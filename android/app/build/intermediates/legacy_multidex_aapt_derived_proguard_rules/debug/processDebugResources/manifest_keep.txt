@@ -1,0 +1,4 @@
+# Referenced at /Users/harry/Kod/hugin-mobile/android/app/build/intermediates/merged_manifests/debug/AndroidManifest.xml:50
+-keep class androidx.core.app.CoreComponentFactory { <init>(); }
+# Referenced at /Users/harry/Kod/hugin-mobile/android/app/build/intermediates/merged_manifests/debug/AndroidManifest.xml:50
+-keep class com.hugin.MainApplication { <init>(); }

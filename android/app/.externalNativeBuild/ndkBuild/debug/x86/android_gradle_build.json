@@ -1,0 +1,53 @@
+{
+  "buildFiles": [
+    "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Android.mk",
+    "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Application.mk"
+  ],
+  "cleanCommands": [
+    "/Users/harry/Library/Android/sdk/ndk-bundle/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Android.mk NDK_APPLICATION_MK\u003d/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Application.mk APP_ABI\u003dx86 NDK_ALL_ABIS\u003dx86 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003d/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/lib clean"
+  ],
+  "libraries": {
+    "TurtleCoin_jni-debug-x86": {
+      "buildCommand": "/Users/harry/Library/Android/sdk/ndk-bundle/ndk-build NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003d/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Android.mk NDK_APPLICATION_MK\u003d/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/Application.mk APP_ABI\u003dx86 NDK_ALL_ABIS\u003dx86 NDK_DEBUG\u003d1 APP_PLATFORM\u003dandroid-16 NDK_OUT\u003d/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/obj NDK_LIBS_OUT\u003d/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/lib /Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/obj/local/x86/libTurtleCoin_jni.so",
+      "toolchain": "toolchain-x86",
+      "abi": "x86",
+      "artifactName": "TurtleCoin_jni",
+      "files": [
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/TurtleCoin.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        },
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/crypto-ops-data.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        },
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/crypto-ops.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        },
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/crypto.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        },
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/hash.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        },
+        {
+          "src": "/Users/harry/Kod/hugin-mobile/android/app/src/main/jni/keccak.cpp",
+          "flags": "-target i686-none-linux-android16 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot /Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fPIC -O0 -UNDEBUG -fno-limit-debug-info -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++/include -I/Users/harry/Library/Android/sdk/ndk-bundle/sources/cxx-stl/llvm-libc++abi/include -I/Users/harry/Kod/hugin-mobile/android/app/src/main/jni -O3 -O3 -std\u003dc++17 -DANDROID -nostdinc++ -Wformat -Werror\u003dformat-security -mstackrealign -fno-strict-aliasing"
+        }
+      ],
+      "output": "/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/obj/local/x86/libTurtleCoin_jni.so"
+    }
+  },
+  "toolchains": {
+    "toolchain-x86": {
+      "cppCompilerExecutable": "/Users/harry/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/bin/clang++"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

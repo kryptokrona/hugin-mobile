@@ -1,0 +1,1 @@
+make: '/Users/harry/Kod/hugin-mobile/android/app/build/intermediates/ndkBuild/debug/obj/local/x86/libTurtleCoin_jni.so' is up to date.
