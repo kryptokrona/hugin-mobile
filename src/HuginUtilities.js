@@ -27,6 +27,8 @@ import naclUtil from 'tweetnacl-util';
 
 import Identicon from 'identicon.js';
 
+import { saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage } from './Database';
+
 
 import {
     toastPopUp,
@@ -189,7 +191,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     /* User payment */
     payments.push([
         receiver,
-        1, /* Amount does not matter for sendAll destination */
+        100000
     ]);
 
 
@@ -217,24 +219,28 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     //   console.log("First message to sender, appending key.");
     // }
 
-    let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
+    let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp, "key":Buffer.from(getKeyPair().publicKey).toString('hex')};
     // Convert json to hex
     let payload_hex = toHex(JSON.stringify(payload_box));
 
-    toastPopUp(payload_hex);
+    // toastPopUp(payload_hex);
 
     const result = await Globals.wallet.sendTransactionAdvanced(
         payments, // destinations,
-        undefined, // mixin
-        undefined, // fee
+        7, // mixin
+        {fixedFee: 7500, isFixedFee: true}, // fee
         undefined, //paymentID
         undefined, // subWalletsToTakeFrom
         undefined, // changeAddress
-        true, // relayToNetwork
-        false, // sneedAll
-        payload_hex
+        undefined, // relayToNetwork
+        undefined, // sneedAll
+        Buffer.from(payload_hex, 'hex')
     );
 
+    Globals.logger.addLogMessage(JSON.stringify(result));
+    Globals.logger.addLogMessage(JSON.stringify(result));
+    Globals.logger.addLogMessage(JSON.stringify(result));
+    Globals.logger.addLogMessage(JSON.stringify(result));
     Globals.logger.addLogMessage(JSON.stringify(result));
     Globals.logger.addLogMessage(JSON.stringify(result));
     Globals.logger.addLogMessage(JSON.stringify(result));
@@ -297,5 +303,176 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       //
       // });
 
+
+}
+
+export function fromHex(hex,str){
+  try{
+    str = decodeURIComponent(hex.replace(/(..)/g,'%$1'))
+  }
+  catch(e){
+    str = hex
+    // console.log('invalid hex input: ' + hex)
+  }
+  return str
+}
+
+export async function getMessage(hash){
+
+  Globals.logger.addLogMessage('Getting payees..');
+
+  let payees = await loadPayeeDataFromDatabase();
+
+  Globals.logger.addLogMessage('Payees: ' + JSON.stringify(payees));
+
+  return new Promise((resolve, reject) => {
+
+  // or
+  // reject(new Error("Error!"));
+
+
+    let nodeURL = 'http://blocksum.org:11898/json_rpc';
+
+    Globals.logger.addLogMessage('Message possibly received: ' + hash);
+
+    fetch(nodeURL, {
+    method: 'POST',
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method: 'f_transaction_json',
+      params: {hash: hash}
+    })
+  })
+  .then((response) => response.json())
+  .then((json) => {
+
+    let data = fromHex(json.result.tx.extra.substring(66));
+
+    Globals.logger.addLogMessage('Message detected: ' + data);
+
+    let tx = JSON.parse(data);
+
+    if (tx.key && tx.t) {
+
+        let senderKey = tx.key;
+
+        let box = tx.box;
+
+        let timestamp = tx.t;
+
+	        let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
+
+        if (!decryptBox) {
+					console.log('Cant decrypt new conversation');
+          reject();
+        }
+
+        let message_dec = naclUtil.encodeUTF8(decryptBox);
+
+        let payload_json = JSON.parse(message_dec);
+
+        payload_json.t = timestamp;
+
+        let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
+
+        savePayeeToDatabase(payee);
+
+        saveIncomingMessage(payload_json);
+
+        resolve(payload_json);
+
+    } else {
+
+        if (tx.m || tx.b) {
+          reject();
+        }
+
+        // If no key is appended to message we need to try the keys in our payload_keychain
+        let box = tx.box;
+        console.log('box', box);
+        console.log('tx', tx);
+        console.log('tx', tx);
+
+        let timestamp = tx.t;
+
+        let decryptBox = false;
+
+        let i = 0;
+
+
+            while (!decryptBox && i < payees.length) {
+
+              let possibleKey = payees[i].paymentID;
+              i += 1;
+              console.log('Trying key:', possibleKey);
+              Globals.logger.addLogMessage('Trying key: ' + possibleKey);
+              try {
+               decryptBox = nacl.box.open(hexToUint(box),
+               nonceFromTimestamp(timestamp),
+               hexToUint(possibleKey),
+               getKeyPair().secretKey);
+             } catch (err) {
+               // console.log('timestamp', timestamp);
+               console.log(err);
+               continue;
+             }
+             console.log('Decrypted:', decryptBox);
+
+              if (!decryptBox) {
+                console.log('Cannot decrypt..');
+                continue;
+              }
+
+
+              let message_dec = naclUtil.encodeUTF8(decryptBox);
+
+              let payload_json = JSON.parse(message_dec);
+
+              payload_json.t = timestamp;
+              // console.log(payload_json);
+
+              saveIncomingMessage(payload_json);
+
+              resolve(payload_json);
+
+            }
+
+
+          }
+          // console.log('Decrypting..');
+
+
+    // }
+
+    // END PASTE
+//
+//     let data = fromHex(json.result.tx.extra.substring(66));
+//
+//     Globals.logger.addLogMessage('Message detected: ' + data);
+//
+//     let tx = JSON.parse(data);
+//
+//     let senderKey = 'ada8e36ba2874b16c551caa4537805ab802147dc52747910dc9869f42e6c712c'; //tx.key;
+//
+//     let box = tx.box;
+//
+//     let timestamp = tx.t;
+//
+//     let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
+//
+//   if (!decryptBox) {
+//     console.log('Cant decrypt new conversation');
+//     reject();
+//   }
+//
+//   let message_dec = naclUtil.encodeUTF8(decryptBox);
+//
+//   let payload_json = JSON.parse(message_dec);
+//
+//   resolve(payload_json);
+//
+   })
+  .catch((error) => Globals.logger.addLogMessage(error))
+});
 
 }

@@ -31,7 +31,7 @@ import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
-
+import { saveToDatabase, getMessages } from './Database';
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -809,10 +809,32 @@ export class ChatScreen extends React.Component {
             addressValid: true,
             nicknameValid: true,
             paymentIDValid: true,
+
+            messages: []
         }
     }
 
+    async componentDidMount() {
+
+        const messages = await getMessages();
+
+        Globals.logger.addLogMessage("messages: ", messages);
+
+        this.setState({
+          messages: messages
+        });
+
+    }
+
     render() {
+
+       const items = [];
+
+       for (message in this.state.messages) {
+         items.push(<Text>{this.state.messages[message].message}</Text>)
+       }
+
+
         return(
             <View style={{
                 flex: 1,
@@ -862,6 +884,8 @@ export class ChatScreen extends React.Component {
                         justifyContent: 'flex-start',
                     }}
                 >
+
+                {items}
 
                 </ScrollView>
 

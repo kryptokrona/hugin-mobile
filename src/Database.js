@@ -144,7 +144,7 @@ async function createTables(DB) {
     }
 
     await DB.transaction((tx) => {
-        
+
         /* We get JSON out from our wallet backend, and load JSON in from our
            wallet backend - it's a little ugly, but it's faster to just read/write
            json to the DB rather than structuring it. */
@@ -198,6 +198,15 @@ async function createTables(DB) {
                 nickname TEXT,
                 address TEXT,
                 paymentid TEXT
+            )`
+        );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS messages (
+                conversation TEXT,
+                type TEXT,
+                message TEXT,
+                timestamp TEXT
             )`
         );
 
@@ -367,6 +376,44 @@ export async function loadPreferencesFromDatabase() {
     return undefined;
 }
 
+export async function saveIncomingMessage(message) {
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `INSERT INTO messages
+              (conversation, type, message, timestamp)
+          VALUES
+              (?, ?, ?, ?)`,
+          [
+              message.from,
+              'received',
+              message.msg,
+              message.t
+          ]
+      );
+  });
+
+}
+
+export async function saveOutgoingMessage(message) {
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `INSERT INTO messages
+              (conversation, type, message, timestamp)
+          VALUES
+              (?, ?, ?, ?)`,
+          [
+              message.from,
+              'sent',
+              message.msg,
+              message.t
+          ]
+      );
+  });
+
+}
+
 export async function savePayeeToDatabase(payee) {
     await database.transaction((tx) => {
         tx.executeSql(
@@ -423,6 +470,37 @@ export async function loadPayeeDataFromDatabase() {
     return undefined;
 }
 
+export async function getMessages() {
+    const [data] = await database.executeSql(
+        `SELECT
+            conversation,
+            type,
+            message,
+            timestamp
+        FROM
+            messages`
+    );
+
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            res.push({
+                conversation: item.conversation,
+                type: item.type,
+                message: item.message,
+                timestamp: item.timestamp
+            });
+        }
+
+        return res;
+    }
+
+    return undefined;
+}
+
+
 export async function saveToDatabase(wallet) {
     try {
         await saveWallet(wallet.toJSONString());
@@ -436,7 +514,7 @@ export async function saveToDatabase(wallet) {
 export async function haveWallet() {
     try {
         const value = await AsyncStorage.getItem(Config.coinName + 'HaveWallet');
-        
+
         if (value !== null) {
             return value === 'true';
         }
