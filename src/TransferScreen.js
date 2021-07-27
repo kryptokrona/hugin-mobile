@@ -193,21 +193,31 @@ export class TransferScreen extends React.Component {
     constructor(props) {
         super(props);
 
-        const [unlockedBalance, lockedBalance] = Globals.wallet.getBalance();
-
         this.state = {
-            unlockedBalance,
-            lockedBalance,
             errMsg: '',
             continueEnabled: false,
-            unlockedBalanceHuman: fromAtomic(unlockedBalance),
             sendAll: false,
             amountFontSize: 30,
+            unlockedBalance: 0,
+            lockedBalance: 0,
+            unlockedBalanceHuman: 0,
         }
     }
 
-    tick() {
-        const [unlockedBalance, lockedBalance] = Globals.wallet.getBalance();
+    async componentDidMount() {
+        const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
+
+        this.setState({
+            unlockedBalance,
+            lockedBalance,
+            unlockedBalanceHuman: fromAtomic(unlockedBalance),
+        });
+
+        this.interval = setInterval(() => this.tick(), 10000);
+    }
+
+    async tick() {
+        const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
 
         this.setState({
             unlockedBalance,
@@ -222,6 +232,7 @@ export class TransferScreen extends React.Component {
                 this.setState({
                     continueEnabled: true,
                     amountAtomic: this.state.unlockedBalance,
+                    errMsg: '',
                 });
             } else {
                 this.setState({
@@ -237,10 +248,6 @@ export class TransferScreen extends React.Component {
                 errMsg: error,
             });
         }
-    }
-
-    componentDidMount() {
-        this.interval = setInterval(() => this.tick(), 10000);
     }
 
     componentWillUnmount() {
@@ -822,7 +829,12 @@ export class ConfirmScreen extends React.Component {
     constructor(props) {
         super(props);
 
-        const [unlockedBalance, lockedBalance] = Globals.wallet.getBalance();
+        this.state = {
+        };
+        }
+
+        async componentDidMount() {
+        const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
 
         const { payee, amount, sendAll } = this.props.navigation.state.params;
 
@@ -832,7 +844,7 @@ export class ConfirmScreen extends React.Component {
 
         const [feeAddress, nodeFee] = Globals.wallet.getNodeFee();
 
-        this.state = {
+        this.setState({
             memo: '',
             modifyMemo: false,
             preparedTransaction: false,
@@ -843,7 +855,7 @@ export class ConfirmScreen extends React.Component {
             unlockedBalance,
             devFee,
             nodeFee,
-        }
+        });
 
         this.prepareTransaction();
     }

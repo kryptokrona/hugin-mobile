@@ -344,15 +344,20 @@ export class ExportKeysScreen extends React.Component {
     constructor(props) {
         super(props);
 
-        let [mnemonicSeed, error] = Globals.wallet.getMnemonicSeed();
-
         const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
 
         this.state = {
             privateSpendKey,
             privateViewKey,
-            mnemonicSeed,
         }
+    }
+
+    async componentDidMount() {
+    const [mnemonicSeed, error] = await Globals.wallet.getMnemonicSeed();
+
+        this.setState({
+            mnemonicSeed,
+        });
     }
 
     render() {

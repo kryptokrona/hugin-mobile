@@ -170,7 +170,7 @@ export class ImportSeedScreen extends React.Component {
         });
     }
 
-    checkSeedIsValid() {
+    async checkSeedIsValid() {
         const words = this.state.seed.toLowerCase().split(' ');
 
         const invalidWords = [];
@@ -201,7 +201,7 @@ export class ImportSeedScreen extends React.Component {
             return false;
         }
 
-        const [valid, error] = isValidMnemonic(words.join(' '), Config);
+        const [valid, error] = await isValidMnemonic(words.join(' '), Config);
 
         if (!valid) {
             this.setState({
@@ -216,8 +216,8 @@ export class ImportSeedScreen extends React.Component {
         return valid;
     }
 
-    importWallet() {
-        const [wallet, error] = WalletBackend.importWalletFromSeed(
+    async importWallet() {
+        const [wallet, error] = await WalletBackend.importWalletFromSeed(
             Globals.getDaemon(), this.scanHeight, this.state.seed.toLowerCase(), Config
         );
 
@@ -357,8 +357,8 @@ export class ImportKeysScreen extends React.Component {
         return [true, ''];
     }
 
-    importWallet() {
-        const [wallet, error] = WalletBackend.importWalletFromKeys(
+    async importWallet() {
+        const [wallet, error] = await WalletBackend.importWalletFromKeys(
             Globals.getDaemon(), this.scanHeight, this.state.privateViewKey,
             this.state.privateSpendKey, Config
         );
