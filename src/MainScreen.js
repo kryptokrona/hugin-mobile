@@ -29,7 +29,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { getKeyPair } from './HuginUtilities';
+import { getKeyPair, getMessage } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { saveToDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -119,23 +119,29 @@ function handleNotification(notification) {
     notification.finish(PushNotificationIOS.FetchResult.NoData);
 }
 
-export function sendNotification(transaction) {
-    /* Don't show notifications if disabled */
-    if (!Globals.preferences.notificationsEnabled) {
-        return;
-    }
+export async function sendNotification(transaction) {
+    // /* Don't show notifications if disabled */
+    // if (!Globals.preferences.notificationsEnabled) {
+    //     return;
+    // }
+    //
+    // /* Don't show notifications in foreground */
+    // if (AppState.currentState !== 'background') {
+    //     return;
+    // }
 
-    /* Don't show notifications in foreground */
-    if (AppState.currentState !== 'background') {
-        return;
-    }
+    let message = await getMessage(transaction.hash);
+
+    // let messages = await getMessages();
+    // Globals.logger.addLogMessage('MessagesDB: ' + JSON.stringify(messages));
+    Globals.logger.addLogMessage('Received message: ' + JSON.stringify(message));
 
     PushNotification.localNotification({
-        title: 'Incoming transaction received!',
-        message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+        title: message.from,//'Incoming transaction received!',
+        //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+        message: message.msg,
         data: JSON.stringify(transaction.hash),
-        largeIcon: 'ic_notification_color',
-        smallIcon: 'ic_notification_color',
+        largeIconUrl: get_avatar(message.from, 64),
     });
 }
 
