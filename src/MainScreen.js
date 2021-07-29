@@ -31,7 +31,7 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
 import { getKeyPair, getMessage } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { saveToDatabase } from './Database';
+import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
@@ -85,6 +85,9 @@ async function init(navigation) {
     if (Globals.backgroundSaveTimer === undefined) {
         Globals.backgroundSaveTimer = setInterval(backgroundSave, Config.walletSaveFrequency);
     }
+    if (Globals.backgroundSyncMessagesTimer === undefined) {
+        Globals.backgroundSyncMessagesTimer = setInterval(backgroundSyncMessages, 5000);
+    }
 
     /* Use our native C++ func to process blocks, provided we're on android */
     /* TODO: iOS support */
@@ -136,8 +139,19 @@ export async function sendNotification(transaction) {
     // Globals.logger.addLogMessage('MessagesDB: ' + JSON.stringify(messages));
     Globals.logger.addLogMessage('Received message: ' + JSON.stringify(message));
 
+    let from = message.from;
+
+    let payees = await loadPayeeDataFromDatabase();
+            for (payee in payees) {
+
+              if (payees[payee].address == from) {
+                from = payees[payee].nickname;
+              }
+
+            }
+
     PushNotification.localNotification({
-        title: message.from,//'Incoming transaction received!',
+        title: from,//'Incoming transaction received!',
         //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
         message: message.msg,
         data: JSON.stringify(transaction.hash),
@@ -674,4 +688,59 @@ async function backgroundSave() {
         reportCaughtException(err);
         Globals.logger.addLogMessage('Failed to background save: ' + err);
     }
+}
+
+async function backgroundSyncMessages() {
+    // Globals.logger.addLogMessage('Getting unconfirmed transactions...');
+    //   const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+    //   let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
+    //
+    //     fetch(nodeURL + "/json_rpc", {
+    //     method: 'POST',
+    //     body: JSON.stringify({
+    //       jsonrpc: '2.0',
+    //       method: 'f_on_transactions_pool_json',
+    //       params: {}
+    //     })
+    //   })
+    //   .then((response) => response.json())
+    //   .then((json) => {
+    //
+    //     let transactions = json.result.transactions;
+    //
+    //     for (transaction in transactions) {
+    //       try {
+    //
+    //         fetch(nodeURL + "/get_transaction_details_by_hashes", {
+    //         method: 'POST',
+    //         body: JSON.stringify({
+    //           transactionHashes: [transactions[transaction].hash]
+    //         })
+    //       })
+    //       .then((response) => response.json())
+    //       .then((json) => {
+    //
+    //         Globals.logger.addLogMessage('Unconformed: ' + JSON.stringify(json.transactions[0]));
+    //         Globals.logger.addLogMessage('Extra: ' + JSON.stringify(json.transactions[0].extra));
+    //
+    //
+    //         // getMessage(transactions[transaction].hash);
+    //         //
+    //         // PushNotification.localNotification({
+    //         //     title: message.from,//'Incoming transaction received!',
+    //         //     //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+    //         //     message: message.msg,
+    //         //     data: JSON.stringify(transaction.hash),
+    //         //     largeIconUrl: get_avatar(message.from, 64),
+    //         });
+    //       } catch (err){
+    //         Globals.logger.addLogMessage('Failed to get unconfirmed messages...');
+    //       }
+    //     }
+    //
+    //
+    //
+    //   });
+
+
 }
