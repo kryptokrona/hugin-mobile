@@ -23,6 +23,9 @@ import ListItem from './ListItem';
 import List from './ListContainer';
 
 import { Styles } from './Styles';
+
+import Moment from 'react-moment';
+
 import { Globals } from './Globals';
 import { Hr, BottomButton } from './SharedComponents';
 
@@ -211,7 +214,7 @@ export class RecipientsScreen extends React.Component {
                             marginTop: 30,
                             fontFamily: "Montserrat-SemiBold"
                         }}>
-                            Modify an existing recipient
+                            Chats
                         </Text>
 
                         {this.state.payees.length > 0 ? addressBookComponent : noPayeesComponent}
@@ -762,7 +765,7 @@ export class ModifyPayeeScreen extends React.Component {
                                     [
                                         { text: 'Delete', onPress: () => {
                                             Globals.removePayee(this.state.initialNickname);
-                                            this.props.navigation.goBack();
+                                            this.props.navigation.pop(2);
                                         }},
                                         { text: 'Cancel', style: 'cancel'},
                                     ],
@@ -776,6 +779,27 @@ export class ModifyPayeeScreen extends React.Component {
         );
     }
 }
+//
+// export class MessageBubble extends React.Component {
+//     constructor(props) {
+//         super(props);
+//         // this.animation = new Animated.Value(0);
+//     }
+//
+//
+//     componentWillMount() {
+//       // this.animatedValue = new Animated.Value(0);
+//     }
+//
+//     componentDidMount() {
+//
+//     }
+//
+//     render() {
+//
+//     }
+// }
+
 
 export class ChatScreen extends React.Component {
     constructor(props) {
@@ -831,7 +855,15 @@ export class ChatScreen extends React.Component {
        const items = [];
 
        for (message in this.state.messages) {
-         items.push(<Text>{this.state.messages[message].message}</Text>)
+         if (this.state.address == this.state.messages[message].conversation){
+           let timestamp = this.state.messages[message].timestamp / 1000;
+           if (this.state.messages[message].type == 'received'){
+              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           } else {
+             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           }
+
+       }
        }
 
 
@@ -839,27 +871,32 @@ export class ChatScreen extends React.Component {
             <View style={{
                 flex: 1,
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
-                justifycontent: 'flex-start',
-                alignItems: 'flex-start',
+                alignItems: 'center',
+                paddingLeft: 10
             }}>
 
                 <View style={{
-                    alignItems: 'flex-start',
-                    justifyContent: 'flex-start',
+                    alignItems: 'center',
                     marginHorizontal: 30,
                 }}>
                     <View style={{
                         flexDirection: 'row',
                         alignItems: 'center',
-                        marginTop: 15,
-                        width: '100%',
-                        justifyContent: 'space-between'
+                        marginTop: 5,
+                        marginLeft: 'auto'
                     }}>
                         <Image
                           style={{width: 50, height: 50}}
                           source={{uri: get_avatar(this.state.address)}}
                         />
-                        <Text style={{ fontSize: 15, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                        <Text onPress={() => {
+                            Globals.logger.addLogMessage("pressed");
+                            this.props.navigation.navigate(
+                                'ModifyPayee', {
+                                    payee: this.props.navigation.state.params.payee,
+                                }
+                            );
+                        }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
                             {this.state.nickname}
                         </Text>
                     </View>
@@ -875,14 +912,12 @@ export class ChatScreen extends React.Component {
                 <ScrollView
                     style={{
                         marginRight: 30,
-                        marginBottom: 130,
+                        marginBottom: 0,
                         width: '100%',
-                        height: '60%',
+                        height: '80%',
                     }}
-                    contentContainerStyle={{
-                        alignItems: 'flex-start',
-                        justifyContent: 'flex-start',
-                    }}
+                    ref={ref => {this.scrollView = ref}}
+                    onContentSizeChange={() => this.scrollView.scrollToEnd({animated: true})}
                 >
 
                 {items}
@@ -899,15 +934,17 @@ export class ChatScreen extends React.Component {
                         width: '100%',
                     }}
                     inputContainerStyle={{
-                        borderColor: this.props.screenProps.theme.notVeryVisibleColour,
+                        backgroundColor: this.props.screenProps.theme.notVeryVisibleColour,
                         borderWidth: 1,
-                        borderRadius: 2,
+                        borderRadius: 15,
                         width: '100%',
                         height: 30,
+                        padding: 15
                     }}
                     inputStyle={{
                         color: this.props.screenProps.theme.primaryColour,
-                        fontSize: 14,
+                        fontFamily: 'Montserrat-Regular',
+                        fontSize: 15
                     }}
                     maxLength={Config.integratedAddressLength}
                     placeholder={'Type your message..'}
