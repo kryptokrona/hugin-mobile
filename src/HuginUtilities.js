@@ -10,10 +10,6 @@ import { Text, Platform, ToastAndroid, Alert } from 'react-native';
 
 import { StackActions, NavigationActions } from 'react-navigation';
 
-import {
-    validateAddresses, WalletErrorCode, validatePaymentID, prettyPrintAmount, FeeType
-} from 'turtlecoin-wallet-backend';
-
 import * as Qs from 'query-string';
 
 import Config from './Config';
@@ -27,7 +23,7 @@ import naclUtil from 'tweetnacl-util';
 
 import Identicon from 'identicon.js';
 
-import { saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage } from './Database';
+import { saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage, saveOutgoingMessage, savePayeeToDatabase } from './Database';
 
 
 import {
@@ -191,11 +187,13 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     /* User payment */
     payments.push([
         receiver,
-        100000
+        10
     ]);
 
 
     let timestamp = Date.now();
+
+
 
 
     // Convert message data to json
@@ -236,6 +234,17 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         undefined, // sneedAll
         Buffer.from(payload_hex, 'hex')
     );
+
+    if (result.success) {
+      saveOutgoingMessage({
+        t: timestamp,
+        msg: message,
+        to: receiver
+      });
+      toastPopUp('Message sent!');
+    } else {
+      toastPopUp('Message failed to send.. Sadface');
+    }
 
     Globals.logger.addLogMessage(JSON.stringify(result));
     Globals.logger.addLogMessage(JSON.stringify(result));
@@ -331,9 +340,13 @@ export async function getMessage(hash){
   // reject(new Error("Error!"));
 
 
-    let nodeURL = 'http://blocksum.org:11898/json_rpc';
+    // let nodeURL = 'http://wasa.kryptokrona.se:11898/json_rpc';
+
+    const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+    let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}/json_rpc`;
 
     Globals.logger.addLogMessage('Message possibly received: ' + hash);
+    Globals.logger.addLogMessage('Using rpc: ' + nodeURL);
 
     fetch(nodeURL, {
     method: 'POST',
@@ -345,7 +358,7 @@ export async function getMessage(hash){
   })
   .then((response) => response.json())
   .then((json) => {
-
+    Globals.logger.addLogMessage('Message ?: ' + JSON.stringify(json));
     let data = fromHex(json.result.tx.extra.substring(66));
 
     Globals.logger.addLogMessage('Message detected: ' + data);
@@ -353,6 +366,7 @@ export async function getMessage(hash){
     let tx = JSON.parse(data);
 
     if (tx.key && tx.t) {
+
 
         let senderKey = tx.key;
 
@@ -373,9 +387,22 @@ export async function getMessage(hash){
 
         payload_json.t = timestamp;
 
-        let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
+        let exists = false;
 
-        savePayeeToDatabase(payee);
+        for (payee in payees) {
+
+          if (payees[payee].paymentID == senderKey) {
+            exists = true;
+          }
+
+        }
+
+        if (!exists) {
+
+          let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
+          savePayeeToDatabase(payee);
+
+        }
 
         saveIncomingMessage(payload_json);
 
