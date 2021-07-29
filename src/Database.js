@@ -404,7 +404,7 @@ export async function saveOutgoingMessage(message) {
           VALUES
               (?, ?, ?, ?)`,
           [
-              message.from,
+              message.to,
               'sent',
               message.msg,
               message.t
