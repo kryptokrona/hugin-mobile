@@ -202,11 +202,12 @@ async function createTables(DB) {
         );
 
         tx.executeSql(
-            `CREATE TABLE IF NOT EXISTS messages (
+            `CREATE TABLE IF NOT EXISTS message_db (
                 conversation TEXT,
                 type TEXT,
                 message TEXT,
-                timestamp TEXT
+                timestamp TEXT,
+                UNIQUE (timestamp)
             )`
         );
 
@@ -380,7 +381,7 @@ export async function saveIncomingMessage(message) {
 
   await database.transaction((tx) => {
       tx.executeSql(
-          `INSERT INTO messages
+          `REPLACE INTO message_db
               (conversation, type, message, timestamp)
           VALUES
               (?, ?, ?, ?)`,
@@ -399,7 +400,7 @@ export async function saveOutgoingMessage(message) {
 
   await database.transaction((tx) => {
       tx.executeSql(
-          `INSERT INTO messages
+          `INSERT INTO message_db
               (conversation, type, message, timestamp)
           VALUES
               (?, ?, ?, ?)`,
@@ -478,7 +479,7 @@ export async function getMessages() {
             message,
             timestamp
         FROM
-            messages`
+            message_db`
     );
 
     if (data && data.rows && data.rows.length) {

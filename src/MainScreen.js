@@ -29,7 +29,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { getKeyPair, getMessage } from './HuginUtilities';
+import { getKeyPair, getMessage, getExtra, optimizeMessages } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -133,7 +133,13 @@ export async function sendNotification(transaction) {
     //     return;
     // }
 
-    let message = await getMessage(transaction.hash);
+    if (transaction.totalAmount() > 0.00011) {
+      await optimizeMessages(transaction);
+    }
+
+    let extra = await getExtra(transaction.hash);
+
+    let message = await getMessage(extra);
 
     // let messages = await getMessages();
     // Globals.logger.addLogMessage('MessagesDB: ' + JSON.stringify(messages));
@@ -691,56 +697,69 @@ async function backgroundSave() {
 }
 
 async function backgroundSyncMessages() {
-    // Globals.logger.addLogMessage('Getting unconfirmed transactions...');
-    //   const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-    //   let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
-    //
-    //     fetch(nodeURL + "/json_rpc", {
-    //     method: 'POST',
-    //     body: JSON.stringify({
-    //       jsonrpc: '2.0',
-    //       method: 'f_on_transactions_pool_json',
-    //       params: {}
-    //     })
-    //   })
-    //   .then((response) => response.json())
-    //   .then((json) => {
-    //
-    //     let transactions = json.result.transactions;
-    //
-    //     for (transaction in transactions) {
-    //       try {
-    //
-    //         fetch(nodeURL + "/get_transaction_details_by_hashes", {
-    //         method: 'POST',
-    //         body: JSON.stringify({
-    //           transactionHashes: [transactions[transaction].hash]
-    //         })
-    //       })
-    //       .then((response) => response.json())
-    //       .then((json) => {
-    //
-    //         Globals.logger.addLogMessage('Unconformed: ' + JSON.stringify(json.transactions[0]));
-    //         Globals.logger.addLogMessage('Extra: ' + JSON.stringify(json.transactions[0].extra));
-    //
-    //
-    //         // getMessage(transactions[transaction].hash);
-    //         //
-    //         // PushNotification.localNotification({
-    //         //     title: message.from,//'Incoming transaction received!',
-    //         //     //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-    //         //     message: message.msg,
-    //         //     data: JSON.stringify(transaction.hash),
-    //         //     largeIconUrl: get_avatar(message.from, 64),
-    //         });
-    //       } catch (err){
-    //         Globals.logger.addLogMessage('Failed to get unconfirmed messages...');
-    //       }
-    //     }
-    //
-    //
-    //
-    //   });
+
+    Globals.logger.addLogMessage('Getting unconfirmed transactions...');
+      const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
+
+        fetch(nodeURL + "/get_pool_changes_lite", {
+        method: 'POST',
+        body: JSON.stringify({
+          knownTXs: {}
+        })
+      })
+      .then((response) => response.json())
+      .then(async (json) => {
+
+        console.log(json);
+
+        json = JSON.stringify(json).replace('.txPrefix','');
+
+        console.log('doc', json);
+
+        json = JSON.parse(json);
+
+        let transactions = json.addedTxs;
+
+        for (transaction in transactions) {
+
+          try {
+
+          console.log('transaction:', transactions[transaction]);
+
+          let thisExtra = transactions[transaction].transactionPrefixInfo.extra;
+
+          console.log('Extra:', thisExtra);
+
+          if (thisExtra.length > 66) {
+
+
+            let message = await getMessage(thisExtra);
+
+            let from = message.from;
+
+            let payees = await loadPayeeDataFromDatabase();
+                    for (payee in payees) {
+
+                      if (payees[payee].address == from) {
+                        from = payees[payee].nickname;
+                      }
+
+                    }
+
+
+
+          }
+
+        } catch (err) {
+          continue;
+        }
+
+        }
+
+
+
+      });
 
 
 }

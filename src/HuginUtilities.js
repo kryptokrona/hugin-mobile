@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import React from 'react';
-
+import PushNotification from 'react-native-push-notification';
 import moment from 'moment';
 
 import { Text, Platform, ToastAndroid, Alert } from 'react-native';
@@ -23,7 +23,7 @@ import naclUtil from 'tweetnacl-util';
 
 import Identicon from 'identicon.js';
 
-import { saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage, saveOutgoingMessage, savePayeeToDatabase } from './Database';
+import { getMessages, saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage, saveOutgoingMessage, savePayeeToDatabase } from './Database';
 
 
 import {
@@ -40,6 +40,23 @@ export function getKeyPair() {
 
 }
 
+
+    PushNotification.configure({
+        onNotification: handleNotification,
+
+        permissions: {
+            alert: true,
+            badge: true,
+            sound: true,
+        },
+
+        popInitialNotification: true,
+
+        requestPermissions: true,
+    });
+function handleNotification(notification) {
+    notification.finish(PushNotificationIOS.FetchResult.NoData);
+}
 
 export function intToRGB(int) {
 
@@ -168,6 +185,82 @@ export function toHex(str,hex){
   return hex
 }
 
+export async function optimizeMessages(transaction) {
+
+  return;
+
+      let my_address = Globals.wallet.getPrimaryAddress();
+
+      let my_addresses = Globals.wallet.getAddresses();
+
+      let my_message_address = '';
+      let my_change_address = '';
+
+      if (my_addresses.length < 3) {
+        let [address, error] = await Globals.wallet.addSubWallet();
+        if (!error) {
+             console.log(`Created subwallet with address of ${address}`);
+        } else {
+          my_message_address = address;
+
+        }
+
+        let [address2, error2] = await Globals.wallet.addSubWallet();
+        if (!error2) {
+             console.log(`Created subwallet with address of ${address}`);
+        } else {
+          my_change_address = address2;
+
+        }
+
+      } else {
+        my_message_address = my_addresses[1];
+        my_change_address = my_addresses[2];
+      }
+
+      let payments = [];
+
+      let nbrOfTxs = transaction.totalAmount() / 0.00011;
+      let i = 0;
+      /* User payment */
+      while (i < nbrOfTxs) {
+        payments.push([
+            my_message_address,
+            11
+        ]);
+
+        i += 1;
+
+      }
+
+      let result = await Globals.wallet.sendTransactionAdvanced(
+          payments, // destinations,
+          7, // mixin
+          {fixedFee: 10, isFixedFee: true}, // fee
+          undefined, //paymentID
+          [my_address], // subWalletsToTakeFrom
+          my_change_address, // changeAddress
+          true, // relayToNetwork
+          false, // sneedAll
+          undefined
+      );
+
+      if (result.success) {
+        toastPopUp('Optimizing wallet!');
+      } else {
+        toastPopUp('Failed to optimizeMessages');
+      }
+
+      Globals.logger.addLogMessage(JSON.stringify(result));
+
+      // toastPopUp('Sending message..');
+      // toastPopUp(result);
+      return '';
+
+
+
+}
+
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
   let has_history = false;
@@ -180,15 +273,76 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     // Globals.logger.addLogMessage(Globals.wallet.getPrimaryAddress());
 
-    let my_address = Globals.wallet.getPrimaryAddress();
 
-    const payments = [];
+          let my_address = Globals.wallet.getPrimaryAddress();
 
-    /* User payment */
-    payments.push([
-        receiver,
-        10
-    ]);
+          let my_addresses = Globals.wallet.getAddresses();
+
+          let my_message_address = '';
+          let my_change_address = '';
+
+          console.log('LENGTH:', my_addresses.length);
+
+          if (my_addresses.length < 2) {
+            let [address, error] = await Globals.wallet.addSubWallet();
+            if (!error) {
+                 console.log(`Created subwallet with address of ${address}`);
+                 my_change_address = address;
+                 my_message_address = my_addresses[0];
+            }
+
+          } else {
+            my_change_address = my_addresses[my_addresses.length - 1];
+            my_message_address = my_addresses[my_addresses.length - 2];
+          }
+
+
+
+
+          for (address in my_addresses) {
+            Globals.logger.addLogMessage('Address: ' + my_addresses[address]);;
+
+            try {let [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance([my_addresses[address]]);
+
+            Globals.logger.addLogMessage('Balance: ' + unlockedBalance);
+            Globals.logger.addLogMessage('Balance locked: ' + lockedBalance);
+          } catch (err) {
+
+          }
+          }
+
+          try {
+
+            let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_message_address]);
+
+            console.log('BALANCE MESSAGE:', munlockedBalance);
+            if (munlockedBalance < 11 && mlockedBalance > 0) {
+
+              toastPopUp('Please wait for more funds to unlock!');
+              return;
+
+            } else if (munlockedBalance == 0 && mlockedBalance == 0) {
+              if (my_message_address != my_address){
+              const error = await Globals.wallet.deleteSubWallet(my_message_address);
+
+              if (error) {
+                   console.log(`Failed to delete subwallet: ${error.toString()}`);
+              }
+              toastPopUp('Please try again!');
+              return;
+            }}
+
+          } catch (err) {
+            return;
+          }
+
+    // let payments = [];
+    //
+    // /* User payment */
+    // payments.push([
+    //     receiver,
+    //     10
+    // ]);
 
 
     let timestamp = Date.now();
@@ -197,9 +351,9 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
 
     // Convert message data to json
-    payload_json = {"from":my_address, "to":receiver, "msg":message};
+    let payload_json = {"from":my_address, "to":receiver, "msg":message};
 
-    payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
+    let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
 
 
 
@@ -223,15 +377,15 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     // toastPopUp(payload_hex);
 
-    const result = await Globals.wallet.sendTransactionAdvanced(
-        payments, // destinations,
+    let result = await Globals.wallet.sendTransactionAdvanced(
+        [[receiver, 1]], // destinations,
         7, // mixin
-        {fixedFee: 7500, isFixedFee: true}, // fee
+        {fixedFee: 10, isFixedFee: true}, // fee
         undefined, //paymentID
-        undefined, // subWalletsToTakeFrom
-        undefined, // changeAddress
-        undefined, // relayToNetwork
-        undefined, // sneedAll
+        [my_message_address], // subWalletsToTakeFrom
+        my_change_address , // changeAddress
+        true, // relayToNetwork
+        false, // sneedAll
         Buffer.from(payload_hex, 'hex')
     );
 
@@ -243,16 +397,36 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       });
       toastPopUp('Message sent!');
     } else {
+
       toastPopUp('Message failed to send.. Sadface');
+
+      try {
+
+        let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_message_address]);
+
+
+              if (my_message_address != my_address && munlockedBalance < 100 | result.error.errorCode == 11 ){
+              const error = await Globals.wallet.deleteSubWallet(my_message_address);
+
+              if (error) {
+                   console.log(`Failed to delete subwallet: ${error.toString()}`);
+              }
+
+            } else if (my_addresses.length < 3) {
+
+                      let [nu_address, nu_error] = await Globals.wallet.addSubWallet();
+                      if (!nu_error) {
+                           console.log(`Created subwallet with address of ${nu_address}`);
+                      }
+            }
+
+      } catch (err){
+        return;
+      }
+
+
     }
 
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
-    Globals.logger.addLogMessage(JSON.stringify(result));
     Globals.logger.addLogMessage(JSON.stringify(result));
 
     // toastPopUp('Sending message..');
@@ -326,40 +500,44 @@ export function fromHex(hex,str){
   return str
 }
 
-export async function getMessage(hash){
+export async function getExtra(hash){
+  return new Promise((resolve, reject) => {
+      const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}/json_rpc`;
+
+      Globals.logger.addLogMessage('Message possibly received: ' + hash);
+      Globals.logger.addLogMessage('Using rpc: ' + nodeURL);
+
+      fetch(nodeURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'f_transaction_json',
+        params: {hash: hash}
+      })
+    })
+    .then((response) => response.json())
+    .then((json) => {
+      let data = fromHex(json.result.tx.extra);
+      resolve(data);
+     })
+    .catch((error) => Globals.logger.addLogMessage(error))
+
+  })
+}
+
+export async function getMessage(extra){
 
   Globals.logger.addLogMessage('Getting payees..');
 
   let payees = await loadPayeeDataFromDatabase();
+  let old_messages = await getMessages();
 
   Globals.logger.addLogMessage('Payees: ' + JSON.stringify(payees));
 
   return new Promise((resolve, reject) => {
 
-  // or
-  // reject(new Error("Error!"));
-
-
-    // let nodeURL = 'http://wasa.kryptokrona.se:11898/json_rpc';
-
-    const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-    let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}/json_rpc`;
-
-    Globals.logger.addLogMessage('Message possibly received: ' + hash);
-    Globals.logger.addLogMessage('Using rpc: ' + nodeURL);
-
-    fetch(nodeURL, {
-    method: 'POST',
-    body: JSON.stringify({
-      jsonrpc: '2.0',
-      method: 'f_transaction_json',
-      params: {hash: hash}
-    })
-  })
-  .then((response) => response.json())
-  .then((json) => {
-    Globals.logger.addLogMessage('Message ?: ' + JSON.stringify(json));
-    let data = fromHex(json.result.tx.extra.substring(66));
+    let data = fromHex(extra.substring(66));
 
     Globals.logger.addLogMessage('Message detected: ' + data);
 
@@ -460,6 +638,41 @@ export async function getMessage(hash){
 
               saveIncomingMessage(payload_json);
 
+
+              let from = payload_json.from;
+
+
+                      for (payee in payees) {
+
+                        if (payees[payee].address == from) {
+                          from = payees[payee].nickname;
+                        }
+
+                      }
+
+              let is_known = false;
+
+                      for (msg in old_messages) {
+                        console.log('old_messages[msg].timestamp', old_messages[msg].timestamp);
+                        console.log('payload_json.t', payload_json.t);
+                        if (old_messages[msg].timestamp == payload_json.t) {
+                          is_known = true;
+                        }
+
+                      }
+
+                      console.log('is_known', is_known);
+              if (!is_known) {
+
+                PushNotification.localNotification({
+                    title: from,//'Incoming transaction received!',
+                    //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                    message: payload_json.msg,
+                    data: payload_json.t,
+                    largeIconUrl: get_avatar(payload_json.from, 64),
+                });
+              }
+
               resolve(payload_json);
 
             }
@@ -498,8 +711,7 @@ export async function getMessage(hash){
 //
 //   resolve(payload_json);
 //
-   })
-  .catch((error) => Globals.logger.addLogMessage(error))
+
 });
 
 }
