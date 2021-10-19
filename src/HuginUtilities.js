@@ -21,10 +21,25 @@ import { addFee, toAtomic } from './Fee';
 import nacl from 'tweetnacl';
 import naclUtil from 'tweetnacl-util';
 
+import * as NaclSealed from 'tweetnacl-sealed-box';
+
 import Identicon from 'identicon.js';
 
 import { getMessages, saveToDatabase, loadPayeeDataFromDatabase, saveIncomingMessage, saveOutgoingMessage, savePayeeToDatabase } from './Database';
 
+
+import {
+    Address,
+    AddressPrefix,
+    Block,
+    BlockTemplate,
+    Crypto,
+    CryptoNote,
+    LevinPacket,
+    Transaction
+} from 'kryptokrona-utils';
+const xkrUtils = new CryptoNote()
+const crypto = new Crypto()
 
 import {
     toastPopUp,
@@ -37,6 +52,23 @@ export function getKeyPair() {
     let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
     return keyPair;
 
+
+}
+
+
+function trimExtra (extra) {
+
+  try {
+
+    let payload = fromHex(extra.substring(66));
+    let payload_json = JSON.parse(payload);
+    return fromHex(extra.substring(66))
+
+  } catch (e) {
+
+    return fromHex(Buffer.from(extra.substring(78)).toString())
+
+  }
 
 }
 
@@ -187,6 +219,8 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(transaction) {
 
+  toastPopUp('Optimizing wallet!');
+
   return;
 
       let my_address = Globals.wallet.getPrimaryAddress();
@@ -235,7 +269,7 @@ export async function optimizeMessages(transaction) {
 
       let result = await Globals.wallet.sendTransactionAdvanced(
           payments, // destinations,
-          7, // mixin
+          3, // mixin
           {fixedFee: 10, isFixedFee: true}, // fee
           undefined, //paymentID
           [my_address], // subWalletsToTakeFrom
@@ -263,10 +297,12 @@ export async function optimizeMessages(transaction) {
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
+  toastPopUp('Sending massage!');
+
   let has_history = false;
 
     if (message.length == 0) {
-      return
+      return;
     }
 
 
@@ -274,67 +310,25 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     // Globals.logger.addLogMessage(Globals.wallet.getPrimaryAddress());
 
 
-          let my_address = Globals.wallet.getPrimaryAddress();
+    let my_address = Globals.wallet.getPrimaryAddress();
 
-          let my_addresses = Globals.wallet.getAddresses();
+    let my_addresses = Globals.wallet.getAddresses();
 
-          let my_message_address = '';
-          let my_change_address = '';
+    try {
 
-          console.log('LENGTH:', my_addresses.length);
+      let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_address]);
 
-          if (my_addresses.length < 2) {
-            let [address, error] = await Globals.wallet.addSubWallet();
-            if (!error) {
-                 console.log(`Created subwallet with address of ${address}`);
-                 my_change_address = address;
-                 my_message_address = my_addresses[0];
-            }
+      if (munlockedBalance < 11 && mlockedBalance > 0) {
 
-          } else {
-            my_change_address = my_addresses[my_addresses.length - 1];
-            my_message_address = my_addresses[my_addresses.length - 2];
-          }
+        toastPopUp('Please wait for more funds to unlock!');
+        return;
 
-
-
-
-          for (address in my_addresses) {
-            Globals.logger.addLogMessage('Address: ' + my_addresses[address]);;
-
-            try {let [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance([my_addresses[address]]);
-
-            Globals.logger.addLogMessage('Balance: ' + unlockedBalance);
-            Globals.logger.addLogMessage('Balance locked: ' + lockedBalance);
-          } catch (err) {
-
-          }
-          }
-
-          try {
-
-            let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_message_address]);
-
-            console.log('BALANCE MESSAGE:', munlockedBalance);
-            if (munlockedBalance < 11 && mlockedBalance > 0) {
-
-              toastPopUp('Please wait for more funds to unlock!');
-              return;
-
-            } else if (munlockedBalance == 0 && mlockedBalance == 0) {
-              if (my_message_address != my_address){
-              const error = await Globals.wallet.deleteSubWallet(my_message_address);
-
-              if (error) {
-                   console.log(`Failed to delete subwallet: ${error.toString()}`);
-              }
-              toastPopUp('Please try again!');
-              return;
-            }}
-
-          } catch (err) {
-            return;
-          }
+      }
+    } catch (err) {
+      toastPopUp('Error!');
+      return;
+    }
+    toastPopUp('Success!');
 
     // let payments = [];
     //
@@ -350,28 +344,47 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
 
 
-    // Convert message data to json
-    let payload_json = {"from":my_address, "to":receiver, "msg":message};
-
-    let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
-
-
-
-    let box = nacl.box(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey), getKeyPair().secretKey);
-
-
-
         // **TO DO** Check whether this is the first outgoing transaction to the recipient
 
-        // History has been asserted, continue sending message
-    // if (has_history) {
-    //   payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
-    // } else {
-    //   payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp, "key":$('#currentPubKey').text()};
-    //   console.log("First message to sender, appending key.");
-    // }
+    let old_messages = await getMessages();
 
-    let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp, "key":Buffer.from(getKeyPair().publicKey).toString('hex')};
+            for (msg in old_messages) {
+              if (old_messages[msg].conversation == receiver) {
+                has_history = true;
+              }
+
+            }
+
+        // History has been asserted, continue sending message
+
+    let box;
+
+    if (!has_history) {
+      console.log('No history found..');
+      // payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
+      const addr = await Address.fromAddress(my_address);
+      const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+      let xkr_private_key = privateSpendKey;
+      let signature = await xkrUtils.signMessage(message, xkr_private_key);
+      let payload_json = {"from":my_address, "k": Buffer.from(getKeyPair().publicKey).toString('hex'), "msg":message, "s": signature};
+      let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
+      box = new NaclSealed.sealedbox(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey));
+    } else {
+      console.log('Has history, not using sealedbox');
+      // Convert message data to json
+      let payload_json = {"from":my_address, "k": Buffer.from(getKeyPair().publicKey).toString('hex'), "msg":message};
+
+      let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
+
+
+
+      box = nacl.box(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey), getKeyPair().secretKey);
+
+    }
+
+    let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
+
+    // let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp, "key":Buffer.from(getKeyPair().publicKey).toString('hex')};
     // Convert json to hex
     let payload_hex = toHex(JSON.stringify(payload_box));
 
@@ -379,11 +392,11 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
-        7, // mixin
-        {fixedFee: 10, isFixedFee: true}, // fee
+        3, // mixin
+        {fixedFee: 2500, isFixedFee: true}, // fee
         undefined, //paymentID
-        [my_message_address], // subWalletsToTakeFrom
-        my_change_address , // changeAddress
+        [my_address], // subWalletsToTakeFrom
+        undefined, // changeAddress
         true, // relayToNetwork
         false, // sneedAll
         Buffer.from(payload_hex, 'hex')
@@ -400,37 +413,11 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
       toastPopUp('Message failed to send.. Sadface');
 
-      try {
-
-        let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_message_address]);
-
-
-              if (my_message_address != my_address && munlockedBalance < 100 | result.error.errorCode == 11 ){
-              const error = await Globals.wallet.deleteSubWallet(my_message_address);
-
-              if (error) {
-                   console.log(`Failed to delete subwallet: ${error.toString()}`);
-              }
-
-            } else if (my_addresses.length < 3) {
-
-                      let [nu_address, nu_error] = await Globals.wallet.addSubWallet();
-                      if (!nu_error) {
-                           console.log(`Created subwallet with address of ${nu_address}`);
-                      }
-            }
-
-      } catch (err){
-        return;
-      }
-
 
     }
 
     Globals.logger.addLogMessage(JSON.stringify(result));
 
-    // toastPopUp('Sending message..');
-    // toastPopUp(result);
     return '';
 
     // let magnetLinks = /(magnet:\?[^\s\"]*)/gmi.exec(message);
@@ -537,56 +524,58 @@ export async function getMessage(extra){
 
   return new Promise((resolve, reject) => {
 
-    let data = fromHex(extra.substring(66));
+    extra = trimExtra(extra);
+
+    let data = extra;
 
     Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
 
-    if (tx.key && tx.t) {
-
-
-        let senderKey = tx.key;
-
-        let box = tx.box;
-
-        let timestamp = tx.t;
-
-	        let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
-
-        if (!decryptBox) {
-					console.log('Cant decrypt new conversation');
-          reject();
-        }
-
-        let message_dec = naclUtil.encodeUTF8(decryptBox);
-
-        let payload_json = JSON.parse(message_dec);
-
-        payload_json.t = timestamp;
-
-        let exists = false;
-
-        for (payee in payees) {
-
-          if (payees[payee].paymentID == senderKey) {
-            exists = true;
-          }
-
-        }
-
-        if (!exists) {
-
-          let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
-          savePayeeToDatabase(payee);
-
-        }
-
-        saveIncomingMessage(payload_json);
-
-        resolve(payload_json);
-
-    } else {
+    // if (tx.key && tx.t) {
+    //
+    //
+    //     let senderKey = tx.key;
+    //
+    //     let box = tx.box;
+    //
+    //     let timestamp = tx.t;
+    //
+	  //       let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
+    //
+    //     if (!decryptBox) {
+		// 			console.log('Cant decrypt new conversation');
+    //       reject();
+    //     }
+    //
+    //     let message_dec = naclUtil.encodeUTF8(decryptBox);
+    //
+    //     let payload_json = JSON.parse(message_dec);
+    //
+    //     payload_json.t = timestamp;
+    //
+    //     let exists = false;
+    //
+    //     for (payee in payees) {
+    //
+    //       if (payees[payee].paymentID == senderKey) {
+    //         exists = true;
+    //       }
+    //
+    //     }
+    //
+    //     if (!exists) {
+    //
+    //       let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
+    //       savePayeeToDatabase(payee);
+    //
+    //     }
+    //
+    //     saveIncomingMessage(payload_json);
+    //
+    //     resolve(payload_json);
+    //
+    // } else {
 
         if (tx.m || tx.b) {
           reject();
@@ -601,6 +590,18 @@ export async function getMessage(extra){
         let timestamp = tx.t;
 
         let decryptBox = false;
+        let createNewPayee = false;
+
+        try {
+         decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
+         nonceFromTimestamp(timestamp),
+         getKeyPair().secretKey);
+         createNewPayee = true;
+         } catch (err) {
+           // console.log('timestamp', timestamp);
+           console.log(err);
+         }
+         console.log(decryptBox);
 
         let i = 0;
 
@@ -623,18 +624,18 @@ export async function getMessage(extra){
              }
              console.log('Decrypted:', decryptBox);
 
-              if (!decryptBox) {
-                console.log('Cannot decrypt..');
-                continue;
-              }
+             }
+
 
 
               let message_dec = naclUtil.encodeUTF8(decryptBox);
 
+              console.log(message_dec);
+
               let payload_json = JSON.parse(message_dec);
 
               payload_json.t = timestamp;
-              // console.log(payload_json);
+               console.log(payload_json);
 
               saveIncomingMessage(payload_json);
 
@@ -642,13 +643,24 @@ export async function getMessage(extra){
               let from = payload_json.from;
 
 
+
+
                       for (payee in payees) {
 
                         if (payees[payee].address == from) {
                           from = payees[payee].nickname;
+                          createNewPayee = false;
                         }
 
                       }
+
+              if (createNewPayee) {
+
+                let new_payee = {nickname: payload_json.from, paymentID: payload_json.k, "address": payload_json.from};
+                console.log('Adding new payee', new_payee);
+                savePayeeToDatabase(new_payee);
+
+              }
 
               let is_known = false;
 
@@ -675,10 +687,10 @@ export async function getMessage(extra){
 
               resolve(payload_json);
 
-            }
 
 
-          }
+
+          // }
           // console.log('Decrypting..');
 
 

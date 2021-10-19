@@ -133,10 +133,6 @@ export async function sendNotification(transaction) {
     //     return;
     // }
 
-    if (transaction.totalAmount() > 0.00011) {
-      await optimizeMessages(transaction);
-    }
-
     let extra = await getExtra(transaction.hash);
 
     let message = await getMessage(extra);
@@ -219,6 +215,10 @@ export class MainScreen extends React.Component {
         Globals.wallet.on('createdfusiontx', () => {
             this.updateBalance();
         });
+        Globals.wallet.on('heightchange', () => {
+            this.updateBalance();
+        });
+
     }
 
     async componentDidMount() {
@@ -713,7 +713,7 @@ async function backgroundSyncMessages() {
 
         console.log(json);
 
-        json = JSON.stringify(json).replace('.txPrefix','');
+        json = JSON.stringify(json).replace(/.txPrefix/gi,'');
 
         console.log('doc', json);
 
@@ -724,12 +724,10 @@ async function backgroundSyncMessages() {
         for (transaction in transactions) {
 
           try {
-
-          console.log('transaction:', transactions[transaction]);
-
+            console.log(transactions[transaction]);
           let thisExtra = transactions[transaction].transactionPrefixInfo.extra;
 
-          console.log('Extra:', thisExtra);
+          console.log('Extra');
 
           if (thisExtra.length > 66) {
 
@@ -749,9 +747,12 @@ async function backgroundSyncMessages() {
 
 
 
+          } else {
+            console.log('no extra apparently');
           }
 
         } catch (err) {
+          console.log('Problem', err);
           continue;
         }
 
