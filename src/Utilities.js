@@ -106,8 +106,10 @@ export function getArrivalTime() {
     }
 }
 
-export function handleURI(data, navigation) {
-    const result = parseURI(data);
+export async function handleURI(data, navigation) {
+    const result = await parseURI(data);
+
+    console.log('wtfm8', result);
 
     if (!result.valid) {
         Alert.alert(
@@ -125,7 +127,7 @@ export function handleURI(data, navigation) {
     }
 }
 
-export function parseURI(qrData) {
+export async function parseURI(qrData) {
     /* It's a URI, try and get the data from it */
     if (qrData.startsWith(Config.uriPrefix)) {
         /* Remove the turtlecoin:// prefix */
@@ -138,11 +140,16 @@ export function parseURI(qrData) {
         }
 
         const address = data.substr(0, index);
+        console.log('wtfoi',address);
         const params = Qs.parse(data.substr(index));
+
+        console.log('wtfm8', params);
 
         const amount = params.amount;
         const name = params.name;
         let paymentID = params.paymentid;
+
+        console.log('wtfm8', paymentID);
 
         if (paymentID) {
             const pidError = validatePaymentID(paymentID);
@@ -164,7 +171,9 @@ export function parseURI(qrData) {
             }
         }
 
-        const addressError = validateAddresses([address], true, Config);
+        const addressError = await validateAddresses([address], true, Config);
+
+        console.log('wtfm8', addressError);
 
         /* Address isn't valid */
         if (addressError.errorCode !== WalletErrorCode.SUCCESS) {
@@ -181,7 +190,7 @@ export function parseURI(qrData) {
             return {
                 paymentID: paymentID || '',
                 address,
-                amount: !isNaN(amountAtomic) ? amountAtomic : undefined,
+                // amount: !isNaN(amountAtomic) ? amountAtomic : undefined,
                 suggestedAction: 'NewPayee',
                 valid: true,
             }

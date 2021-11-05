@@ -53,11 +53,11 @@ export class XKRLogo extends React.Component {
             <Animated.View style={{
                 backgroundColor: interpolateColor,
                 borderRadius: 150,
-                width: 150,
-                height: 150
+                width: 250,
+                height: 250
             }}>
             <Image
-              style={{width: 250, height: 169.43}}
+              style={{width: 300, height: 250, marginLeft: -25, marginTop: 4}}
               source={require('../assets/img/hugin.png')}
             />
             </Animated.View>

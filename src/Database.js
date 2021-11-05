@@ -377,7 +377,9 @@ export async function loadPreferencesFromDatabase() {
     return undefined;
 }
 
-export async function saveIncomingMessage(message) {
+export async function saveMessage(conversation, type, message, timestamp) {
+
+  console.log('Saving message', conversation, type, message, timestamp);
 
   await database.transaction((tx) => {
       tx.executeSql(
@@ -386,13 +388,15 @@ export async function saveIncomingMessage(message) {
           VALUES
               (?, ?, ?, ?)`,
           [
-              message.from,
-              'received',
-              message.msg,
-              message.t
+              conversation,
+              type,
+              message,
+              timestamp
           ]
       );
   });
+
+  Globals.updateMessages();
 
 }
 
@@ -431,14 +435,35 @@ export async function savePayeeToDatabase(payee) {
     });
 }
 
-export async function removePayeeFromDatabase(nickname) {
+export async function removePayeeFromDatabase(address, removeMessages) {
     await database.transaction((tx) => {
         tx.executeSql(
             `DELETE FROM
                 payees
             WHERE
-                nickname = ?`,
-            [ nickname ]
+                address = ?`,
+            [ address ]
+        );
+    });
+    if (removeMessages) {
+      //console.log('Removing messages for', address);
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM
+                message_db
+            WHERE
+                conversation = ?`,
+            [ address ]
+        );
+    })
+  }
+}
+
+
+export async function removeMessages() {
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM message_db`
         );
     });
 }
@@ -458,13 +483,61 @@ export async function loadPayeeDataFromDatabase() {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
+
+            const [latestMessage] = await database.executeSql(
+                `SELECT
+                    message,
+                    timestamp
+                FROM
+                    message_db
+                WHERE
+                    conversation = ?
+                ORDER BY
+                    timestamp
+                DESC
+                LIMIT
+                    1
+                    `,
+                    [
+                        item.address
+                    ]
+            );
+            let thisMessage = 'No messages yet 🥱';
+            let thisMessageTimestamp = 0;
+            if (latestMessage.rows.length) {
+              thisMessage = latestMessage.rows.item(0).message;
+              thisMessageTimestamp = latestMessage.rows.item(0).timestamp;
+              console.log(thisMessageTimestamp);
+            }
+            // //console.log('latestMessage', latestMessage);
+            // // let latestMessage2 = latestMessage.rows.item(1);
+            // //console.log('latestMessage2', latestMessage.rows.item(0));
+            if (false) {
+              console.log('res has length, doing some stuff');
+            for (payee in res) {
+              console.log('res[payee].lastMessageTimestamp', res[payee].lastMessageTimestamp);
+              console.log('res[payee]', res[payee]);
+              if (res[payee].lastMessageTimestamp > thisMessageTimestamp) {
+                res.splice(payee, 0, {
+                    nickname: item.nickname,
+                    address: item.address,
+                    paymentID: item.paymentid,
+                    lastMessage: thisMessage,
+                    lastMessageTimestamp: thisMessageTimestamp
+                })
+              }
+            }
+          } else {
             res.push({
                 nickname: item.nickname,
                 address: item.address,
                 paymentID: item.paymentid,
-            });
+                lastMessage: thisMessage,
+                lastMessageTimestamp: thisMessageTimestamp
+            })
+          }
         }
-
+        console.log('res', res);
         return res;
     }
 
@@ -479,7 +552,10 @@ export async function getMessages() {
             message,
             timestamp
         FROM
-            message_db`
+            message_db
+        ORDER BY
+            timestamp
+        ASC`
     );
 
     if (data && data.rows && data.rows.length) {

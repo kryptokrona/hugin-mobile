@@ -12,6 +12,8 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
+import { getMessages } from './Database';
+
 import Config from './Config';
 
 import { Logger } from './Logger';
@@ -19,7 +21,7 @@ import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
 
 import {
-    loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+    removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
     loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase,
 } from './Database';
 
@@ -54,10 +56,17 @@ class globals {
 
         this.updatePayeeFunctions = [];
 
+        this.updateChatFunctions = [];
+
         /* Mapping of tx hash to address sent, payee name, memo */
         this.transactionDetails = [];
 
         this.daemons = [];
+
+        this.messages = [];
+
+        this.knownTXs = [];
+
     }
 
     reset() {
@@ -65,6 +74,7 @@ class globals {
         this.pinCode = undefined;
         this.backgroundSaveTimer = undefined;
         this.logger = new Logger();
+        removeMessages();
     }
 
     addTransactionDetails(txDetails) {
@@ -78,9 +88,9 @@ class globals {
         this.update();
     }
 
-    removePayee(nickname) {
+    removePayee(nickname, removeMessages) {
         _.remove(Globals.payees, (item) => item.nickname === nickname);
-        removePayeeFromDatabase(nickname);
+        removePayeeFromDatabase(nickname, removeMessages);
         this.update();
     }
 
@@ -88,6 +98,34 @@ class globals {
         Globals.updatePayeeFunctions.forEach((f) => {
             f();
         });
+    }
+
+    async updateMessages() {
+      console.log('updateMessages');
+      this.messages = await getMessages();
+      console.log('updateMessages', this.messages);
+      this.updateChat();
+      let payees = await loadPayeeDataFromDatabase();
+      console.log(payees);
+
+      if (payees !== undefined) {
+          Globals.payees = payees;
+      }
+
+      this.update();
+
+    }
+
+    //
+    // updateKnownTXs() {
+    //
+    // }
+
+    updateChat() {
+      console.log('updateChat');
+      Globals.updateChatFunctions.forEach((f) => {
+          f();
+      });
     }
 
     getDaemon() {
@@ -136,6 +174,7 @@ function updateConnection(connection) {
    if no internet. */
 export async function initGlobals() {
     const payees = await loadPayeeDataFromDatabase();
+    console.log(payees);
 
     if (payees !== undefined) {
         Globals.payees = payees;

@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import * as Animatable from 'react-native-animatable';
 
 import React from 'react';
-
 import TextTicker from 'react-native-text-ticker';
 
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -18,8 +17,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
-    AppState, RefreshControl,
+    Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
+    AppState, RefreshControl, useColorScheme
 } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
@@ -559,7 +558,7 @@ export class SwapNodeScreen extends React.Component {
 
             forceUpdate: 0,
 
-            refreshing: false,
+            refreshing: false
         };
     }
 
@@ -906,17 +905,17 @@ export class SettingsScreen extends React.Component {
                     <FlatList
 
                         data={[
-                            {
-                                title: 'FAQ',
-                                description: 'Find answers to common questions',
-                                icon: {
-                                    iconName: 'question',
-                                    IconType: SimpleLineIcons,
-                                },
-                                onClick: () => {
-                                    this.props.navigation.navigate('Faq');
-                                },
-                            },
+                            // {
+                            //     title: 'FAQ',
+                            //     description: 'Find answers to common questions',
+                            //     icon: {
+                            //         iconName: 'question',
+                            //         IconType: SimpleLineIcons,
+                            //     },
+                            //     onClick: () => {
+                            //         this.props.navigation.navigate('Faq');
+                            //     },
+                            // },
                             {
                                 title: 'Backup Keys',
                                 description: 'Display your private keys/seed',
@@ -1031,36 +1030,36 @@ export class SettingsScreen extends React.Component {
                                 checkbox: true,
                                 checked: this.state.limitData,
                             },
-                            {
-                                title: 'Enable dark mode',
-                                description: 'Swap between light and dark mode',
-                                icon: {
-                                    iconName: this.state.darkMode ? 'light-down' : 'light-up',
-                                    IconType: Entypo,
-                                },
-                                onClick: () => {
-                                    const newTheme = Globals.preferences.theme === 'darkMode' ? 'lightMode' : 'darkMode';
-
-                                    Globals.preferences.theme = newTheme;
-
-                                    this.setState({
-                                        darkMode: Globals.preferences.theme === 'darkMode',
-                                    });
-
-                                    /* Need to use a callback to setState() the
-                                       theme prop which is passed down to all
-                                       our components */
-                                    if (Globals.updateTheme) {
-                                        Globals.updateTheme();
-                                        Globals.update();
-                                    }
-
-                                    toastPopUp(Globals.preferences.theme === 'darkMode' ? 'Dark mode enabled' : 'Light mode enabled');
-                                    savePreferencesToDatabase(Globals.preferences);
-                                },
-                                checkbox: true,
-                                checked: this.state.darkMode,
-                            },
+                            // {
+                            //     title: 'Enable dark mode',
+                            //     description: 'Swap between light and dark mode',
+                            //     icon: {
+                            //         iconName: this.state.darkMode ? 'light-down' : 'light-up',
+                            //         IconType: Entypo,
+                            //     },
+                            //     onClick: () => {
+                            //         const newTheme = Globals.preferences.theme === 'darkMode' ? 'lightMode' : 'darkMode';
+                            //
+                            //         Globals.preferences.theme = newTheme;
+                            //
+                            //         this.setState({
+                            //             darkMode: Globals.preferences.theme === 'darkMode',
+                            //         });
+                            //
+                            //         /* Need to use a callback to setState() the
+                            //            theme prop which is passed down to all
+                            //            our components */
+                            //         if (Globals.updateTheme) {
+                            //             Globals.updateTheme();
+                            //             Globals.update();
+                            //         }
+                            //
+                            //         toastPopUp(Globals.preferences.theme === 'darkMode' ? 'Dark mode enabled' : 'Light mode enabled');
+                            //         savePreferencesToDatabase(Globals.preferences);
+                            //     },
+                            //     checkbox: true,
+                            //     checked: this.state.darkMode,
+                            // },
                             {
                                 title: 'Enable PIN/Fingerprint confirmation',
                                 description: 'Require auth for sensitive operations',
@@ -1187,32 +1186,32 @@ export class SettingsScreen extends React.Component {
                                 },
 
                             },
-                            {
-                                title: `View ${Config.appName} on ${Platform.OS === 'ios' ? 'the App Store' : 'Google Play'}`,
-                                description: 'Leave a rating or send the link to your friends',
-                                icon: {
-                                    iconName: Platform.OS === 'ios' ? 'app-store' : 'google-play',
-                                    IconType: Entypo,
-                                },
-                                onClick: () => {
-                                    const link = Platform.OS === 'ios' ? Config.appStoreLink : Config.googlePlayLink;
-
-                                    Linking.openURL(link)
-                                           .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err));
-                                },
-                            },
-                            {
-                                title: `Find ${Config.appName} on Github`,
-                                description: 'View the source code and give feedback',
-                                icon: {
-                                    iconName: 'github',
-                                    IconType: AntDesign,
-                                },
-                                onClick: () => {
-                                    Linking.openURL(Config.repoLink)
-                                           .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err))
-                                },
-                            },
+                            // {
+                            //     title: `View ${Config.appName} on ${Platform.OS === 'ios' ? 'the App Store' : 'Google Play'}`,
+                            //     description: 'Leave a rating or send the link to your friends',
+                            //     icon: {
+                            //         iconName: Platform.OS === 'ios' ? 'app-store' : 'google-play',
+                            //         IconType: Entypo,
+                            //     },
+                            //     onClick: () => {
+                            //         const link = Platform.OS === 'ios' ? Config.appStoreLink : Config.googlePlayLink;
+                            //
+                            //         Linking.openURL(link)
+                            //                .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err));
+                            //     },
+                            // },
+                            // {
+                            //     title: `Find ${Config.appName} on Github`,
+                            //     description: 'View the source code and give feedback',
+                            //     icon: {
+                            //         iconName: 'github',
+                            //         IconType: AntDesign,
+                            //     },
+                            //     onClick: () => {
+                            //         Linking.openURL(Config.repoLink)
+                            //                .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err))
+                            //     },
+                            // },
                             {
                                 title: 'Resync Wallet',
                                 description: 'Resync wallet from scratch',
@@ -1257,15 +1256,15 @@ export class SettingsScreen extends React.Component {
                                     }
                                 },
                             },
-                            {
-                                title: Config.appName,
-                                description: Config.appVersion,
-                                icon: {
-                                    iconName: 'info',
-                                    IconType: SimpleLineIcons,
-                                },
-                                onClick: () => {},
-                            },
+                            // {
+                            //     title: Config.appName,
+                            //     description: Config.appVersion,
+                            //     icon: {
+                            //         iconName: 'info',
+                            //         IconType: SimpleLineIcons,
+                            //     },
+                            //     onClick: () => {},
+                            // },
                         ]}
                         keyExtractor={item => item.title}
                         renderItem={({item}) => (

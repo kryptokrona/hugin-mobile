@@ -24,6 +24,7 @@ import Identicon from 'identicon.js';
 import NetInfo from "@react-native-community/netinfo";
 
 import { prettyPrintAmount, LogLevel } from 'kryptokrona-wallet-backend-js';
+import { Address } from 'kryptokrona-utils';
 
 import Config from './Config';
 
@@ -133,7 +134,32 @@ export async function sendNotification(transaction) {
     //     return;
     // }
 
+    //console.log(Globals.wallet);
+    //
+    // //console.log(transaction);
+    //
+    // //console.log(transaction.transfers);
+    //
+    // //console.log(transaction.transfers[0]);
+
+
+    let this_addr = await Address.fromAddress(Globals.wallet.getPrimaryAddress());
+
+    let my_public_key = this_addr.spend.publicKey;
+
+    let amount_received = transaction.transfers.get(my_public_key);
+
+    let payments = [];
+
+    let nbrOfTxs = amount_received / 10000;
+
+    optimizeMessages(nbrOfTxs);
+
+    // for (transfer in transaction.transfers)
+
     let extra = await getExtra(transaction.hash);
+
+
 
     let message = await getMessage(extra);
 
@@ -376,7 +402,7 @@ export class MainScreen extends React.Component {
                     height: Dimensions.get('window').height - 73,
                 }}>
                     <View style={{
-                      height: '14%',
+                      height: '10%',
                       flexDirection: 'row',
                       justifyContent: 'space-between',
                       marginBottom: 30,
@@ -431,7 +457,7 @@ class AddressComponent extends React.Component {
         return(
             <View style={{ alignItems: 'center' }}>
 
-                <View style={{ borderRadius: 5, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
+                <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
                 <Image
                   style={{width: 112, height: 112}}
                   source={{uri: get_avatar(this.state.address, 112)}}
@@ -440,7 +466,7 @@ class AddressComponent extends React.Component {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'left',
                     fontSize: 10,
-                    marginTop: 10,
+                    marginTop: 0,
                     marginRight: 20,
                     marginLeft: 20,
                     fontFamily: 'Montserrat-Bold'
@@ -451,7 +477,7 @@ class AddressComponent extends React.Component {
                       color: this.props.screenProps.theme.primaryColour,
                       width: 215,
                       fontSize: 15,
-                      marginTop: 10,
+                      marginTop: 0,
                       marginRight: 20,
                       marginLeft: 20,
                       fontFamily: 'Montserrat-Regular'
@@ -484,7 +510,8 @@ class AddressComponent extends React.Component {
                       color: this.props.screenProps.theme.primaryColour,
                       width: 215,
                       fontSize: 15,
-                      marginTop: 10,
+                      marginTop: 0,
+                      marginBottom: 5,
                       marginRight: 20,
                       marginLeft: 20,
                       fontFamily: 'Montserrat-Regular'
@@ -502,10 +529,10 @@ class AddressComponent extends React.Component {
                     {...this.props}
                 />
 
-                <View style={{ borderRadius: 5, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
+                <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 0, marginTop: 10, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
                     <QRCode
-                        value={this.state.address}
-                        size={200}
+                        value={'xkr://' + this.state.address + '?paymentid=' + Buffer.from(getKeyPair().publicKey).toString('hex')}
+                        size={180}
                         backgroundColor={this.props.screenProps.theme.qrCode.backgroundColour}
                         color={this.props.screenProps.theme.qrCode.foregroundColour}
                     />
@@ -543,7 +570,7 @@ class BalanceComponent extends React.Component {
 
     render() {
         const compactBalance = <OneLineText
-                                     style={{marginTop: 20, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 32}}
+                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 32}}
                                      onPress={() => this.setState({
                                          expandedBalance: !this.state.expandedBalance
                                      })}
@@ -553,8 +580,8 @@ class BalanceComponent extends React.Component {
                                </OneLineText>;
 
         const lockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FontAwesome name={'lock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 3}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
+                                    <FontAwesome name={'lock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 0}}/>
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.state.expandedBalance
                                           })}>
@@ -564,7 +591,7 @@ class BalanceComponent extends React.Component {
 
         const unlockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                     <FontAwesome name={'unlock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 3}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.props.expandedBalance
                                           })}>
@@ -572,14 +599,14 @@ class BalanceComponent extends React.Component {
                                     </OneLineText>
                                 </View>;
 
-        const expandedBalance = <View style={{ textAlignVertical: 'bottom', alignItems: 'center', justifyContent: 'center' }}>
+        const expandedBalance = <View style={{ textAlignVertical: 'middle', alignItems: 'center', justifyContent: 'center' }}>
                                     {unlockedBalance}
                                     {lockedBalance}
                                 </View>;
 
 
         return(
-            <View style={{ borderRadius: 5, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
+            <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
 
                     <View ref={this.balanceRef}>
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
@@ -697,42 +724,69 @@ async function backgroundSave() {
 }
 
 async function backgroundSyncMessages() {
+  // Globals.updatePayeeFunctions.push(() => {
+  //     this.setState(prevState => ({
+  //         payees: Globals.payees,
+  //         index: prevState.index + 1,
+  //     }))
+  // });
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
-
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',
         body: JSON.stringify({
-          knownTXs: {}
-        })
+             knownTxsIds: Globals.knownTXs
+         })
       })
       .then((response) => response.json())
       .then(async (json) => {
 
         console.log(json);
 
-        json = JSON.stringify(json).replace(/.txPrefix/gi,'');
+        let addedTxs = json.addedTxs;
 
-        console.log('doc', json);
+        // let json_string = JSON.stringify(json);
+        //
+        // //console.log('doc', json_string);
+        //
+        // let json_cleaned = json_string.replace(/.txPrefix/gi,'');
+        //
+        // //console.log('doc', json_cleaned);
+        //
+        // json_cleaned = JSON.parse(json_cleaned);
+        //
+        // //console.log('doc', json_cleaned);
+        //
+        // let transactions = json_cleaned.addedTxs;
 
-        json = JSON.parse(json);
+        let transactions = addedTxs;
 
-        let transactions = json.addedTxs;
-
+        console.log('transactions.length', transactions.length);
+        console.log('Globals.knownTXs', Globals.knownTXs);
         for (transaction in transactions) {
 
           try {
             console.log(transactions[transaction]);
-          let thisExtra = transactions[transaction].transactionPrefixInfo.extra;
-
-          console.log('Extra');
+          let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
+          let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+          if (Globals.knownTXs.indexOf(thisHash) === -1) {
+                       Globals.knownTXs.push(thisHash);
+                     } else {
+                       console.log("This transaction is already known");
+                       continue;
+                     }
+          console.log('Extra', thisExtra);
 
           if (thisExtra.length > 66) {
 
 
             let message = await getMessage(thisExtra);
+
+            if (!message) {
+              continue;
+            }
 
             let from = message.from;
 
@@ -752,7 +806,7 @@ async function backgroundSyncMessages() {
           }
 
         } catch (err) {
-          console.log('Problem', err);
+          //console.log('Problem', err);
           continue;
         }
 

@@ -188,7 +188,7 @@ const Config = new function() {
      * Default daemon to use. Can either be a BlockchainCacheApi(baseURL, SSL),
      * or a ConventionalDaemon(url, port).
      */
-    this.defaultDaemon = new Daemon('gota.kryptokrona.se', 11898);
+    this.defaultDaemon = new Daemon('testnet.kryptokrona.se', 20001);
 
     /**
      * A link to where a bug can be reported for your wallet. Please update
@@ -232,7 +232,7 @@ const Config = new function() {
      * A url to fetch node info from. Should follow the turtlepay format
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
-    this.nodeListURL = 'https://kryptokrona.se/nodelist.json';
+    this.nodeListURL = 'https://kryptokrona.se/nodelist-testnet.json';
 };
 
 module.exports = Config;

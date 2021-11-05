@@ -92,7 +92,7 @@ export class QrScannerScreen extends React.Component {
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <QRCodeScanner
                     onRead={(code) => {
-                        this.props.navigation.goBack();
+                        // this.props.navigation.goBack();
 
                         this.props.navigation.state.params.setAddress(code.data);
                     }}
@@ -396,6 +396,7 @@ class AddressBook extends React.Component {
             }}>
                 <ScrollView>
                     <FlatList
+                        ItemSeparatorComponent={null}
                         extraData={this.state.index}
                         data={this.state.payees}
                         keyExtractor={item => item.nickname}
@@ -687,6 +688,7 @@ export class NewPayeeScreen extends React.Component {
                                     } else {
                                         this.setState({
                                             address: data,
+                                            // paymentID: data.substring(99),
                                         }, () => this.checkErrors());
                                     }
                                 };
@@ -886,10 +888,10 @@ export class ConfirmScreen extends React.Component {
 
         const result = await Globals.wallet.sendTransactionAdvanced(
             payments, // destinations,
-            undefined, // mixin
-            undefined, // fee
+            0, // mixin
+            {fixedFee: 2500, isFixedFee: true}, // fee
             this.state.payee.paymentID,
-            undefined, // subWalletsToTakeFrom
+            [], // subWalletsToTakeFrom
             undefined, // changeAddress
             false, // relayToNetwork
             this.state.sendAll,
@@ -897,7 +899,9 @@ export class ConfirmScreen extends React.Component {
 
         if (result.success) {
             let actualAmount = this.state.amount;
-
+            for (const input of result.preparedTransaction.inputs) {
+              console.log('input', input.input);
+            }
             if (this.state.sendAll) {
                 let transactionSum = 0;
 

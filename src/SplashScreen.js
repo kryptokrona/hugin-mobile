@@ -89,7 +89,7 @@ export class SplashScreen extends React.Component {
             if (hasWallet) {
                 Authenticate(
                     this.props.navigation,
-                    'to unlock your wallet',
+                    'to unlock your account',
                     tryLoadWallet,
                     true
                 );

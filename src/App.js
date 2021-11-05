@@ -255,8 +255,8 @@ const HomeNavigator = createBottomTabNavigator(
                     IconComponent = Ionicons;
                     iconName = 'ios-list';
                 } else if (routeName === 'Transfer') {
-                    IconComponent = Ionicons;
-                    iconName = 'ios-send';
+                    IconComponent = Entypo;
+                    iconName = 'wallet';
                 } else if (routeName === 'Recipients') {
                     IconComponent = Entypo;
                     iconName = 'chat';

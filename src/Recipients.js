@@ -93,12 +93,13 @@ export class RecipientsScreen extends React.Component {
             }}>
                     <FlatList
                         extraData={this.state.index}
+                        ItemSeparatorComponent={null}
                         data={this.state.payees}
                         keyExtractor={item => item.nickname}
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.nickname}
-                                subtitle={item.address.substr(0, 15) + '...'}
+                                subtitle={item.lastMessage}
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
@@ -729,14 +730,18 @@ export class ModifyPayeeScreen extends React.Component {
                         <RNEButton
                             title='Update'
                             onPress={() => {
-                                Globals.removePayee(this.state.initialNickname);
+                                Globals.removePayee(this.state.initialAddress, false);
 
                                 Globals.addPayee({
                                     address: this.state.newAddress,
                                     nickname: this.state.newNickname,
                                     paymentID: this.state.newPaymentID,
+                                    lastMessage: this.state.lastMessage,
                                 });
-
+                                console.log(Globals.payees);
+                                this.setState({
+                                    payees: Globals.payees
+                                });
                                 this.props.navigation.goBack();
                             }}
                             color={this.props.screenProps.theme.primaryColour}
@@ -764,7 +769,8 @@ export class ModifyPayeeScreen extends React.Component {
                                     'Are you sure you want to delete this recipient?',
                                     [
                                         { text: 'Delete', onPress: () => {
-                                            Globals.removePayee(this.state.initialNickname);
+                                            console.log('initialAddress', this.state.initialAddress);
+                                            Globals.removePayee(this.state.initialAddress, true);
                                             this.props.navigation.pop(2);
                                         }},
                                         { text: 'Cancel', style: 'cancel'},
@@ -829,20 +835,29 @@ export class ChatScreen extends React.Component {
             paymentIDError: '',
 
             paymentIDEnabled: address.length !== Config.integratedAddressLength,
-
+            input: React.createRef(),
             addressValid: true,
             nicknameValid: true,
             paymentIDValid: true,
 
             messages: []
         }
+
+
+        Globals.updateChatFunctions.push(() => {
+          console.log('Updatemessages');
+            this.setState({
+                messages: Globals.messages
+            })
+        });
+
     }
 
     async componentDidMount() {
 
         const messages = await getMessages();
 
-        Globals.logger.addLogMessage("messages: ", messages);
+        console.log(messages);
 
         this.setState({
           messages: messages
@@ -930,6 +945,7 @@ export class ChatScreen extends React.Component {
                 }}>
 
                 <Input
+                    ref={this.state.input}
                     containerStyle={{
                         width: '100%',
                     }}
@@ -954,7 +970,15 @@ export class ChatScreen extends React.Component {
                         // }
                           let text = e.nativeEvent.text;
                           // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
-                          sendMessage(text, this.state.address, this.state.paymentID);
+                          let success = await sendMessage(text, this.state.address, this.state.paymentID);
+                          if (success) {
+                          let updated_messages = await getMessages();
+
+                            this.setState({
+                              messages: updated_messages
+                            })
+                            this.state.input.current.clear();
+                          }
                     }}
                     onChangeText={(text) => {
                         if (this.props.onChange) {

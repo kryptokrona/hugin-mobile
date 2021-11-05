@@ -236,7 +236,7 @@ export class ChooseAuthMethodScreen extends React.Component {
                         marginRight: 20,
                         fontFamily: "Montserrat-SemiBold",
                     }}>
-                        How would you like to secure your wallet?
+                        How would you like to secure your account?
                     </Text>
 
                     <View style={{ flexDirection: 'row', marginRight: 20, marginLeft: 25, marginBottom: 20 }}>
@@ -422,19 +422,19 @@ export class ForgotPinScreen extends React.Component {
                         marginLeft: 30,
                         marginBottom: 20,
                     }}>
-                        Your wallet is encrypted with your pin, so unfortunately, if you have forgotten your pin, it cannot be recovered.
+                        Your account is encrypted with your pin, so unfortunately, if you have forgotten your pin, it cannot be recovered.
                     </Text>
                     <Text style={{
                         color: this.props.screenProps.theme.primaryColour,
                         fontSize: 25,
                         marginLeft: 30
                     }}>
-                        However, you can delete your wallet if you wish to create a new one.
+                        However, you can delete your account if you wish to create a new one.
                     </Text>
                 </View>
 
                 <BottomButton
-                    title='Delete Wallet'
+                    title='Delete Account'
                     onPress={() => {
                         (async () => {
                             await setHaveWallet(false);

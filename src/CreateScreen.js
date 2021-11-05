@@ -46,12 +46,12 @@ export class WalletOptionScreen extends React.Component {
                         Hugin Messenger {'\n'}
                     </Text>
                     <Text style={{
-                        fontSize: 20,
-                        fontFamily: "Montserrat-BoldItalic",
+                        fontSize: 14,
+                        fontFamily: "Montserrat-Italic",
                         color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                         textAlign: 'center'
                     }}>
-                         The bird is the word
+                         Welcome to the open beta of Hugin Messenger, the blockchain messenger!
                     </Text>
                 </View>
 
@@ -99,6 +99,8 @@ export class CreateWalletScreen extends React.Component {
         Globals.wallet = await WalletBackend.createWallet(Globals.getDaemon(), Config);
 
         const [ seed ] = await Globals.wallet.getMnemonicSeed();
+
+        // let [address, error] = await Globals.wallet.addSubWallet();
 
         this.setState({
             seed,

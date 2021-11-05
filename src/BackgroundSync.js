@@ -9,7 +9,7 @@ import { AppState, Platform, PushNotificationIOS } from 'react-native';
 import { WalletBackend, LogLevel } from 'kryptokrona-wallet-backend-js';
 
 import PushNotification from 'react-native-push-notification';
-
+import {getMessage} from './HuginUtilities';
 import NetInfo from '@react-native-community/netinfo';
 
 import Config from './Config';
@@ -21,7 +21,7 @@ import { sendNotification } from './MainScreen';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 
 import {
-    saveToDatabase, haveWallet, loadWallet, openDB, loadPreferencesFromDatabase
+    saveToDatabase, haveWallet, loadWallet, openDB, loadPreferencesFromDatabase, loadPayeeDataFromDatabase
 } from './Database';
 
 export function initBackgroundSync() {
@@ -216,6 +216,100 @@ export async function backgroundSync() {
 
     /* Run for 25 seconds or until the app comes back to the foreground */
     while (!State.shouldStop && secsRunning < allowedRunTime) {
+
+
+        // Globals.updatePayeeFunctions.push(() => {
+        //     this.setState(prevState => ({
+        //         payees: Globals.payees,
+        //         index: prevState.index + 1,
+        //     }))
+        // });
+
+          Globals.logger.addLogMessage('Getting unconfirmed transactions...');
+            const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+            let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
+              fetch(nodeURL + "/get_pool_changes_lite", {
+              method: 'POST',
+              body: JSON.stringify({
+                   knownTxsIds: Globals.knownTXs
+               })
+            })
+            .then((response) => response.json())
+            .then(async (json) => {
+
+              console.log(json);
+
+              let addedTxs = json.addedTxs;
+
+              // let json_string = JSON.stringify(json);
+              //
+              // //console.log('doc', json_string);
+              //
+              // let json_cleaned = json_string.replace(/.txPrefix/gi,'');
+              //
+              // //console.log('doc', json_cleaned);
+              //
+              // json_cleaned = JSON.parse(json_cleaned);
+              //
+              // //console.log('doc', json_cleaned);
+              //
+              // let transactions = json_cleaned.addedTxs;
+
+              let transactions = addedTxs;
+
+              console.log('transactions.length', transactions.length);
+              console.log('Globals.knownTXs', Globals.knownTXs);
+              for (transaction in transactions) {
+
+                try {
+                  console.log(transactions[transaction]);
+                let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
+                let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+                if (Globals.knownTXs.indexOf(thisHash) === -1) {
+                             Globals.knownTXs.push(thisHash);
+                           } else {
+                             console.log("This transaction is already known");
+                             continue;
+                           }
+                console.log('Extra', thisExtra);
+
+                if (thisExtra.length > 66) {
+
+
+                  let message = await getMessage(thisExtra);
+
+                  if (!message) {
+                    continue;
+                  }
+
+                  let from = message.from;
+
+                  let payees = await loadPayeeDataFromDatabase();
+                          for (payee in payees) {
+
+                            if (payees[payee].address == from) {
+                              from = payees[payee].nickname;
+                            }
+
+                          }
+
+
+
+                } else {
+                  console.log('no extra apparently');
+                }
+
+              } catch (err) {
+                //console.log('Problem', err);
+                continue;
+              }
+
+              }
+
+
+
+            });
+
         /* Update the daemon info */
         await Globals.wallet.internal().updateDaemonInfo();
 
