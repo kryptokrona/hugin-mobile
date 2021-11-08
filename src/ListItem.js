@@ -16,8 +16,10 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         paddingBottom: 10,
         borderBottomColor: 'rgba(125,125,125,0.3)',
-        borderBottomWidth: 1,
-        backgroundColor: "transparent",
+        borderBottomWidth: 0,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        borderRadius: 15,
+        marginBottom: 10
     },
 });
 

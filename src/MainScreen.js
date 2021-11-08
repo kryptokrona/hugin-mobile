@@ -457,7 +457,7 @@ class AddressComponent extends React.Component {
         return(
             <View style={{ alignItems: 'center' }}>
 
-                <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
+                <View style={{ borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: 'rgba(0,0,0,0.2)' }}>
                 <Image
                   style={{width: 112, height: 112}}
                   source={{uri: get_avatar(this.state.address, 112)}}
@@ -606,7 +606,7 @@ class BalanceComponent extends React.Component {
 
 
         return(
-            <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
+            <View style={{ borderRadius: 0, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: 'rgba(0,0,0,0.2)' }}>
 
                     <View ref={this.balanceRef}>
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
@@ -730,6 +730,8 @@ async function backgroundSyncMessages() {
   //         index: prevState.index + 1,
   //     }))
   // });
+
+
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();

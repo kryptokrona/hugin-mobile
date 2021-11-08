@@ -410,6 +410,7 @@ class TransactionList extends React.Component {
                     borderTopWidth: 0
                 }}>
                     <FlatList
+                        style={{paddingLeft: 25, paddingRight: 25}}
                         extraData={this.state.index}
                         data={this.props.transactions}
                         keyExtractor={item => item.hash}

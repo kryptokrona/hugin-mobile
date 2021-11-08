@@ -941,6 +941,7 @@ export class ChatScreen extends React.Component {
 
                 <View style={{
                     marginHorizontal: 10,
+                    marginBottom: 5,
                     flex: 1,
                 }}>
 
@@ -950,11 +951,12 @@ export class ChatScreen extends React.Component {
                         width: '100%',
                     }}
                     inputContainerStyle={{
-                        backgroundColor: this.props.screenProps.theme.notVeryVisibleColour,
-                        borderWidth: 1,
+                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        borderWidth: 0,
+                        borderColor: 'transparent',
                         borderRadius: 15,
                         width: '100%',
-                        height: 30,
+                        height: 40,
                         padding: 15
                     }}
                     inputStyle={{

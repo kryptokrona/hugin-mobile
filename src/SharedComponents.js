@@ -72,6 +72,7 @@ export class SeedComponent extends React.Component {
                     </TextFixedWidth>
                 </View>
                 <CopyButton
+                    style={{ marginLeft: 0 }}
                     data={this.props.seed}
                     name='Seed'
                     {...this.props}

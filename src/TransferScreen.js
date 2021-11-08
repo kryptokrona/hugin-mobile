@@ -618,9 +618,10 @@ export class NewPayeeScreen extends React.Component {
                             fontFamily: 'Montserrat-Regular',
                         }}
                         inputContainerStyle={{
-                            borderColor: this.props.screenProps.theme.notVeryVisibleColour,
-                            borderWidth: 1,
-                            borderRadius: 2,
+                            borderWidth: 0,
+                            borderRadius: 15,
+                            backgroundColor: "rgba(0,0,0,0.2)",
+                            borderColor: 'transparent'
                         }}
                         label={'Name'}
                         labelStyle={{
@@ -650,9 +651,10 @@ export class NewPayeeScreen extends React.Component {
                             marginLeft: 20,
                         }}
                         inputContainerStyle={{
-                            borderColor: this.props.screenProps.theme.notVeryVisibleColour,
-                            borderWidth: 1,
-                            borderRadius: 2,
+                          borderWidth: 0,
+                          borderRadius: 15,
+                          backgroundColor: "rgba(0,0,0,0.2)",
+                          borderColor: 'transparent'
                         }}
                         maxLength={Config.integratedAddressLength}
                         label={'Recipient\'s address'}
@@ -680,7 +682,7 @@ export class NewPayeeScreen extends React.Component {
                                     borderColor: this.props.screenProps.theme.borderColour,
                                     borderWidth: 1,}}>
                         <Button
-                            title='Scan QR Code'
+                            title='Scan QR'
                             onPress={() => {
                                 const func = (data) => {
                                     if (data.startsWith(Config.uriPrefix)) {
@@ -712,9 +714,10 @@ export class NewPayeeScreen extends React.Component {
                             marginLeft: 20,
                         }}
                         inputContainerStyle={{
-                            borderColor: this.props.screenProps.theme.notVeryVisibleColour,
-                            borderWidth: 1,
-                            borderRadius: 2,
+                          borderWidth: 0,
+                          borderRadius: 15,
+                          backgroundColor: "rgba(0,0,0,0.2)",
+                          borderColor: 'transparent'
                         }}
                         maxLength={64}
                         label={'Recipient\'s Message Key'}
