@@ -188,7 +188,7 @@ const Config = new function() {
      * Default daemon to use. Can either be a BlockchainCacheApi(baseURL, SSL),
      * or a ConventionalDaemon(url, port).
      */
-    this.defaultDaemon = new Daemon('testnet.kryptokrona.se', 20001);
+    this.defaultDaemon = new Daemon('testnet.kryptokrona.se', 20001, false, true);
 
     /**
      * A link to where a bug can be reported for your wallet. Please update

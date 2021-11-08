@@ -129,9 +129,14 @@ class globals {
     }
 
     getDaemon() {
-        const [ host, port ] = this.preferences.node.split(':');
+        const [ host, port, ssl ] = this.preferences.node.split(':');
 
-        const daemon = new Daemon(host, Number(port), undefined, false);
+        let ssl_formatted = false;
+        if (ssl == 'true') {
+          ssl_formatted = true;
+        }
+
+        const daemon = new Daemon(host, Number(port), false, ssl_formatted);
 
         if (Platform.OS === 'android') {
             /* Override with our native makePostRequest implementation which can

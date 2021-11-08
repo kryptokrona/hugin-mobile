@@ -585,7 +585,7 @@ export class SwapNodeScreen extends React.Component {
     async swapNode(node) {
         toastPopUp('Swapping node...');
 
-        Globals.preferences.node = node.url + ':' + node.port;
+        Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
 
         this.setState((prevState) => ({
             selectedNode: Globals.preferences.node,
@@ -900,10 +900,11 @@ export class SettingsScreen extends React.Component {
                 <List style={{
                     backgroundColor: this.props.screenProps.theme.backgroundColour,
                     borderColor: this.props.screenProps.theme.backgroundColour,
-                    borderWidth: 0
+                    borderWidth: 0,
+
                 }}>
                     <FlatList
-
+                        ItemSeparatorComponent={null}
                         data={[
                             // {
                             //     title: 'FAQ',
@@ -1272,7 +1273,9 @@ export class SettingsScreen extends React.Component {
                                 title={item.title}
                                 noBorder
                                 subtitle={item.description}
-                                style={{borderBottomWidth: 0}}
+                                style={{borderBottomWidth: 0,
+                                  marginLeft: 25,
+                                  marginRight: 25}}
                                 titleStyle={{
                                     color: this.props.screenProps.theme.primaryColour,
                                     borderBottomWidth: 0,
