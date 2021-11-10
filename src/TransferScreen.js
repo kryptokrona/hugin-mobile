@@ -731,7 +731,7 @@ export class NewPayeeScreen extends React.Component {
                             color: this.props.screenProps.theme.primaryColour,
                             fontSize: 15,
                             marginLeft: this.state.paymentIDEnabled ? 5 : 0,
-                            backgroundColor: this.state.paymentIDEnabled ? this.props.screenProps.theme.backgroundColour : this.props.screenProps.theme.disabledColour,
+                            backgroundColor: "rgba(0,0,0,0.2)"
                         }}
                         value={this.state.paymentID}
                         onChangeText={(text) => {
