@@ -473,7 +473,7 @@ export class ModifyPayeeScreen extends React.Component {
 
                         <CopyButton
                             data={this.state.address + this.state.paymentID}
-                            name='Copied contact\'s address'
+                            name="Copied contact's address"
                             {...this.props}
                         />
 
