@@ -607,8 +607,17 @@ class BalanceComponent extends React.Component {
 
         return(
             <View style={{ borderRadius: 0, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: 'rgba(0,0,0,0.2)' }}>
-
-                    <View ref={this.balanceRef}>
+                    <Text style={{
+                        color: 'white',
+                        fontSize: 64,
+                        fontFamily: 'icomoon',
+                        position: 'absolute',
+                        top: 25,
+                        left: 5
+                    }}>
+                        
+                    </Text>
+                    <View style={{marginLeft: 64}}ref={this.balanceRef}>
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
                     </View>
 
