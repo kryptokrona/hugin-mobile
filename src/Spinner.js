@@ -42,7 +42,7 @@ export class Spinner extends React.Component {
           });
 
         Animated.loop(
-            Animated.timing(this.animation, {toValue: 1, duration: 2000, useNativeDriver: true})
+            Animated.timing(this.animation, {toValue: 1, duration: 100000, useNativeDriver: true})
         ).start();
 
     }
@@ -60,13 +60,10 @@ export class Spinner extends React.Component {
 
         return(
             <Animated.View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: interpolateColor, width: "100%", height: "100%"}}>
-            <Text style={{
-                color: 'black',
-                fontSize: 212,
-                fontFamily: 'icomoon'
-            }}>
-                
-            </Text>
+            <Image
+              style={{position: 'absolute', marginLeft: 100, bottom: -20, width: 700, height: 583}}
+              source={require('../assets/img/hugin.png')}
+            />
             </Animated.View>
         );
     }

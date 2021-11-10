@@ -3,7 +3,7 @@
 // Please see the included LICENSE file for more information.
 
 import React from 'react';
-
+import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
@@ -27,7 +27,7 @@ import { Styles } from './Styles';
 import Moment from 'react-moment';
 
 import { Globals } from './Globals';
-import { Hr, BottomButton } from './SharedComponents';
+import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
 
 import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
@@ -450,7 +450,7 @@ export class ModifyPayeeScreen extends React.Component {
                         fontWeight: 'bold',
                         fontFamily: 'Montserrat-SemiBold'
                     }}>
-                        Modify Recipient
+                        {this.state.nickname}'s details
                     </Text>
                 </View>
 
@@ -470,9 +470,13 @@ export class ModifyPayeeScreen extends React.Component {
                           style={{width: 50, height: 50}}
                           source={{uri: get_avatar(this.state.address)}}
                         />
-                        <Text style={{ fontSize: 15, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
-                            {this.state.nickname}'s details
-                        </Text>
+
+                        <CopyButton
+                            data={this.state.address + this.state.paymentID}
+                            name='Copied contact\'s address'
+                            {...this.props}
+                        />
+
                     </View>
                 </View>
 
@@ -972,7 +976,7 @@ export class ChatScreen extends React.Component {
                         // }
                           let text = e.nativeEvent.text;
                           // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
-                          let success = await sendMessage(text, this.state.address, this.state.paymentID);
+                          let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
                           if (success) {
                           let updated_messages = await getMessages();
 

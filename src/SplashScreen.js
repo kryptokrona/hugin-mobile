@@ -114,7 +114,7 @@ export class SplashScreen extends React.Component {
             }).start(() => {
           Animated.timing(this.animatedValue,{
             toValue:0,
-            duration: 3000
+            duration: 10000
           }).start()
         });
         }
