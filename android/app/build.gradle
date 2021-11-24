@@ -136,7 +136,7 @@ android {
         versionCode 001
         versionName "v0.0.1"
         ndk {
-            abiFilters "armeabi-v7a", "x86"
+            abiFilters "armeabi-v7a", "x86", "x86_64", "arm64-v8a"
             moduleName "TurtleCoin_jni"
             stl "stlport_static"
         }
