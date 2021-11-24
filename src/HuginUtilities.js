@@ -219,13 +219,21 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs) {
 
+  let [new_address, error] = await Globals.wallet.addSubWallet();
+
+  const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+  let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+  if (inputs.length > 8) {
+    toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+    return;
+  }
   // toastPopUp('Optimizing wallet!');
   let payments = [];
   let i = 0;
   /* User payment */
   while (i < nbrOfTxs - 1 && i < 10) {
     payments.push([
-        Globals.wallet.getPrimaryAddress(),
+        new_address,
         10000
     ]);
 
@@ -238,15 +246,15 @@ export async function optimizeMessages(nbrOfTxs) {
       0, // mixin
       {fixedFee: 10000, isFixedFee: true}, // fee
       undefined, //paymentID
-      [Globals.wallet.getPrimaryAddress()], // subWalletsToTakeFrom
-      undefined, // changeAddress
+      undefined, // subWalletsToTakeFrom
+      new_address, // changeAddress
       true, // relayToNetwork
       false, // sneedAll
       undefined
   );
 
   if (result.success) {
-    // toastPopUp('Optimizing wallet!');
+    toastPopUp('Optimizing wallet!');
   } else {
     toastPopUp('Failed to optimize wallet');
   }
@@ -327,6 +335,10 @@ export async function optimizeMessages(nbrOfTxs) {
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
+  // optimizeMessages(10000000);
+
+  // return;
+
   // toastPopUp('Sending massage!');
 
   let has_history = false;
@@ -347,7 +359,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     try {
 
-      let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance([my_address]);
+      let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance();
       //console.log('bal', munlockedBalance, mlockedBalance);
 
       if (munlockedBalance < 11 && mlockedBalance > 0) {
@@ -427,7 +439,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         0, // mixin
         {fixedFee: 2500, isFixedFee: true}, // fee
         undefined, //paymentID
-        [my_address], // subWalletsToTakeFrom
+        undefined, // subWalletsToTakeFrom
         undefined, // changeAddress
         true, // relayToNetwork
         false, // sneedAll

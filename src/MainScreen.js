@@ -30,7 +30,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { getKeyPair, getMessage, getExtra, optimizeMessages } from './HuginUtilities';
+import { getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -39,8 +39,6 @@ import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
 import { coinsToFiat, getCoinPriceFromAPI } from './Currency';
-
-import {intToRGB, hashCode, get_avatar} from './HuginUtilities';
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -153,7 +151,7 @@ export async function sendNotification(transaction) {
 
     let nbrOfTxs = amount_received / 10000;
 
-    optimizeMessages(nbrOfTxs);
+    //optimizeMessages(nbrOfTxs);
 
     // for (transfer in transaction.transfers)
 
@@ -744,6 +742,29 @@ async function backgroundSyncMessages() {
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      console.log(Globals.wallet);
+      const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+      console.log(inputs);
+      let message_inputs = 0;
+      for (input in inputs) {
+        try {
+          console.log(inputs[input]);
+          let this_amount = inputs[input].input.amount;
+          console.log(this_amount);
+          if (this_amount == 10000) {
+            message_inputs++;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+      if (message_inputs < 2) {
+        optimizeMessages(10);
+
+      } else {
+        console.log("No need to optimize, got ", message_inputs, " inputs.");
+      }
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',

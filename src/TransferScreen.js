@@ -889,13 +889,15 @@ export class ConfirmScreen extends React.Component {
             ]);
         }
 
+        let [new_address, error] = await Globals.wallet.addSubWallet();
+
         const result = await Globals.wallet.sendTransactionAdvanced(
             payments, // destinations,
             0, // mixin
             {fixedFee: 2500, isFixedFee: true}, // fee
             this.state.payee.paymentID,
-            [], // subWalletsToTakeFrom
-            undefined, // changeAddress
+            undefined, // subWalletsToTakeFrom
+            new_address, // changeAddress
             false, // relayToNetwork
             this.state.sendAll,
         );

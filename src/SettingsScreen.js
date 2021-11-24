@@ -7,7 +7,7 @@ import * as Animatable from 'react-native-animatable';
 
 import React from 'react';
 import TextTicker from 'react-native-text-ticker';
-
+import { optimizeMessages } from './HuginUtilities';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -1177,13 +1177,14 @@ export class SettingsScreen extends React.Component {
                             },
                             {
                                 title: 'Manually Optimize Wallet',
-                                description: 'Helps sending large TXs (See FAQ)',
+                                description: 'Split your balance into more inputs (See FAQ)',
                                 icon: {
                                     iconName: 'refresh',
                                     IconType: SimpleLineIcons,
                                 },
                                 onClick: () => {
-                                    optimizeWallet(this.props.navigation);
+                                    // optimizeWallet(this.props.navigation);
+                                    optimizeMessages(10);
                                 },
 
                             },
