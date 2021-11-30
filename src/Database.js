@@ -400,6 +400,25 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 }
 
+
+export async function removeMessage(timestamp) {
+
+  console.log('Removing message ', timestamp);
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `DELETE FROM
+              message_db
+          WHERE
+              timestamp = ?`,
+          [ timestamp ]
+      );
+  });
+
+  Globals.updateMessages();
+
+}
+
 export async function saveOutgoingMessage(message) {
 
   await database.transaction((tx) => {
