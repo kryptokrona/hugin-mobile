@@ -12,7 +12,7 @@ import QRCode from 'react-native-qrcode-svg';
 
 import PushNotification from 'react-native-push-notification';
 
-import { NavigationActions, NavigationEvents } from 'react-navigation';
+import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
 import {
     Animated, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
@@ -53,7 +53,6 @@ String.prototype.hashCode = function() {
     return hash;
 }
 
-
 async function init(navigation) {
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
     Globals.wallet.enableAutoOptimization(Globals.preferences.autoOptimize);
@@ -66,8 +65,29 @@ async function init(navigation) {
     Globals.wallet.removeAllListeners('deadnode');
     Globals.wallet.removeAllListeners('heightchange');
 
-    Globals.wallet.on('incomingtx', (transaction) => {
+    Globals.wallet.on('incomingtx', async (transaction) => {
         sendNotification(transaction);
+        const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+        let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+        let message_inputs = 0;
+        for (input in inputs) {
+          try {
+            console.log(inputs[input]);
+            let this_amount = inputs[input].input.amount;
+            console.log(this_amount);
+            if (this_amount == 10000) {
+              message_inputs++;
+            }
+          } catch (err) {
+            continue;
+          }
+        }
+        if (message_inputs < 2) {
+          optimizeMessages(10);
+
+        } else {
+          console.log("No need to optimize, got ", message_inputs, " inputs.");
+        }
     });
 
     Globals.wallet.on('deadnode', () => {
@@ -738,33 +758,11 @@ async function backgroundSyncMessages() {
   //     }))
   // });
 
-
-
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       console.log(Globals.wallet);
-      const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-      console.log(inputs);
-      let message_inputs = 0;
-      for (input in inputs) {
-        try {
-          console.log(inputs[input]);
-          let this_amount = inputs[input].input.amount;
-          console.log(this_amount);
-          if (this_amount == 10000) {
-            message_inputs++;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-      if (message_inputs < 2) {
-        optimizeMessages(10);
+      console.log(Globals.wallet.subWallets.subWallets);
 
-      } else {
-        console.log("No need to optimize, got ", message_inputs, " inputs.");
-      }
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',

@@ -67,6 +67,8 @@ class globals {
 
         this.knownTXs = [];
 
+        this.activeChat = '';
+
     }
 
     reset() {

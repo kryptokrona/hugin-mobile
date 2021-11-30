@@ -34,7 +34,7 @@ import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
-import { saveToDatabase, getMessages } from './Database';
+import { saveToDatabase, getMessages, removeMessage } from './Database';
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -67,6 +67,7 @@ export class RecipientsScreen extends React.Component {
     }
 
     render() {
+
         const noPayeesComponent =
             <View style={{
                 width: '100%',
@@ -867,6 +868,14 @@ export class ChatScreen extends React.Component {
           messages: messages
         });
 
+        Globals.activeChat = this.state.address;
+
+    }
+
+    async componentWillUnmount() {
+
+        Globals.activeChat = '';
+
     }
 
     render() {
@@ -976,14 +985,29 @@ export class ChatScreen extends React.Component {
                         // }
                           let text = e.nativeEvent.text;
                           // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
+                          let updated_messages = await getMessages();
+                          let temp_timestamp = Date.now();
+                          updated_messages.push({
+                              conversation: this.state.address,
+                              type: 'sent',
+                              message: checkText(text),
+                              timestamp: temp_timestamp
+                          });
+
+                          this.setState({
+                            messages: updated_messages
+                          })
+                          this.state.input.current.clear();
+
                           let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+                          await removeMessage(temp_timestamp);
                           if (success) {
                           let updated_messages = await getMessages();
 
                             this.setState({
                               messages: updated_messages
                             })
-                            this.state.input.current.clear();
+                            // this.state.input.current.clear();
                           }
                     }}
                     onChangeText={(text) => {
