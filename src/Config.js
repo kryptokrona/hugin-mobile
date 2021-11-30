@@ -133,12 +133,12 @@ const Config = new function() {
     /**
      * Use our native func instead of JS slowness
      */
-    this.deriveSecretKey = Platform.OS === 'ios' ? undefined : deriveSecretKey;
+    this.deriveSecretKey = Platform.OS === 'ios' ? undefined : undefined;
 
     /**
      * Use our native func instead of JS slowness
      */
-    this.generateKeyImage = Platform.OS === 'ios' ? undefined : generateKeyImage;
+    this.generateKeyImage = Platform.OS === 'ios' ? undefined : undefined;
 
     /**
      * Use our native func instead of JS slowness

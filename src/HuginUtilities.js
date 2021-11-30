@@ -219,7 +219,7 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs) {
 
-  let [new_address, error] = await Globals.wallet.addSubWallet();
+
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
@@ -227,13 +227,26 @@ export async function optimizeMessages(nbrOfTxs) {
     toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
     return;
   }
+
+  let subWallets = Globals.wallet.subWallets.subWallets;
+  subWallets.forEach((value, name) => {
+    let txs = value.unconfirmedIncomingAmounts.length;
+
+    if (txs > 0) {
+      console.log('Already have incoming inputs, aborting..');
+      return;
+    }
+  })
+
+  // let [new_address, error] = await Globals.wallet.addSubWallet();
+  // console.log('Optimizing and creating new wallet ', new_address);
   // toastPopUp('Optimizing wallet!');
   let payments = [];
   let i = 0;
   /* User payment */
   while (i < nbrOfTxs - 1 && i < 10) {
     payments.push([
-        new_address,
+        Globals.wallet.subWallets.getAddresses()[0],
         10000
     ]);
 
@@ -247,7 +260,7 @@ export async function optimizeMessages(nbrOfTxs) {
       {fixedFee: 10000, isFixedFee: true}, // fee
       undefined, //paymentID
       undefined, // subWalletsToTakeFrom
-      new_address, // changeAddress
+      undefined, // changeAddress
       true, // relayToNetwork
       false, // sneedAll
       undefined
@@ -257,6 +270,8 @@ export async function optimizeMessages(nbrOfTxs) {
     toastPopUp('Optimizing wallet!');
   } else {
     toastPopUp('Failed to optimize wallet');
+    console.log('Removing subwallet:', new_address);
+    Globals.wallet.deleteSubWallet(new_address);
   }
 
   return result;
@@ -356,6 +371,10 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     let my_addresses = Globals.wallet.getAddresses();
     //console.log('my_addr', my_addresses);
+    // let [changeAddress, error] = await Globals.wallet.addSubWallet();
+    // if (error) {
+    //   toastPopUp(error);
+    // }
 
     try {
 
@@ -436,8 +455,8 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
-        0, // mixin
-        {fixedFee: 2500, isFixedFee: true}, // fee
+        3, // mixin
+        {fixedFee: 4500, isFixedFee: true}, // fee
         undefined, //paymentID
         undefined, // subWalletsToTakeFrom
         undefined, // changeAddress
@@ -446,11 +465,31 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         Buffer.from(payload_hex, 'hex')
     );
     console.log('result', result);
+
     if (result.success) {
 
       saveMessage(receiver, 'sent', message, timestamp);
       // toastPopUp('Message sent!');
-      return true;
+
+
+      const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+      let message_inputs = 0;
+      for (input in inputs) {
+        try {
+          let this_amount = inputs[input].input.amount;
+          if (this_amount == 10000) {
+            message_inputs++;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+      if (message_inputs < 2) {
+        optimizeMessages(10);
+      } else {
+        console.log("No need to optimize, got ", message_inputs, " inputs.");
+      }
       // optimizeMessages(2);
     } else {
 
@@ -724,17 +763,22 @@ export async function getMessage(extra){
 
                       //console.log('is_known', is_known);
               if (!is_known) {
-                PushNotification.localNotification({
-                    title: from,//'Incoming transaction received!',
-                    //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-                    message: payload_json.msg,
-                    data: payload_json.t,
-                    largeIconUrl: get_avatar(payload_json.from, 64),
-                });
+
                 saveMessage(payload_json.from, 'received', payload_json.msg, payload_json.t);
                 console.log('from', from);
                 console.log('message', payload_json.msg);
                 console.log('payload_json.t', payload_json.t);
+                console.log('activeChat=', Globals.activeChat, ' from=', payload_json.from);
+                if (Globals.activeChat != payload_json.from) {
+                  PushNotification.localNotification({
+                      title: from,//'Incoming transaction received!',
+                      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                      message: payload_json.msg,
+                      data: payload_json.t,
+                      largeIconUrl: get_avatar(payload_json.from, 64),
+                  });
+                }
+
 
               }
 
