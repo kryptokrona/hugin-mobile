@@ -1155,27 +1155,6 @@ export class SettingsScreen extends React.Component {
                                 checked: this.state.scanCoinbase,
                             },
                             {
-                                title: 'Enable Auto Optimization',
-                                description: 'Helps sending large TXs (See FAQ)',
-                                icon: {
-                                    iconName: 'refresh',
-                                    IconType: SimpleLineIcons,
-                                },
-                                onClick: () => {
-                                    Globals.preferences.autoOptimize = !Globals.preferences.autoOptimize;
-
-                                    this.setState({
-                                        autoOptimize: Globals.preferences.autoOptimize,
-                                    });
-
-                                    Globals.wallet.enableAutoOptimization(Globals.preferences.autoOptimize);
-                                    toastPopUp(Globals.preferences.autoOptimize ? 'Auto Optimization enabled' : 'Auto Optimization disabled');
-                                    savePreferencesToDatabase(Globals.preferences);
-                                },
-                                checkbox: true,
-                                checked: this.state.autoOptimize,
-                            },
-                            {
                                 title: 'Manually Optimize Wallet',
                                 description: 'Split your balance into more inputs (See FAQ)',
                                 icon: {
