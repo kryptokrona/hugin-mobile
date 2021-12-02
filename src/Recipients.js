@@ -156,7 +156,7 @@ export class RecipientsScreen extends React.Component {
                 <View style={{
                     flex: 1,
                     marginLeft: 30,
-                    marginTop: 60,
+                    marginTop: 15,
                     width: '85%'
                 }}>
                     <TouchableWithoutFeedback
@@ -197,7 +197,7 @@ export class RecipientsScreen extends React.Component {
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
                             }}>
-                                Add a new recipient
+                                Chats
                             </Text>
                         </View>
                     </TouchableWithoutFeedback>
@@ -210,14 +210,6 @@ export class RecipientsScreen extends React.Component {
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                     }}>
-                        <Text style={{
-                            color: this.props.screenProps.theme.primaryColour,
-                            fontSize: 24,
-                            marginTop: 30,
-                            fontFamily: "Montserrat-SemiBold"
-                        }}>
-                            Chats
-                        </Text>
 
                         {this.state.payees.length > 0 ? addressBookComponent : noPayeesComponent}
 

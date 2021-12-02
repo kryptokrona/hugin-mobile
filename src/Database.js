@@ -531,12 +531,13 @@ export async function loadPayeeDataFromDatabase() {
             // //console.log('latestMessage', latestMessage);
             // // let latestMessage2 = latestMessage.rows.item(1);
             // //console.log('latestMessage2', latestMessage.rows.item(0));
-            if (false) {
+            let saved = false;
+            if (thisMessageTimestamp) {
               console.log('res has length, doing some stuff');
             for (payee in res) {
               console.log('res[payee].lastMessageTimestamp', res[payee].lastMessageTimestamp);
               console.log('res[payee]', res[payee]);
-              if (res[payee].lastMessageTimestamp > thisMessageTimestamp) {
+              if (res[payee].lastMessageTimestamp < thisMessageTimestamp) {
                 res.splice(payee, 0, {
                     nickname: item.nickname,
                     address: item.address,
@@ -544,9 +545,12 @@ export async function loadPayeeDataFromDatabase() {
                     lastMessage: thisMessage,
                     lastMessageTimestamp: thisMessageTimestamp
                 })
+                saved = true;
+                break;
               }
             }
-          } else {
+          }
+          if (!saved) {
             res.push({
                 nickname: item.nickname,
                 address: item.address,
