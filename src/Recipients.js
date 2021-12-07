@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    View, Text, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    KeyboardAvoidingView, View, Text, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import {
@@ -162,8 +162,11 @@ export class RecipientsScreen extends React.Component {
                     <TouchableWithoutFeedback
                         onPress={() => {
                             this.props.navigation.navigate('NewPayee', {
-                                finishFunction: () => {
-                                    this.props.navigation.navigate('Recipients');
+                                finishFunction: (item) => {
+                                    this.props.navigation.navigate(
+                                        'ChatScreen', {
+                                            payee: item,
+                                        });
                                 }
                             })
                         }}
@@ -944,7 +947,9 @@ export class ChatScreen extends React.Component {
 
                 </ScrollView>
 
-                <View style={{
+                <KeyboardAvoidingView
+                 behavior={Platform.OS == "ios" ? "padding" : "height"}
+                 style={{
                     marginHorizontal: 10,
                     marginBottom: 5,
                     flex: 1,
@@ -1010,7 +1015,7 @@ export class ChatScreen extends React.Component {
                     errorMessage={this.props.error}
                 />
 
-            </View>
+            </KeyboardAvoidingView>
             </View>
         );
     }
