@@ -668,7 +668,8 @@ class BalanceComponent extends React.Component {
 
 
         return(
-            <Animated.View style={{marginTop: 20, marginLeft: 53, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
+            <View style={{alignItems: 'center'}}>
+            <Animated.View style={{marginTop: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
                     <Text style={{
                         color: 'black',
                         fontSize: 64,
@@ -684,6 +685,7 @@ class BalanceComponent extends React.Component {
                     </View>
 
             </Animated.View>
+            </View>
         );
     }
 }
