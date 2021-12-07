@@ -219,7 +219,7 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs) {
 
-
+  return;
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
@@ -256,7 +256,7 @@ export async function optimizeMessages(nbrOfTxs) {
 
   let result = await Globals.wallet.sendTransactionAdvanced(
       payments, // destinations,
-      0, // mixin
+      3, // mixin
       {fixedFee: 10000, isFixedFee: true}, // fee
       undefined, //paymentID
       undefined, // subWalletsToTakeFrom
