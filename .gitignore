@@ -6,3 +6,4 @@ android/.gradle
 android/build
 ios/sentry.properties
 android/app/my-release-key.keystore
+.DS_STORE
