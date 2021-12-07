@@ -16,6 +16,7 @@ import { FadeView } from './FadeView';
 import { Authenticate } from './Authenticate';
 import { haveWallet, loadWallet } from './Database';
 import { delay, navigateWithDisabledBack } from './Utilities';
+import { XKRLogo } from './XKRLogo';
 
 function fail(msg) {
     Globals.logger.addLogMessage(msg);
@@ -103,37 +104,24 @@ export class SplashScreen extends React.Component {
 
 
         componentWillMount() {
-          this.animatedValue = new Animated.Value(0);
+
         }
 
         componentDidMount() {
 
-            Animated.timing(this.animatedValue, {
-              toValue: 224,
-              duration: 3000
-            }).start(() => {
-          Animated.timing(this.animatedValue,{
-            toValue:0,
-            duration: 10000
-          }).start()
-        });
         }
 
 
     render() {
 
-                 const interpolateColor =  this.animatedValue.interpolate({
-                 inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
-                 outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
-               });
 
         return(
             /* Fade in a spinner logo */
-            <Animated.View style={{justifyContent: 'center', alignItems: 'stretch', backgroundColor: interpolateColor, flex: 1}}>
+            <View style={{justifyContent: 'center', alignItems: 'center', backgroundColor: this.props.screenProps.theme.backgroundColour, flex: 1}}>
 
-                    <Spinner/>
+                    <XKRLogo />
 
-            </Animated.View>
+            </View>
         );
     }
 }
