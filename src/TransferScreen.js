@@ -758,8 +758,13 @@ export class NewPayeeScreen extends React.Component {
                             const finishFunction = this.props.navigation.getParam('finishFunction', undefined);
 
                             if (finishFunction) {
-                                finishFunction();
+                                finishFunction(payee);
                             } else {
+                              this.props.navigation.navigate(
+                                  'ChatScreen', {
+                                      payee: payee,
+                                  });
+                                  return;
                                 const amount = this.props.navigation.getParam('amount', undefined);
 
                                 /* Already have an amount, don't need to go to transfer screen */
