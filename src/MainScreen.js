@@ -196,13 +196,13 @@ export async function sendNotification(transaction) {
 
             }
 
-    PushNotification.localNotification({
-        title: from,//'Incoming transaction received!',
-        //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-        message: message.msg,
-        data: JSON.stringify(transaction.hash),
-        largeIconUrl: get_avatar(message.from, 64),
-    });
+    // PushNotification.localNotification({
+    //     title: from,//'Incoming transaction received!',
+    //     //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+    //     message: message.msg,
+    //     data: JSON.stringify(transaction.hash),
+    //     largeIconUrl: get_avatar(message.from, 64),
+    // });
 }
 
 /**
@@ -242,6 +242,7 @@ export class MainScreen extends React.Component {
             addressOnly: false,
             unlockedBalance: 0,
             lockedBalance: 0,
+            address: Globals.wallet.getPrimaryAddress()
         }
 
         this.updateBalance();
@@ -378,7 +379,7 @@ export class MainScreen extends React.Component {
         await this.updateBalance();
 
         this.setState({
-            refreshing: false,
+            refreshing: false
         });
     }
 
@@ -436,7 +437,24 @@ export class MainScreen extends React.Component {
 
                       elevation: 15,
                     }}>
-                    <View style={{flex: 1}}>
+
+                    </View>
+
+                    <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
+                        <AddressComponent {...this.props}/>
+
+                      <View style={{ display: this.state.addressOnly ? 'flex' : 'none', borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 0, marginTop: 10, backgroundColor: 'transparent', alignItems: "center" }}>
+
+                          <QRCode
+                              value={'xkr://' + this.state.address + '?paymentid=' + Buffer.from(getKeyPair().publicKey).toString('hex')}
+                              size={250}
+                              backgroundColor={'transparent'}
+                              color={this.props.screenProps.theme.qrCode.foregroundColour}
+                          />
+                      </View>
+                    </TouchableOpacity>
+
+                    <View style={{display: this.state.addressOnly ? 'none' : 'flex', flex: 1}}>
                         <BalanceComponent
                             unlockedBalance={this.state.unlockedBalance}
                             lockedBalance={this.state.lockedBalance}
@@ -445,12 +463,6 @@ export class MainScreen extends React.Component {
                         />
 
                     </View>
-
-                    </View>
-
-                    <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
-                        <AddressComponent {...this.props}/>
-                    </TouchableOpacity>
 
                     <View style={{ opacity: this.state.addressOnly ? 0 : 100, flex: 1 }}>
                         <SyncComponent {...this.props}/>
@@ -479,6 +491,13 @@ class AddressComponent extends React.Component {
                 <Image
                   style={{width: 112, height: 112}}
                   source={{uri: get_avatar(this.state.address, 112)}}
+                />
+
+                <CopyButton
+                    style={{position: "absolute", top: 25, right: 20}}
+                    data={this.state.address + Buffer.from(getKeyPair().publicKey).toString('hex')}
+                    name='Address'
+                    {...this.props}
                 />
                 <Text style={[Styles.centeredText, {
                     color: this.props.screenProps.theme.primaryColour,
@@ -541,20 +560,7 @@ class AddressComponent extends React.Component {
                 </View>
 
 
-                <CopyButton
-                    data={this.state.address + Buffer.from(getKeyPair().publicKey).toString('hex')}
-                    name='Address'
-                    {...this.props}
-                />
 
-                <View style={{ borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 0, marginTop: 10, backgroundColor: this.props.screenProps.theme.qrCode.backgroundColour }}>
-                    <QRCode
-                        value={'xkr://' + this.state.address + '?paymentid=' + Buffer.from(getKeyPair().publicKey).toString('hex')}
-                        size={180}
-                        backgroundColor={this.props.screenProps.theme.qrCode.backgroundColour}
-                        color={this.props.screenProps.theme.qrCode.foregroundColour}
-                    />
-                </View>
 
 
             </View>
@@ -573,11 +579,42 @@ class BalanceComponent extends React.Component {
             expandedBalance: false,
         };
 
+        this.animation = new Animated.Value(0);
+
         this.balanceRef = (ref) => this.balance = ref;
         this.valueRef = (ref) => this.value = ref;
     }
 
 
+        componentWillMount() {
+          this.animatedValue = new Animated.Value(0);
+        }
+
+
+            componentDidMount() {
+
+              let flipFlop = false;
+
+              let keepAnimating = () => {
+
+                Animated.timing(this.animatedValue, {
+                  toValue: flipFlop ? 0 : 224,
+                  duration: 10000
+                }).start(() => {
+                  flipFlop = flipFlop ? false : true;
+                  keepAnimating();
+                });
+
+              }
+
+                Animated.timing(this.animatedValue, {
+                  toValue: 224,
+                  duration: 10000
+                }).start(() => {
+                  keepAnimating();
+
+            });
+            }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.unlockedBalance !== this.props.unlockedBalance ||
@@ -588,7 +625,7 @@ class BalanceComponent extends React.Component {
 
     render() {
         const compactBalance = <OneLineText
-                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 32}}
+                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'black' : 'black', fontSize: 24}}
                                      onPress={() => this.setState({
                                          expandedBalance: !this.state.expandedBalance
                                      })}
@@ -598,8 +635,8 @@ class BalanceComponent extends React.Component {
                                </OneLineText>;
 
         const lockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FontAwesome name={'lock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 0}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
+                                    <FontAwesome name={'lock'} size={16} color={'black'} style={{marginRight: 7, marginTop: 0}}/>
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.state.expandedBalance
                                           })}>
@@ -608,8 +645,8 @@ class BalanceComponent extends React.Component {
                               </View>;
 
         const unlockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FontAwesome name={'unlock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 3}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
+                                    <FontAwesome name={'unlock'} size={16} color={'black'} style={{marginRight: 7, marginTop: 3}}/>
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.props.expandedBalance
                                           })}>
@@ -623,23 +660,30 @@ class BalanceComponent extends React.Component {
                                 </View>;
 
 
+       const interpolateColor =  this.animatedValue.interpolate({
+       inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
+       outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
+     });
+
+
+
         return(
-            <View style={{ borderRadius: 0, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: 'rgba(0,0,0,0.2)' }}>
+            <Animated.View style={{marginTop: 20, marginLeft: 53, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
                     <Text style={{
-                        color: 'white',
+                        color: 'black',
                         fontSize: 64,
                         fontFamily: 'icomoon',
                         position: 'absolute',
-                        top: 25,
+                        top: 23,
                         left: 5
                     }}>
                         
                     </Text>
-                    <View style={{marginLeft: 64}}ref={this.balanceRef}>
+                    <View style={{marginLeft: 64, marginBottom: 10}} ref={this.balanceRef}>
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
                     </View>
 
-            </View>
+            </Animated.View>
         );
     }
 }
