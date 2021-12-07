@@ -15,7 +15,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-
+import { Input } from 'react-native-elements';
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
     AppState, RefreshControl, useColorScheme
@@ -691,6 +691,85 @@ export class SwapNodeScreen extends React.Component {
                             </Text>
                         </View>
                     }
+                    <View style={{
+                        backgroundColor: this.props.screenProps.theme.backgroundColour,
+                        marginHorizontal: 20,
+                    }}>
+                    <Text style={{
+                        fontSize: 20,
+                        color: this.props.screenProps.theme.primaryColour,
+                    }}>
+                        Use a custom node by typing the address below
+                    </Text>
+                    <Text style={{
+                        fontSize: 12,
+                        color: this.props.screenProps.theme.primaryColour,
+                    }}>
+                        Format is: url:port:ssl
+                    </Text>
+                    </View>
+                    <Input
+                        ref={this.state.input}
+                        containerStyle={{
+                            width: '100%',
+                        }}
+                        inputContainerStyle={{
+                            backgroundColor: 'rgba(0,0,0,0.2)',
+                            borderWidth: 0,
+                            borderColor: 'transparent',
+                            borderRadius: 15,
+                            width: '100%',
+                            height: 40,
+                            padding: 15
+                        }}
+                        inputStyle={{
+                            color: this.props.screenProps.theme.primaryColour,
+                            fontFamily: 'Montserrat-Regular',
+                            fontSize: 15
+                        }}
+                        placeholder={this.state.selectedNode}
+                        onSubmitEditing={async (e) => {
+                            // if (this.props.onChange) {
+                            //     this.props.onChange(text);
+                            // }
+                              let text = e.nativeEvent.text;
+                              text = text.split(':');
+                              let node = {url: text[0], port: text[1], ssl: text[2]};
+
+                              this.swapNode(node);
+                              // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
+                              // let updated_messages = await getMessages();
+                              // let temp_timestamp = Date.now();
+                              // updated_messages.push({
+                              //     conversation: this.state.address,
+                              //     type: 'sent',
+                              //     message: checkText(text),
+                              //     timestamp: temp_timestamp
+                              // });
+                              //
+                              // this.setState({
+                              //   messages: updated_messages
+                              // })
+                              // this.state.input.current.clear();
+                              //
+                              // let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+                              // await removeMessage(temp_timestamp);
+                              // if (success) {
+                              // let updated_messages = await getMessages();
+                              //
+                              //   this.setState({
+                              //     messages: updated_messages
+                              //   })
+                              //   // this.state.input.current.clear();
+                              // }
+                        }}
+                        onChangeText={(text) => {
+                            if (this.props.onChange) {
+                                this.props.onChange(text);
+                            }
+                        }}
+                        errorMessage={this.props.error}
+                    />
                 </ScrollView>
             </View>
         );
@@ -836,6 +915,9 @@ export class SettingsScreen extends React.Component {
            case "Rewind Wallet":
               return "#f25f61";
               break;
+          case "Reset wallet":
+             return "#f25f61";
+             break;
            case "Speed Up Background Syncing":
               return "#f2cb5f";
               break;
@@ -1237,6 +1319,28 @@ export class SettingsScreen extends React.Component {
                                     }
                                 },
                             },
+                            {
+                                title: 'Reset wallet',
+                                description: 'Use this if you are having issues sending messages',
+                                icon: {
+                                    iconName: 'md-help-buoy',
+                                    IconType: Ionicons,
+                                },
+                                onClick: () => {
+                                    if (Globals.preferences.authConfirmation) {
+                                        Authenticate(
+                                            this.props.navigation,
+                                            'to delete your wallet',
+                                            () => {
+                                                this.props.navigation.navigate('Settings');
+                                                recoverWallet(this.props.navigation)
+                                            }
+                                        );
+                                    } else {
+                                        recoverWallet(this.props.navigation)
+                                    }
+                                },
+                            },
                             // {
                             //     title: Config.appName,
                             //     description: Config.appVersion,
@@ -1346,6 +1450,23 @@ function rewindWallet(navigation) {
                 Globals.wallet.rewind(rewindHeight);
 
                 toastPopUp('Wallet rewind initiated');
+                navigation.navigate('Main', { reloadBalance: true } );
+            }},
+            {text: 'Cancel', style: 'cancel'},
+        ],
+    );
+}
+
+function recoverWallet(navigation) {
+    Alert.alert(
+        'Recover Wallet?',
+        'This will make all current funds unavailable (but recoverable with your private keys).',
+        [
+            {text: 'Rewind', onPress: () => {
+                const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
+                Globals.wallet.rewind(walletBlockCount);
+
+                toastPopUp('Wallet recovery initiated');
                 navigation.navigate('Main', { reloadBalance: true } );
             }},
             {text: 'Cancel', style: 'cancel'},
