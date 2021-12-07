@@ -983,6 +983,9 @@ export class ChatScreen extends React.Component {
                           let text = e.nativeEvent.text;
                           // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
                           let updated_messages = await getMessages();
+                          if (!updated_messages) {
+                            updated_messages = [];
+                          }
                           let temp_timestamp = Date.now();
                           updated_messages.push({
                               conversation: this.state.address,
