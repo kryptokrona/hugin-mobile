@@ -16,6 +16,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import { Input } from 'react-native-elements';
+import fetch from './fetchWithTimeout'
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
     AppState, RefreshControl, useColorScheme
@@ -569,6 +570,24 @@ export class SwapNodeScreen extends React.Component {
 
         await Globals.updateNodeList();
 
+        for (node in Globals.daemons) {
+          let this_node = Globals.daemons[node];
+          console.log('this_node', this_node);
+          let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
+            try {
+                let ping = await fetch(nodeURL, {
+                method: 'GET'
+              }, 1000);
+              console.log(ping);
+              this_node.online = true;
+            } catch (err) {
+              console.log('Cannot connect to node..');
+              this_node.online = false;
+            }
+
+
+        }
+
         this.setState((prevState) => ({
             refreshing: false,
 
@@ -580,10 +599,12 @@ export class SwapNodeScreen extends React.Component {
 
             forceUpdate: prevState.forceUpdate + 1,
         }));
+
     }
 
     async swapNode(node) {
         toastPopUp('Swapping node...');
+
 
         Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
 
@@ -603,7 +624,7 @@ export class SwapNodeScreen extends React.Component {
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
-                flex: 1,
+                flex: 1
             }}>
                 <ScrollView
                     style={{
@@ -619,42 +640,53 @@ export class SwapNodeScreen extends React.Component {
                         />
                     }
                 >
+                <Text style={{
+                    fontSize: 10,
+                    color: this.props.screenProps.theme.primaryColour,
+                    textAlign: 'center'
+                }}>
+                    Pull down to check status of nodes
+                </Text>
                     {this.state.nodes.length > 0 ?
                         <List style={{
                             backgroundColor: this.props.screenProps.theme.backgroundColour,
                         }}>
                             <FlatList
+                                style={{marginHorizontal: 20}}
                                 extraData={this.state.forceUpdate}
                                 data={this.state.nodes}
                                 keyExtractor={(item) => item.url + item.port}
                                 renderItem={({ item }) => (
                                     <ListItem
                                         title={item.name}
-                                        subtitle={`Node TX fee: ${prettyPrintAmount(item.fee.amount, Config)}, Uptime: ${item.availability}%`}
+                                        subtitle={`URL: ${item.url + ':' + item.port} Fee: ${item.fee}/tx`}
                                         leftIcon={
-                                            <View style={{
-                                                width: 50,
-                                                height: 50,
+                                            item.online == undefined ? <View style={{
+                                                width: 5,
+                                                height: 5,
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                backgroundColor: this.props.screenProps.theme.iconColour,
+                                                backgroundColor: '#555555',
                                                 borderRadius: 45
                                             }}>
-                                                <Text style={[Styles.centeredText, {
-                                                    fontSize: 15,
-                                                    color: item.online ? '#33ff33' : '#ff0000',
-                                                }]}>
-                                                    {item.online ? 'Online' : 'Offline'}
-                                                </Text>
+                                            </View> :
+                                            <View style={{
+                                                width: 5,
+                                                height: 5,
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: item.online ? '#33ff33' : '#ff0000',
+                                                borderRadius: 45
+                                            }}>
                                             </View>
                                         }
                                         titleStyle={{
-                                            color: this.state.selectedNode === item.url + ':' + item.port
+                                            color: this.state.selectedNode === item.url + ':' + item.port + ":" + item.ssl
                                                 ? this.props.screenProps.theme.primaryColour
                                                 : this.props.screenProps.theme.slightlyMoreVisibleColour,
                                         }}
                                         subtitleStyle={{
-                                            color: this.state.selectedNode === item.url + ':' + item.port
+                                            color: this.state.selectedNode === item.url + ':' + item.port + ":" + item.ssl
                                                 ? this.props.screenProps.theme.primaryColour
                                                 : this.props.screenProps.theme.slightlyMoreVisibleColour,
                                         }}
