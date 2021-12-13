@@ -1464,7 +1464,7 @@ function recoverWallet(navigation) {
         [
             {text: 'Rewind', onPress: () => {
                 const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
-                Globals.wallet.rewind(walletBlockCount);
+                Globals.wallet.reset(walletBlockCount - 1);
 
                 toastPopUp('Wallet recovery initiated');
                 navigation.navigate('Main', { reloadBalance: true } );
