@@ -195,12 +195,12 @@ const Config = new function() {
      * this if you are forking, so we don't get reported bugs for your wallet...
      *
      */
-    this.repoLink = 'https://github.com/kryptokrona/kryptokrona-mobile-wallet/issues';
+    this.repoLink = 'https://github.com/kryptokrona/hugin-mobile/issues';
 
     /**
      * This only controls the name in the settings screen.
      */
-    this.appName = 'Kryptokrona Mobile Wallet';
+    this.appName = 'Hugin Messenger';
 
     /**
      * Slogan phrase during wallet CreateScreen
@@ -226,13 +226,13 @@ const Config = new function() {
     /**
      * A link to your app on the google play store
      */
-    this.googlePlayLink = 'https://play.google.com/store/apps/details?id=com.xkr';
+    this.googlePlayLink = 'https://play.google.com/store/apps/details?id=com.hugin';
 
     /**
      * A url to fetch node info from. Should follow the turtlepay format
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
-    this.nodeListURL = 'https://kryptokrona.se/nodelist-testnet.json';
+    this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-nodes-list/master/nodes.json';
 };
 
 module.exports = Config;
