@@ -200,7 +200,7 @@ export class RecipientsScreen extends React.Component {
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
                             }}>
-                                Chats
+                                Messages
                             </Text>
                         </View>
                     </TouchableWithoutFeedback>
