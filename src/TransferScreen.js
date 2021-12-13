@@ -529,6 +529,16 @@ export class NewPayeeScreen extends React.Component {
             });
         }
 
+        if (address.length === 163) {
+          // Hugin address
+
+          await this.setState({
+              address: address.substring(0,99),
+              paymentID: address.substring(99),
+              paymentIDEnabled: true
+          });
+          address = address.substring(0,99);
+        }
         const addressError = await validateAddresses([address], true, Config);
 
         if (addressError.errorCode !== WalletErrorCode.SUCCESS) {
