@@ -730,7 +730,7 @@ export class ModifyPayeeScreen extends React.Component {
                         <RNEButton
                             title='Update'
                             onPress={() => {
-                                Globals.removePayee(this.state.initialAddress, false);
+                                Globals.removePayee(this.state.initialNickname, false);
 
                                 Globals.addPayee({
                                     address: this.state.newAddress,
@@ -770,7 +770,11 @@ export class ModifyPayeeScreen extends React.Component {
                                     [
                                         { text: 'Delete', onPress: () => {
                                             console.log('initialAddress', this.state.initialAddress);
-                                            Globals.removePayee(this.state.initialAddress, true);
+                                            Globals.removePayee(this.state.initialNickname, true);
+                                            console.log(Globals.payees);
+                                            this.setState({
+                                                payees: Globals.payees
+                                            });
                                             this.props.navigation.pop(2);
                                         }},
                                         { text: 'Cancel', style: 'cancel'},

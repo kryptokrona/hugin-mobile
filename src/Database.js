@@ -454,14 +454,14 @@ export async function savePayeeToDatabase(payee) {
     });
 }
 
-export async function removePayeeFromDatabase(address, removeMessages) {
+export async function removePayeeFromDatabase(nickname, removeMessages) {
     await database.transaction((tx) => {
         tx.executeSql(
             `DELETE FROM
                 payees
             WHERE
-                address = ?`,
-            [ address ]
+                nickname = ?`,
+            [ nickname ]
         );
     });
     if (removeMessages) {

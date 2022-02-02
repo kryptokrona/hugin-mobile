@@ -433,6 +433,7 @@ class TransactionList extends React.Component {
                                 }}
                                 onPress={() => this.props.navigation.navigate('TransactionDetails', { transaction: item })}
                             />
+
                         )}
                     />
                 </List>
