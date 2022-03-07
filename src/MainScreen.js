@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 
@@ -15,8 +15,8 @@ import PushNotification from 'react-native-push-notification';
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
 import {
-    Animated, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
-    AppState, Platform, Linking, ScrollView, RefreshControl, Dimensions, Clipboard,
+    Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
+    AppState, Platform, Linking, ScrollView, RefreshControl, Dimensions, Clipboard
 } from 'react-native';
 
 import Identicon from 'identicon.js';
@@ -72,9 +72,9 @@ async function init(navigation) {
         let message_inputs = 0;
         for (input in inputs) {
           try {
-            console.log(inputs[input]);
+            // console.log(inputs[input]);
             let this_amount = inputs[input].input.amount;
-            console.log(this_amount);
+            // console.log(this_amount);
             if (this_amount == 10000) {
               message_inputs++;
             }
@@ -86,7 +86,7 @@ async function init(navigation) {
           optimizeMessages(10);
 
         } else {
-          console.log("No need to optimize, got ", message_inputs, " inputs.");
+          // console.log("No need to optimize, got ", message_inputs, " inputs.");
         }
     });
 
@@ -459,6 +459,7 @@ export class MainScreen extends React.Component {
                             unlockedBalance={this.state.unlockedBalance}
                             lockedBalance={this.state.lockedBalance}
                             coinValue={this.state.coinValue}
+                            address={this.state.address}
                             {...this.props}
                         />
 
@@ -624,6 +625,7 @@ class BalanceComponent extends React.Component {
     }
 
     render() {
+        const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
                                      style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'black' : 'black', fontSize: 24}}
                                      onPress={() => this.setState({
@@ -660,6 +662,21 @@ class BalanceComponent extends React.Component {
                                 </View>;
 
 
+        const OpenURLButton = () => {
+          const handlePress = useCallback(async () => {
+
+              // Opening the link with some app, if the URL scheme is "http" the web link should be opened
+              // by some browser in the mobile
+              await Linking.openURL('https://kryptokrona.org/faucet/faucet.html?address=' + this.props.address);
+
+          });
+          if (!hasBalance) {
+            return <Button title={'⛽ Top up'} onPress={handlePress} />;
+          } else {
+            return <View style={{alignItems: 'center'}}></View>;
+          }
+        };
+
        const interpolateColor =  this.animatedValue.interpolate({
        inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
        outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
@@ -669,7 +686,7 @@ class BalanceComponent extends React.Component {
 
         return(
             <View style={{alignItems: 'center'}}>
-            <Animated.View style={{marginTop: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
+            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
                     <Text style={{
                         color: 'black',
                         fontSize: 64,
@@ -685,6 +702,8 @@ class BalanceComponent extends React.Component {
                     </View>
 
             </Animated.View>
+
+            <OpenURLButton></OpenURLButton>
             </View>
         );
     }
@@ -806,8 +825,8 @@ async function backgroundSyncMessages() {
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-      console.log(Globals.wallet);
-      console.log(Globals.wallet.subWallets.subWallets);
+      // console.log(Globals.wallet);
+      // console.log(Globals.wallet.subWallets.subWallets);
 
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
@@ -819,7 +838,7 @@ async function backgroundSyncMessages() {
       .then((response) => response.json())
       .then(async (json) => {
 
-        console.log(json);
+        // console.log(json);
 
         let addedTxs = json.addedTxs;
 
@@ -839,21 +858,21 @@ async function backgroundSyncMessages() {
 
         let transactions = addedTxs;
 
-        console.log('transactions.length', transactions.length);
-        console.log('Globals.knownTXs', Globals.knownTXs);
+        // console.log('transactions.length', transactions.length);
+        // console.log('Globals.knownTXs', Globals.knownTXs);
         for (transaction in transactions) {
 
           try {
-            console.log(transactions[transaction]);
+            // console.log(transactions[transaction]);
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
                        Globals.knownTXs.push(thisHash);
                      } else {
-                       console.log("This transaction is already known");
+                       // console.log("This transaction is already known");
                        continue;
                      }
-          console.log('Extra', thisExtra);
+          // console.log('Extra', thisExtra);
 
           if (thisExtra.length > 66) {
 
@@ -878,7 +897,7 @@ async function backgroundSyncMessages() {
 
 
           } else {
-            console.log('no extra apparently');
+            // console.log('no extra apparently');
           }
 
         } catch (err) {
