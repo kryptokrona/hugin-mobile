@@ -15,6 +15,10 @@ import Config from './Config';
 import { Styles } from './Styles';
 import { toastPopUp } from './Utilities';
 
+
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
+
 export class TextFixedWidth extends React.Component {
     constructor(props) {
         super(props);
@@ -85,12 +89,13 @@ export class SeedComponent extends React.Component {
 /**
  * Copy the data to clipboard
  */
-export class CopyButton extends React.Component {
+export class CopyButtonNoTranslation extends React.Component {
     constructor(props) {
         super(props);
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={[{...this.props.style}, {
                 marginTop: 10,
@@ -101,10 +106,10 @@ export class CopyButton extends React.Component {
                 paddingTop: 0
             }]}>
                 <Button
-                    title='Copy'
+                    title={t('copy')}
                     onPress={() => {
                         Clipboard.setString(this.props.data);
-                        toastPopUp(this.props.name + ' copied');
+                        toastPopUp(this.props.name + t('copied'));
                     }}
                     titleStyle={{
                         color: this.props.screenProps.theme.primaryColour,
@@ -117,6 +122,8 @@ export class CopyButton extends React.Component {
         );
     }
 }
+
+export const CopyButton = withTranslation()(CopyButtonNoTranslation)
 
 export class Hr extends React.Component {
     constructor(props) {

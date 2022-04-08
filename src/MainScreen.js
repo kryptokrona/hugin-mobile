@@ -39,6 +39,8 @@ import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
 import { coinsToFiat, getCoinPriceFromAPI } from './Currency';
+import { withTranslation } from 'react-i18next';
+import './i18n.js';
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -264,6 +266,7 @@ export class MainScreen extends React.Component {
             this.updateBalance();
         });
 
+
     }
 
     async componentDidMount() {
@@ -384,6 +387,10 @@ export class MainScreen extends React.Component {
     }
 
     render() {
+
+      const { t, i18n } = this.props;
+
+
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
            want to display your balance. */
@@ -441,8 +448,7 @@ export class MainScreen extends React.Component {
                     </View>
 
                     <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
-                        <AddressComponent {...this.props}/>
-
+                        <AddressComponentWithTranslation {...this.props}/>
                       <View style={{ display: this.state.addressOnly ? 'flex' : 'none', borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 0, marginTop: 10, backgroundColor: 'transparent', alignItems: "center" }}>
 
                           <QRCode
@@ -484,7 +490,10 @@ class AddressComponent extends React.Component {
         };
     }
 
+
     render() {
+      const { t } = this.props;
+
         return(
             <View style={{ alignItems: 'center' }}>
 
@@ -509,7 +518,7 @@ class AddressComponent extends React.Component {
                     marginLeft: 20,
                     fontFamily: 'Montserrat-Bold'
                 }]}>
-                Payment address
+                {t('paymentAddress')}
                 </Text>
                   <Text numberOfLines={2} style={[Styles.centeredText, {
                       color: this.props.screenProps.theme.primaryColour,
@@ -537,7 +546,7 @@ class AddressComponent extends React.Component {
                       marginLeft: 20,
                       fontFamily: 'Montserrat-Bold'
                   }]}>
-                  Message key
+                   {t('messageKey')}
                   </Text>
 
                   <Text onPress={() => {
@@ -568,6 +577,9 @@ class AddressComponent extends React.Component {
         );
     }
 }
+
+const AddressComponentWithTranslation = withTranslation()(AddressComponent)
+
 
 /**
  * Balance component at top of screen
@@ -825,8 +837,12 @@ async function backgroundSyncMessages() {
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-      // console.log(Globals.wallet);
-      // console.log(Globals.wallet.subWallets.subWallets);
+      console.log(Globals.wallet);
+      console.log(Globals.wallet.subWallets.subWallets);
+      console.log(Globals.wallet.subWallets.subWallets); //d74ba9d19b7e9c4e3e76b6f1331d91f28623bdf496bb7f4ce9ce0350cd2f268c
+      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getSpendableInputs());
+      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getBalance());
+      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getUnconfirmedChange());
 
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {

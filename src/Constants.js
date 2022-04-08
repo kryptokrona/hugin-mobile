@@ -5,6 +5,20 @@
 export default Constants = {
     walletFileFormatVersion: 0,
 
+    languages: [
+      {
+        language: 'Svenska',
+        langCode: 'sv',
+        flag: '🇸🇪'
+      },
+      {
+        language: 'English',
+        langCode: 'en',
+         flag: '🇬🇧'
+      }
+
+    ],
+
     /* Note: It falls back to USD, so I suggest not removing that */
     currencies: [
         {

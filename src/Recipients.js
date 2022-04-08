@@ -36,6 +36,9 @@ import {toastPopUp} from './Utilities';
 
 import { saveToDatabase, getMessages, removeMessage } from './Database';
 
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {
@@ -49,7 +52,7 @@ String.prototype.hashCode = function() {
     return hash;
 }
 
-export class RecipientsScreen extends React.Component {
+export class RecipientsScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -67,7 +70,7 @@ export class RecipientsScreen extends React.Component {
     }
 
     render() {
-
+        const { t } = this.props;
         const noPayeesComponent =
             <View style={{
                 width: '100%',
@@ -78,7 +81,7 @@ export class RecipientsScreen extends React.Component {
                     marginTop: 10,
                     fontSize: 16
                 }}>
-                    Your address book is empty! Add a new recipient above to populate it.
+                    {t('emptyAddressBook')}
                 </Text>
             </View>;
 
@@ -100,7 +103,7 @@ export class RecipientsScreen extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.nickname}
-                                subtitle={item.lastMessage}
+                                subtitle={item.lastMessage ? item.lastMessage : t('noMessages')}
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
@@ -200,7 +203,7 @@ export class RecipientsScreen extends React.Component {
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
                             }}>
-                                Messages
+                                {t('messagesTitle')}
                             </Text>
                         </View>
                     </TouchableWithoutFeedback>
@@ -222,6 +225,8 @@ export class RecipientsScreen extends React.Component {
         );
     }
 }
+
+export const RecipientsScreen = withTranslation()(RecipientsScreenNoTranslation)
 
 function isPaymentIDValid(paymentID) {
     let errorMessage = '';
@@ -811,7 +816,7 @@ export class ModifyPayeeScreen extends React.Component {
 // }
 
 
-export class ChatScreen extends React.Component {
+export class ChatScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -878,6 +883,8 @@ export class ChatScreen extends React.Component {
     }
 
     render() {
+
+       const { t } = this.props;
 
        const items = [];
 
@@ -979,7 +986,7 @@ export class ChatScreen extends React.Component {
                         fontSize: 15
                     }}
                     maxLength={Config.integratedAddressLength}
-                    placeholder={'Type your message..'}
+                    placeholder={t('typeMessageHere')}
                     onSubmitEditing={async (e) => {
                         // if (this.props.onChange) {
                         //     this.props.onChange(text);
@@ -1027,3 +1034,5 @@ export class ChatScreen extends React.Component {
         );
     }
 }
+
+export const ChatScreen = withTranslation()(ChatScreenNoTranslation)

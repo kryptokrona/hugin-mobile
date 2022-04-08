@@ -21,7 +21,8 @@ import { Styles } from './Styles';
 import { Globals } from './Globals';
 import { coinsToFiat } from './Currency';
 import { prettyPrintUnixTimestamp, prettyPrintDate } from './Utilities';
-
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
 class ItemDescription extends React.Component {
     constructor(props) {
         super(props);
@@ -54,7 +55,7 @@ class ItemDescription extends React.Component {
     }
 }
 
-export class TransactionDetailsScreen extends React.Component {
+export class TransactionDetailsScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: 'Transaction Details',
     };
@@ -93,6 +94,7 @@ export class TransactionDetailsScreen extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
         return(
             <View style={{
                 flex: 1,
@@ -116,67 +118,67 @@ export class TransactionDetailsScreen extends React.Component {
                         }}
                     >
                         <ItemDescription
-                            title={this.state.transaction.totalAmount() > 0 ? 'Received' : 'Sent'}
+                            title={this.state.transaction.totalAmount() > 0 ? t('received') : t('sent')}
                             item={this.state.complete ? prettyPrintUnixTimestamp(this.state.transaction.timestamp) : prettyPrintDate()}
                             {...this.props}
                         />
 
                         {this.state.payee && <ItemDescription
-                            title='Recipient'
+                            title={t('recipient')}
                             item={this.state.payee}
                             {...this.props}
                         />}
 
                         <ItemDescription
-                            title='Amount'
+                            title={t('amount')}
                             item={prettyPrintAmount(this.state.amount, Config)}
                             {...this.props}
                         />
 
                         {this.state.transaction.totalAmount() < 0 && <ItemDescription
-                            title='Fee'
+                            title={t('fee')}
                             item={prettyPrintAmount(this.state.transaction.fee, Config)}
                             {...this.props}
                         />}
 
                         <ItemDescription
-                            title='Value'
+                            title={t('value')}
                             item={this.state.coinValue}
                             {...this.props}
                         />
 
                         {this.state.memo && this.state.memo !== '' && <ItemDescription
-                            title='Notes'
+                            title={t('notes')}
                             item={this.state.memo}
                             {...this.props}
                         />}
 
                         {this.state.address && <ItemDescription
-                            title='Address'
+                            title={t('address')}
                             item={this.state.address}
                             {...this.props}
                         />}
 
                         <ItemDescription
-                            title='State'
-                            item={this.state.complete ? 'Complete' : 'Processing'}
+                            title={t('state')}
+                            item={this.state.complete ? t('completed') : t('processed')}
                             {...this.props}
                         />
 
                         {this.state.complete && <ItemDescription
-                            title='Block Height'
+                            title={t('blockHeight')}
                             item={this.state.transaction.blockHeight.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
                             {...this.props}
                         />}
 
                         <ItemDescription
-                            title='Hash'
+                            title={t('hash')}
                             item={this.state.transaction.hash}
                             {...this.props}
                         />
 
                         {this.state.transaction.paymentID !== '' && <ItemDescription
-                            title='Payment ID'
+                            title={t('paymentID')}
                             item={this.state.transaction.paymentID}
                             {...this.props}
                         />}
@@ -184,7 +186,7 @@ export class TransactionDetailsScreen extends React.Component {
 
                     {this.state.complete && <View style={[Styles.buttonContainer, {width: '100%', marginBottom: 20 }]}>
                         <Button
-                            title='View on Block Explorer'
+                            title={t('viewOnExplorer')}
                             onPress={() => {
                                 Linking.openURL(Config.explorerBaseURL + this.state.transaction.hash)
                                        .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err));
@@ -198,10 +200,12 @@ export class TransactionDetailsScreen extends React.Component {
     }
 }
 
+export const TransactionDetailsScreen = withTranslation()(TransactionDetailsScreenNoTranslation)
+
 /**
  * List of transactions sent + received
  */
-export class TransactionsScreen extends React.Component {
+export class TransactionsScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: 'Transactions',
         header: null
@@ -297,16 +301,18 @@ export class TransactionsScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
+
         const syncedMsg = this.state.walletHeight + 10 >= this.state.networkHeight ?
             ''
-          : "\nYour wallet isn't fully synced. If you're expecting some transactions, please wait.";
+          : t('notSyncedMessage');
 
         const noTransactions =
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <Text style={{ fontFamily: 'Montserrat-Regular', borderRadius: 5,
                 borderColor: this.props.screenProps.theme.borderColour,
                 borderWidth: 1, padding: 10, paddingBottom: 0, fontSize: 15, width: 200, color: this.props.screenProps.theme.primaryColour, justifyContent: 'center', textAlign: 'center' }}>
-                    Looks like you haven't sent{"\n"}or received any transactions yet!{"\n"} {"\n"} 😥 {"\n"}
+                    {t('noTxMessage')}
                     {syncedMsg}
                 </Text>
             </View>;
@@ -325,7 +331,10 @@ export class TransactionsScreen extends React.Component {
     }
 }
 
-class TransactionList extends React.Component {
+
+export const TransactionsScreen = withTranslation()(TransactionsScreenNoTranslation)
+
+class TransactionListNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -365,6 +374,7 @@ class TransactionList extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -384,7 +394,7 @@ class TransactionList extends React.Component {
                         }
                     }}
                     centerComponent={{
-                        text: `PAGE ${this.props.pageNum + 1} / ${this.getMaxPage()}`,
+                        text: `${t('page')} ${this.props.pageNum + 1} / ${this.getMaxPage()}`,
                         style: {
                             color: this.props.screenProps.theme.primaryColour,
                             fontSize: 16,
@@ -417,7 +427,7 @@ class TransactionList extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={prettyPrintAmount(Math.abs(item.totalAmount()) - (item.totalAmount() > 0 ? 0 : item.fee), Config)}
-                                subtitle={item.timestamp === 0 ? 'Processing at ' + prettyPrintDate() : 'Completed on ' + prettyPrintUnixTimestamp(item.timestamp)}
+                                subtitle={item.timestamp === 0 ? t('processing') + prettyPrintDate() : t('completed') + prettyPrintUnixTimestamp(item.timestamp)}
                                 leftIcon={
                                     <View style={{width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
                                         <Ionicons name={this.getIconName(item)} size={30} color={this.getIconColour(item)}/>
@@ -441,3 +451,5 @@ class TransactionList extends React.Component {
         )
     }
 }
+
+export const TransactionList = withTranslation()(TransactionListNoTranslation)

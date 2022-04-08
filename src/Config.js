@@ -133,12 +133,12 @@ const Config = new function() {
     /**
      * Use our native func instead of JS slowness
      */
-    this.deriveSecretKey = Platform.OS === 'ios' ? undefined : undefined;
+    this.deriveSecretKey = Platform.OS === 'ios' ? undefined : deriveSecretKey;
 
     /**
      * Use our native func instead of JS slowness
      */
-    this.generateKeyImage = Platform.OS === 'ios' ? undefined : undefined;
+    this.generateKeyImage = Platform.OS === 'ios' ? undefined : generateKeyImage;
 
     /**
      * Use our native func instead of JS slowness
@@ -188,7 +188,7 @@ const Config = new function() {
      * Default daemon to use. Can either be a BlockchainCacheApi(baseURL, SSL),
      * or a ConventionalDaemon(url, port).
      */
-    this.defaultDaemon = new Daemon('testnet.kryptokrona.se', 20001, false, true);
+    this.defaultDaemon = new Daemon('gota.kryptokrona.se', 11898, false);
 
     /**
      * A link to where a bug can be reported for your wallet. Please update

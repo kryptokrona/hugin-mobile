@@ -1,0 +1,6 @@
+{
+  paymentAddress: 'Payment address',
+  messageKey: 'Message keykey',
+  copy: 'Copy',
+  emptyAddressBook: 'Your address book is empty! Add a new recipient above to populate it.'
+}

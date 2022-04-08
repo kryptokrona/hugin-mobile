@@ -163,7 +163,8 @@ async function createTables(DB) {
                 scancoinbasetransactions BOOLEAN,
                 limitdata BOOLEAN,
                 theme TEXT,
-                pinconfirmation BOOLEAN
+                pinconfirmation BOOLEAN,
+                language TEXT
             )`
         );
 
@@ -322,7 +323,8 @@ export async function savePreferencesToDatabase(preferences) {
                 pinconfirmation = ?,
                 autooptimize = ?,
                 authmethod = ?,
-                node = ?
+                node = ?,
+                language = ?
             WHERE
                 id = 0`,
             [
@@ -335,6 +337,7 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.autoOptimize ? 1 : 0,
                 preferences.authenticationMethod,
                 preferences.node,
+                preferences.language
             ]
         );
     });
@@ -351,7 +354,8 @@ export async function loadPreferencesFromDatabase() {
             pinconfirmation,
             autooptimize,
             authmethod,
-            node
+            node,
+            language
         FROM
             preferences
         WHERE
@@ -371,6 +375,7 @@ export async function loadPreferencesFromDatabase() {
             autoOptimize: item.autooptimize === 1,
             authenticationMethod: item.authmethod,
             node: item.node,
+            language: item.language
         }
     }
 
@@ -521,7 +526,7 @@ export async function loadPayeeDataFromDatabase() {
                         item.address
                     ]
             );
-            let thisMessage = 'No messages yet 🥱';
+            let thisMessage = '';
             let thisMessageTimestamp = 0;
             if (latestMessage.rows.length) {
               thisMessage = latestMessage.rows.item(0).message;

@@ -45,6 +45,9 @@ import {
 
 import Identicon from 'identicon.js';
 
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
+
 const intToRGB = (int) => {
 
   if (typeof int !== 'number') throw new Error(errorMessage);
@@ -180,7 +183,7 @@ class CrossButton extends React.Component {
 /**
  * Send a transaction
  */
-export class TransferScreen extends React.Component {
+export class TransferScreenNoTranslation extends React.Component {
     static navigationOptions = ({ navigation, screenProps }) => {
         return {
             title: '',
@@ -255,6 +258,7 @@ export class TransferScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -275,11 +279,11 @@ export class TransferScreen extends React.Component {
                         marginLeft: 30,
                         fontFamily: 'Montserrat-SemiBold'
                     }}>
-                        How much {Config.coinName} do you want to send?
+                        {t('transferTitle')}
                     </Text>
 
                     <AmountInput
-                        label={'Recipient gets'}
+                        label={t('sendAmountLabel')}
                         value={this.state.amount}
                         fontSize={this.state.amountFontSize}
                         onChangeText={(text) => {
@@ -298,7 +302,7 @@ export class TransferScreen extends React.Component {
 
                     <View style={{ marginLeft: '70%' }}>
                         <Button
-                            title="Send Max"
+                            title={t('sendMaxButton')}
                             onPress={() => {
                                 this.setState({
                                     sendAll: true,
@@ -322,11 +326,11 @@ export class TransferScreen extends React.Component {
                         marginTop: 20,
                         fontFamily: 'Montserrat-Regular'
                     }}>
-                        Should arrive in {getArrivalTime()}
+                        {t('shouldArriveIn')} {getArrivalTime()}
                     </Text>
 
                     <BottomButton
-                        title="Continue"
+                        title={t('continue')}
                         onPress={() => {
                             this.props.navigation.navigate(
                                 'Confirm', {
@@ -345,6 +349,7 @@ export class TransferScreen extends React.Component {
         );
     }
 }
+export const TransferScreen = withTranslation()(TransferScreenNoTranslation)
 
 class AddressBook extends React.Component {
     constructor(props) {
@@ -478,7 +483,7 @@ class ExistingPayees extends React.Component {
     }
 }
 
-export class NewPayeeScreen extends React.Component {
+export class NewPayeeScreenNoTranslation extends React.Component {
     static navigationOptions = ({ navigation }) => {
         return {
             headerRight: (
@@ -605,6 +610,7 @@ export class NewPayeeScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -617,7 +623,7 @@ export class NewPayeeScreen extends React.Component {
                     marginTop: 60,
                 }}>
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 40, marginLeft: 30 }}>
-                        New contact
+                        {t('newContact')}
                     </Text>
 
                     <Input
@@ -633,7 +639,7 @@ export class NewPayeeScreen extends React.Component {
                             backgroundColor: "rgba(0,0,0,0.2)",
                             borderColor: 'transparent'
                         }}
-                        label={'Name'}
+                        label={t('name')}
                         labelStyle={{
                             fontFamily: 'Montserrat-Regular',
                             marginBottom: 5,
@@ -667,7 +673,7 @@ export class NewPayeeScreen extends React.Component {
                           borderColor: 'transparent'
                         }}
                         maxLength={Config.integratedAddressLength}
-                        label={'Recipient\'s address'}
+                        label={t('paymentAddress')}
                         labelStyle={{
                             fontFamily: 'Montserrat-Regular',
                             marginBottom: 5,
@@ -692,7 +698,7 @@ export class NewPayeeScreen extends React.Component {
                                     borderColor: this.props.screenProps.theme.borderColour,
                                     borderWidth: 1,}}>
                         <Button
-                            title='Scan QR'
+                            title={t('scanQR')}
                             onPress={() => {
                                 const func = (data) => {
                                     if (data.startsWith(Config.uriPrefix)) {
@@ -730,7 +736,7 @@ export class NewPayeeScreen extends React.Component {
                           borderColor: 'transparent'
                         }}
                         maxLength={64}
-                        label={'Recipient\'s Message Key'}
+                        label={t('messageKey')}
                         labelStyle={{
                             marginBottom: 5,
                             marginRight: 2,
@@ -754,7 +760,7 @@ export class NewPayeeScreen extends React.Component {
                     />
 
                     <BottomButton
-                        title="Continue"
+                        title={t('continue')}
                         onPress={() => {
                             const payee = {
                                 nickname: this.state.nickname,
@@ -804,6 +810,8 @@ export class NewPayeeScreen extends React.Component {
     }
 }
 
+export const NewPayeeScreen = withTranslation()(NewPayeeScreenNoTranslation)
+
 class ModifyMemo extends React.Component {
     constructor(props) {
         super(props);
@@ -837,7 +845,7 @@ class ModifyMemo extends React.Component {
     }
 }
 
-export class ConfirmScreen extends React.Component {
+export class ConfirmScreenNoTranslation extends React.Component {
     static navigationOptions = ({ navigation }) => {
         return {
             headerRight: (
@@ -955,7 +963,7 @@ export class ConfirmScreen extends React.Component {
         }
     }
 
-    preparingScreen() {
+    preparingScreen(t) {
         return(
             <View style={{
                 flex: 1,
@@ -972,7 +980,7 @@ export class ConfirmScreen extends React.Component {
                     animation='pulse'
                     iterationCount='infinite'
                 >
-                    Estimating transaction fee, please wait...
+                    {t('estimating')}
                 </Animatable.Text>
             </View>
         );
@@ -1018,7 +1026,7 @@ export class ConfirmScreen extends React.Component {
         );
     }
 
-    confirmScreen() {
+    confirmScreen(t) {
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -1028,7 +1036,7 @@ export class ConfirmScreen extends React.Component {
                     marginHorizontal: 30,
                 }}>
                     <Text style={{ fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 25 }}>
-                        Review your transfer
+                        {t('reviewTitle')}
                     </Text>
                 </View>
 
@@ -1066,11 +1074,11 @@ export class ConfirmScreen extends React.Component {
                                     color: this.props.screenProps.theme.primaryColour,
                                     fontFamily: 'Montserrat-SemiBold',
                                 }}>
-                                    Notes
+                                    {t('notes')}
                                 </Text>
 
                                 <Button
-                                    title='Change'
+                                    title={t('change')}
                                     onPress={() => {
                                         this.setState({
                                             modifyMemo: !this.state.modifyMemo,
@@ -1106,7 +1114,7 @@ export class ConfirmScreen extends React.Component {
                             />
                             :
                             <Text style={{ color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
-                                {this.state.memo === '' ? 'None' : this.state.memo}
+                                {this.state.memo === '' ? t('none') : this.state.memo}
                             </Text>
                         }
                     </View>
@@ -1124,11 +1132,11 @@ export class ConfirmScreen extends React.Component {
                             justifyContent: 'space-between'
                         }}>
                             <Text style={{ fontFamily: 'Montserrat-SemiBold', fontSize: 15, color: this.props.screenProps.theme.primaryColour }}>
-                                {this.state.payee.nickname}'s details
+                                {this.state.payee.nickname}{t('details')}
                             </Text>
 
                             <Button
-                                title='Change'
+                                title={t('change')}
                                 onPress={() => {
                                     this.props.navigation.navigate('ChoosePayee');
                                 }}
@@ -1143,7 +1151,7 @@ export class ConfirmScreen extends React.Component {
                         <View style={{ borderWidth: 0.7, borderColor: 'lightgrey', width: '100%' }}/>
 
                         <Text style={{ fontFamily: 'Montserrat-SemiBold', marginBottom: 5, marginTop: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                            Address
+                            {t('address')}
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular', color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1153,7 +1161,7 @@ export class ConfirmScreen extends React.Component {
                         {this.state.payee.paymentID !== '' &&
                         <View>
                             <Text style={{ fontFamily: 'Montserrat-SemiBold', marginBottom: 5, marginTop: 20 }}>
-                                Payment ID
+                                {t('paymentID')}
                             </Text>
 
                             <Text style={{ fontFamily: 'Montserrat-Regular', color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1169,11 +1177,11 @@ export class ConfirmScreen extends React.Component {
                             justifyContent: 'space-between'
                         }}>
                             <Text style={{ fontFamily: 'Montserrat-SemiBold', fontSize: 15, color: this.props.screenProps.theme.primaryColour }}>
-                                Transfer details
+                                {t('transferDetails')}
                             </Text>
 
                             <Button
-                                title='Change'
+                                title={t('change')}
                                 onPress={() => {
                                     this.props.navigation.navigate(
                                         'Transfer', {
@@ -1192,7 +1200,7 @@ export class ConfirmScreen extends React.Component {
                         <View style={{ borderWidth: 0.7, borderColor: 'lightgrey', width: '100%' }}/>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular', marginBottom: 5, marginTop: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                            You're sending
+                            {t('sendAmountLabel')}
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular',color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1200,7 +1208,7 @@ export class ConfirmScreen extends React.Component {
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular', marginBottom: 5, marginTop: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                            {this.state.payee.nickname} gets
+                            {this.state.payee.nickname} {t('gets')}
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular',color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1208,7 +1216,7 @@ export class ConfirmScreen extends React.Component {
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular',marginBottom: 5, marginTop: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                            Network fee
+                            {t('fee')}
                         </Text>
 
                         <Text style={{ fontFamily: 'Montserrat-Regular',color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1229,7 +1237,7 @@ export class ConfirmScreen extends React.Component {
                         {this.state.nodeFee > 0 &&
                         <View>
                             <Text style={{ fontFamily: 'Montserrat-Regular',marginBottom: 5, marginTop: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                                Node fee
+                                {t('nodeFee')}
                             </Text>
 
                             <Text style={{ fontFamily: 'Montserrat-Regular',color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
@@ -1250,7 +1258,7 @@ export class ConfirmScreen extends React.Component {
                 </ScrollView>
 
                 <BottomButton
-                    title="Send Transaction"
+                    title={t('sendTransaction')}
                     onPress={() => {
                         const params = {
                             amount: this.state.recipientAmount,
@@ -1286,19 +1294,22 @@ export class ConfirmScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 { this.state.preparedTransaction
                     ? this.state.haveError
-                        ? this.errorScreen()
-                        : this.confirmScreen()
-                    : this.preparingScreen() }
+                        ? this.errorScreen(t)
+                        : this.confirmScreen(t)
+                    : this.preparingScreen(t) }
             </View>
         );
     }
 }
 
-export class ChoosePayeeScreen extends React.Component {
+export const ConfirmScreen = withTranslation()(ConfirmScreenNoTranslation)
+
+export class ChoosePayeeScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
     }
@@ -1318,6 +1329,7 @@ export class ChoosePayeeScreen extends React.Component {
     };
 
     render() {
+        const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -1331,7 +1343,7 @@ export class ChoosePayeeScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 30 }}>
-                        Who are you sending to?
+                        {t('sendToWho')}
                     </Text>
                 </View>
 
@@ -1345,7 +1357,7 @@ export class ChoosePayeeScreen extends React.Component {
                                     borderWidth: 1
                 }}>
                     <Button
-                        title='Scan QR Code'
+                        title={t('scanQR')}
                         onPress={() => {
                             const func = (data) => {
                                 handleURI(data, this.props.navigation);
@@ -1401,7 +1413,7 @@ export class ChoosePayeeScreen extends React.Component {
                             </View>
 
                             <Text style={{ fontFamily: 'Montserrat-Regular', marginLeft: 15, color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
-                                Add a new recipient
+                                {t('addNewRecipient')}
                             </Text>
                         </View>
                     </TouchableWithoutFeedback>
@@ -1415,7 +1427,9 @@ export class ChoosePayeeScreen extends React.Component {
     }
 }
 
-export class SendTransactionScreen extends React.Component {
+export const ChoosePayeeScreen = withTranslation()(ChoosePayeeScreenNoTranslation)
+
+export class SendTransactionScreenNoTranslation extends React.Component {
     static navigationOptions = {
         header: null,
     }
@@ -1471,6 +1485,7 @@ export class SendTransactionScreen extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
         const sending =
             <View>
                 <Animatable.Text
@@ -1481,7 +1496,7 @@ export class SendTransactionScreen extends React.Component {
                     animation='pulse'
                     iterationCount='infinite'
                 >
-                    Sending transaction, please wait...
+                    {t('sendingMsg')}
                 </Animatable.Text>
             </View>;
 
@@ -1497,7 +1512,7 @@ export class SendTransactionScreen extends React.Component {
                     animation='shake'
                     delay={1000}
                 >
-                    Transaction failed!
+                    {t('failedMsg')}
                 </Animatable.Text>
 
                 <Text style={{ fontSize: 13 }}>
@@ -1516,7 +1531,7 @@ export class SendTransactionScreen extends React.Component {
                     animation='tada'
                     delay={1000}
                 >
-                    Transaction complete
+                    {t('completeMsg')}
                 </Animatable.Text>
 
                 <Text style={{ fontFamily: 'Montserrat-Regular', fontSize: 13, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
@@ -1531,7 +1546,7 @@ export class SendTransactionScreen extends React.Component {
                 </Text>
 
                 <Text style={{ fontSize: 15, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-Regular', marginTop: 15 }}>
-                    Transaction hash
+                    {t('transactionHash')}
                 </Text>
 
                 <TextTicker
@@ -1550,10 +1565,10 @@ export class SendTransactionScreen extends React.Component {
                         justifyContent: 'flex-start',
                         marginLeft: -8
                     }}
-                    title='Copy'
+                    title={t('copy')}
                     onPress={() => {
                         Clipboard.setString(this.state.hash);
-                        toastPopUp('Transaction hash copied');
+                        toastPopUp(t('copied'));
                     }}
                     titleStyle={{
                         color: this.props.screenProps.theme.primaryColour,
@@ -1589,3 +1604,5 @@ export class SendTransactionScreen extends React.Component {
         );
     }
 }
+
+export const SendTransactionScreen = withTranslation()(SendTransactionScreenNoTranslation)

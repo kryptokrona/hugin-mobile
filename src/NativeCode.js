@@ -37,7 +37,7 @@ export async function generateKeyDerivation(
     transactionPublicKey,
     privateViewKey) {
 
-    return NativeModules.TurtleCoin.generateKeyDerivation(
+    return await NativeModules.TurtleCoin.generateKeyDerivation(
         transactionPublicKey, privateViewKey,
     );
 }

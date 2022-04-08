@@ -47,6 +47,7 @@ class globals {
             autoOptimize: false,
             authenticationMethod: 'hardware-auth',
             node: Config.defaultDaemon.getConnectionString(),
+            language: 'en'
         };
 
         /* People in our address book */

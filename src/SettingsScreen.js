@@ -16,6 +16,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import { Input } from 'react-native-elements';
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
 import fetch from './fetchWithTimeout'
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
@@ -535,6 +537,69 @@ export class SwapCurrencyScreen extends React.Component {
     }
 }
 
+export class SwapLanguageScreen extends React.Component {
+    static navigationOptions = {
+        title: 'Language',
+    };
+
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return(
+            <View style={{
+                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                flex: 1,
+            }}>
+                <List style={{
+                    backgroundColor: this.props.screenProps.theme.backgroundColour,
+                    marginTop: 50,
+                    marginLeft: 10,
+                    marginRight: 10
+                }}>
+                    <FlatList
+                        data={Constants.languages}
+                        keyExtractor={item => item.langCode}
+                        renderItem={({item}) => (
+                            <ListItem
+                                title={item.language}
+                                style={{borderBottomWidth: 0}}
+                                subtitle={item.langCode}
+                                leftIcon={
+                                    <View style={{width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
+                                        <Text style={{ fontSize: 25, color: this.props.screenProps.theme.primaryColour }}>
+                                            {item.flag}
+                                        </Text>
+                                    </View>
+                                }
+                                titleStyle={{
+                                    color: this.props.screenProps.theme.slightlyMoreVisibleColour,
+                                }}
+                                subtitleStyle={{
+                                    color: this.props.screenProps.theme.slightlyMoreVisibleColour,
+                                }}
+                                onPress={() => {
+                                    Globals.preferences.language = item.langCode;
+
+                                    savePreferencesToDatabase(Globals.preferences);
+
+                                    /* Reset this stack to be on the settings screen */
+                                    this.props.navigation.dispatch(navigateWithDisabledBack('Settings'));
+
+                                    /* And go back to the main screen. */
+                                    this.props.navigation.navigate('Main', { reloadBalance: true } );
+                                }}
+                            />
+                        )}
+                    />
+                </List>
+            </View>
+        );
+    }
+}
+
+
 export class SwapNodeScreen extends React.Component {
     static navigationOptions = {
         title: 'Available Nodes',
@@ -913,7 +978,7 @@ export class OptimizeScreen extends React.Component {
 /**
  * Fuck w/ stuff
  */
-export class SettingsScreen extends React.Component {
+export class SettingsScreenNoTranslation extends React.Component {
     static navigationOptions = ({ navigation, screenProps }) => ({
         title: 'Settings',
         header: null,
@@ -929,58 +994,59 @@ export class SettingsScreen extends React.Component {
             darkMode: Globals.preferences.theme === 'darkMode',
             authConfirmation: Globals.preferences.authConfirmation,
             autoOptimize: Globals.preferences.autoOptimize,
+            language: Globals.preferences.language
         }
     }
 
     render() {
       let getColor = (item) => {
         switch(item.title) {
-           case "FAQ":
+           case "Language":
               return "#5f86f2";
               break;
-           case "Backup Keys":
+           case t('backupKeys'):
               return "#a65ff2";
               break;
-            case "View logs":
+            case t('viewLogs'):
                return "#f25fd0";
                break;
-           case "Rewind Wallet":
+           case t('rewindWallet'):
               return "#f25f61";
               break;
-          case "Reset wallet":
+          case t('resetWallet'):
              return "#f25f61";
              break;
-           case "Speed Up Background Syncing":
+           case t('backgroundSyncing'):
               return "#f2cb5f";
               break;
-          case "Swap Node":
+          case t('swapNode'):
              return "#abf25f";
              break;
-         case "Swap Currency":
+         case t('swapCurrency'):
             return "#5ff281";
             break;
-          case "Limit data":
+          case t('limitData'):
              return "#5ff2f0";
              break;
            case "Enable dark mode":
               return "#5f86f2";
               break;
-          case "Enable PIN/Fingerprint confirmation":
+          case t('enablePin'):
              return "#a65ff2";
              break;
-             case "Change login method":
+             case t('changeLoginMethod'):
                 return "#f25fd0";
                 break;
-                case "Enable Notifications":
+                case t('enableNotifications'):
                    return "#f25f61";
                    break;
-                 case "Scan Coinbase Transactions":
+                 case t('scanCoinbase'):
                     return "#f2cb5f";
                     break;
-                   case "Enable Auto Optimization":
+                   case t('enableAutoOptimization'):
                       return "#abf25f";
                       break;
-                      case "Manually Optimize Wallet":
+                      case t('manualOptimization'):
                          return "#5ff281";
                          break;
                          case "View Kryptokrona Mobile Wallet on Google Play":
@@ -989,10 +1055,10 @@ export class SettingsScreen extends React.Component {
                           case "View Kryptokrona Mobile Wallet on Github":
                              return "#5f86f2";
                              break;
-                            case "Resync Wallet":
+                            case t('resyncWallet'):
                                return "#a65ff2";
                                break;
-                               case "Delete Wallet":
+                               case t('deleteAccount'):
                                   return "#f25fd0";
                                   break;
                                   case "Kryptokrona Mobile Wallet":
@@ -1003,7 +1069,9 @@ export class SettingsScreen extends React.Component {
 
 
         }
+
       }
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -1031,9 +1099,20 @@ export class SettingsScreen extends React.Component {
                             //         this.props.navigation.navigate('Faq');
                             //     },
                             // },
+                            // {
+                            //     title: 'Language',
+                            //     description: 'Change language',
+                            //     icon: {
+                            //         iconName: 'earth',
+                            //         IconType: MaterialCommunityIcons,
+                            //     },
+                            //     onClick: () => {
+                            //             this.props.navigation.navigate('SwapLanguage');
+                            //         }
+                            // },
                             {
-                                title: 'Backup Keys',
-                                description: 'Display your private keys/seed',
+                                title: t('backupKeys'),
+                                description: t('backupKeysDescr'),
                                 icon: {
                                     iconName: 'key-change',
                                     IconType: MaterialCommunityIcons,
@@ -1054,8 +1133,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'View logs',
-                                description: 'View debugging information',
+                                title: t('viewLogs'),
+                                description: t('viewLogsDescr'),
                                 icon: {
                                     iconName: 'note-text',
                                     IconType: MaterialCommunityIcons,
@@ -1065,8 +1144,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Rewind Wallet',
-                                description: 'Rescan last 5000 blocks for missing transactions',
+                                title: t('rewindWallet'),
+                                description: t('rewindWalletDescr'),
                                 icon: {
                                     iconName: 'md-rewind',
                                     IconType: Ionicons,
@@ -1087,8 +1166,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Speed Up Background Syncing',
-                                description: 'Disable battery optimization to speed up background syncing',
+                                title: t('backgroundSyncing'),
+                                description: t('backgroundSyncingDescr'),
                                 icon: {
                                     iconName: 'battery-charging',
                                     IconType: MaterialCommunityIcons,
@@ -1098,8 +1177,8 @@ export class SettingsScreen extends React.Component {
                                 }
                             },
                             {
-                                title: 'Swap Node',
-                                description: 'Use an alternative daemon to sync your wallet',
+                                title: t('swapNode'),
+                                description: t('swapNodeDescr'),
                                 icon: {
                                     iconName: 'ios-swap',
                                     IconType: Ionicons,
@@ -1109,8 +1188,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Swap Currency',
-                                description: 'Swap your wallet display currency',
+                                title: t('swapCurrency'),
+                                description: t('swapCurrencyDescr'),
                                 icon: {
                                     iconName: 'currency-usd',
                                     IconType: MaterialCommunityIcons,
@@ -1118,8 +1197,8 @@ export class SettingsScreen extends React.Component {
                                 onClick: () => { this.props.navigation.navigate('SwapCurrency') },
                             },
                             {
-                                title: 'Limit data',
-                                description: 'Only sync when connected to WiFi',
+                                title: t('limitData'),
+                                description: t('limitDataDescr'),
                                 icon: {
                                     iconName: this.state.limitData ? 'signal-off' : 'signal',
                                     IconType: MaterialCommunityIcons,
@@ -1176,8 +1255,8 @@ export class SettingsScreen extends React.Component {
                             //     checked: this.state.darkMode,
                             // },
                             {
-                                title: 'Enable PIN/Fingerprint confirmation',
-                                description: 'Require auth for sensitive operations',
+                                title: t('enablePin'),
+                                description: t('enablePinDescr'),
                                 icon: {
                                     iconName: 'security',
                                     IconType: MaterialCommunityIcons,
@@ -1215,8 +1294,8 @@ export class SettingsScreen extends React.Component {
                                 checked: this.state.authConfirmation,
                             },
                             {
-                                title: 'Change login method',
-                                description: 'Use Pin, Fingerprint, or No Security',
+                                title: t('changeLoginMethod'),
+                                description: t('changeLoginMethodDescr'),
                                 icon: {
                                     iconName: 'security',
                                     IconType: MaterialCommunityIcons,
@@ -1228,8 +1307,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Enable Notifications',
-                                description: 'Get notified when you are sent money',
+                                title: t('enableNotifications'),
+                                description: t('enableNotificationsDescr'),
                                 icon: {
                                     iconName: 'ios-notifications',
                                     IconType: Ionicons,
@@ -1248,8 +1327,8 @@ export class SettingsScreen extends React.Component {
                                 checked: this.state.notifsEnabled,
                             },
                             {
-                                title: 'Scan Coinbase Transactions',
-                                description: 'Enable this if you have solo mined',
+                                title: t('scanCoinbase'),
+                                description: t('scanCoinbaseDescr'),
                                 icon: {
                                     iconName: 'pickaxe',
                                     IconType: MaterialCommunityIcons,
@@ -1269,8 +1348,8 @@ export class SettingsScreen extends React.Component {
                                 checked: this.state.scanCoinbase,
                             },
                             {
-                                title: 'Manually Optimize Wallet',
-                                description: 'Split your balance into more inputs (See FAQ)',
+                                title: t('manualOptimization'),
+                                description: t('manualOptimizationDescr'),
                                 icon: {
                                     iconName: 'refresh',
                                     IconType: SimpleLineIcons,
@@ -1308,8 +1387,8 @@ export class SettingsScreen extends React.Component {
                             //     },
                             // },
                             {
-                                title: 'Resync Wallet',
-                                description: 'Resync wallet from scratch',
+                                title: t('resyncWallet'),
+                                description: t('resyncWalletDescr'),
                                 icon: {
                                     iconName: 'ios-refresh',
                                     IconType: Ionicons,
@@ -1330,8 +1409,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Delete Wallet',
-                                description: 'Delete your wallet',
+                                title: t('deleteWallet'),
+                                description: t('deleteWalletDescr'),
                                 icon: {
                                     iconName: 'delete',
                                     IconType: AntDesign,
@@ -1352,8 +1431,8 @@ export class SettingsScreen extends React.Component {
                                 },
                             },
                             {
-                                title: 'Reset wallet',
-                                description: 'Use this if you are having issues sending messages',
+                                title: t('resetWallet'),
+                                description: t('resetWalletDescr'),
                                 icon: {
                                     iconName: 'md-help-buoy',
                                     IconType: Ionicons,
@@ -1421,6 +1500,10 @@ export class SettingsScreen extends React.Component {
         );
     }
 }
+
+export const SettingsScreen = withTranslation()(SettingsScreenNoTranslation)
+
+
 
 /**
  *

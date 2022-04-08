@@ -74,7 +74,19 @@ function trimExtra (extra) {
 
 
     PushNotification.configure({
-        onNotification: handleNotification,
+      onNotification: function (notification) {
+        // console.log("NOTIFICATION:", notification);
+
+              navigation.navigate(
+                  'ChatScreen', {
+                      payee: {none: none},
+                  }
+              );
+        // process the notification
+
+        // (required) Called when a remote is received or opened, or local notification is opened
+
+        },
 
         permissions: {
             alert: true,
@@ -85,9 +97,13 @@ function trimExtra (extra) {
         popInitialNotification: true,
 
         requestPermissions: true,
+
     });
 function handleNotification(notification) {
+
     notification.finish(PushNotificationIOS.FetchResult.NoData);
+
+
 }
 
 export function intToRGB(int) {
@@ -117,13 +133,14 @@ export function hashCode(str) {
 
 
 export function get_avatar(hash, size) {
+  console.log('hash', hash);
   // Displays a fixed identicon until user adds new contact address in the input field
   if (hash.length < 15) {
     hash = 'SEKReYanL2qEQF2HA8tu9wTpKBqoCA8TNb2mNRL5ZDyeFpxsoGNgBto3s3KJtt5PPrRH36tF7DBEJdjUn5v8eaESN2T5DPgRLVY';
   }
   // Get custom color scheme based on address
   let rgb = intToRGB(hashCode(hash));
-
+  console.log('hash2', rgb);
   // Options for avatar
   var options = {
         foreground: [rgb.red, rgb.green, rgb.blue, 255],               // rgba black
@@ -219,8 +236,6 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs) {
 
-  return;
-
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
   if (inputs.length > 8) {
@@ -256,7 +271,7 @@ export async function optimizeMessages(nbrOfTxs) {
 
   let result = await Globals.wallet.sendTransactionAdvanced(
       payments, // destinations,
-      3, // mixin
+      0, // mixin
       {fixedFee: 10000, isFixedFee: true}, // fee
       undefined, //paymentID
       undefined, // subWalletsToTakeFrom
@@ -270,7 +285,7 @@ export async function optimizeMessages(nbrOfTxs) {
     toastPopUp('Optimizing wallet!');
   } else {
     toastPopUp('Failed to optimize wallet');
-    console.log('Removing subwallet:', new_address);
+    // console.log('Removing subwallet:', new_address);
     Globals.wallet.deleteSubWallet(new_address);
   }
 
@@ -464,7 +479,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         false, // sneedAll
         Buffer.from(payload_hex, 'hex')
     );
-    console.log('result', result);
+    // console.log('result', result);
 
     if (result.success) {
 
@@ -488,7 +503,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       if (message_inputs < 2) {
         optimizeMessages(10);
       } else {
-        console.log("No need to optimize, got ", message_inputs, " inputs.");
+        // console.log("No need to optimize, got ", message_inputs, " inputs.");
       }
       // optimizeMessages(2);
     } else {
@@ -659,7 +674,6 @@ export async function getMessage(extra){
     // } else {
 
         if (tx.m || tx.b || tx.brd) {
-          console.log('Found shitty tx!');
           reject();
         }
 
@@ -765,16 +779,17 @@ export async function getMessage(extra){
               if (!is_known) {
 
                 saveMessage(payload_json.from, 'received', payload_json.msg, payload_json.t);
-                console.log('from', from);
-                console.log('message', payload_json.msg);
-                console.log('payload_json.t', payload_json.t);
-                console.log('activeChat=', Globals.activeChat, ' from=', payload_json.from);
+                // console.log('from', from);
+                // console.log('message', payload_json.msg);
+                // console.log('payload_json.t', payload_json.t);
+                // console.log('activeChat=', Globals.activeChat, ' from=', payload_json.from);
                 if (Globals.activeChat != payload_json.from) {
                   PushNotification.localNotification({
                       title: from,//'Incoming transaction received!',
                       //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
                       message: payload_json.msg,
                       data: payload_json.t,
+
                       largeIconUrl: get_avatar(payload_json.from, 64),
                   });
                 }
