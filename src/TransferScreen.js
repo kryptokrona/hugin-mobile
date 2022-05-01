@@ -306,7 +306,7 @@ export class TransferScreenNoTranslation extends React.Component {
                             onPress={() => {
                                 this.setState({
                                     sendAll: true,
-                                    amount: 'Entire Balance Minus Fees',
+                                    amount: t('sendAllLabel'),
                                     amountFontSize: 20,
                                 }, () => {
                                     this.checkErrors(this.state.unlockedBalanceHuman);
@@ -326,7 +326,7 @@ export class TransferScreenNoTranslation extends React.Component {
                         marginTop: 20,
                         fontFamily: 'Montserrat-Regular'
                     }}>
-                        {t('shouldArriveIn')} {getArrivalTime()}
+                        {t('shouldArriveIn')} {getArrivalTime([t('minute'), t('second')])}
                     </Text>
 
                     <BottomButton
@@ -1056,7 +1056,7 @@ export class ConfirmScreenNoTranslation extends React.Component {
                             <Text style={{ color: this.props.screenProps.theme.primaryColour, fontWeight: 'bold' }}>
                                 {this.state.payee.nickname}'s{' '}
                             </Text>
-                            account, in {getArrivalTime()}
+                            account, in {getArrivalTime([t('minute'), t('second')])}
                         </Text>
 
                         <View style={{

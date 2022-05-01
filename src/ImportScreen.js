@@ -21,11 +21,13 @@ import { Styles } from './Styles';
 import { Globals } from './Globals';
 import { saveToDatabase } from './Database';
 import { BottomButton } from './SharedComponents';
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
 
 /**
  * Import a wallet from keys/seed
  */
-export class ImportWalletScreen extends React.Component {
+class ImportWalletScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -35,6 +37,9 @@ export class ImportWalletScreen extends React.Component {
     }
 
     render() {
+
+      const { t } = this.props;
+
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -45,11 +50,11 @@ export class ImportWalletScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        When did you create your wallet?
+                        {t('whenCreated')}
                     </Text>
 
                     <Text style={{ fontFamily: "Montserrat-Regular", color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 60 }}>
-                        This helps us scan your wallet faster.
+                        {t('whenCreatedSubtitle')}
                     </Text>
                 </View>
 
@@ -60,7 +65,7 @@ export class ImportWalletScreen extends React.Component {
                 }}>
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="Pick a month"
+                            title={t('pickMonth')}
                             onPress={() => this.props.navigation.navigate('PickMonth')}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -68,7 +73,7 @@ export class ImportWalletScreen extends React.Component {
 
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="Pick an approximate block height"
+                            title={t('pickApproxBlockHeight')}
                             onPress={() => this.props.navigation.navigate('PickBlockHeight')}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -76,7 +81,7 @@ export class ImportWalletScreen extends React.Component {
 
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="Pick an exact block height"
+                            title={t('pickExactBlockHeight')}
                             onPress={() => this.props.navigation.navigate('PickExactBlockHeight')}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -84,7 +89,7 @@ export class ImportWalletScreen extends React.Component {
 
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="I don't Know"
+                            title={t('idk')}
                             onPress={() => this.props.navigation.navigate('ImportKeysOrSeed', { scanHeight: 0 })}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -94,9 +99,11 @@ export class ImportWalletScreen extends React.Component {
         );
     }
 }
+export const ImportWalletScreen = withTranslation()(ImportWalletScreenNoTranslation)
+
 
 /* Pick between keys and mnemonic seed */
-export class ImportKeysOrSeedScreen extends React.Component {
+class ImportKeysOrSeedScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -108,6 +115,7 @@ export class ImportKeysOrSeedScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -118,14 +126,14 @@ export class ImportKeysOrSeedScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 60 }}>
-                        How would you like to import your wallet?
+                        {t('howToImport')}
                     </Text>
                 </View>
 
                 <View style={{ justifyContent: 'center', alignItems: 'flex-start' }}>
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="25 Word Mnemonic Seed"
+                            title={t('mnemonic')}
                             onPress={() => this.props.navigation.navigate('ImportSeed', { scanHeight: this.scanHeight })}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -133,7 +141,7 @@ export class ImportKeysOrSeedScreen extends React.Component {
 
                     <View style={[Styles.buttonContainer, {alignItems: 'stretch', width: '100%', marginTop: 5, marginBottom: 5}]}>
                         <Button
-                            title="Private Spend + Private View Key"
+                            title={t('privateKeys')}
                             onPress={() => this.props.navigation.navigate('ImportKeys', { scanHeight: this.scanHeight })}
                             color={this.props.screenProps.theme.buttonColour}
                         />
@@ -143,9 +151,11 @@ export class ImportKeysOrSeedScreen extends React.Component {
         );
     }
 }
+export const ImportKeysOrSeedScreen = withTranslation()(ImportKeysOrSeedScreenNoTranslation)
+
 
 /* Pick between keys and mnemonic seed */
-export class ImportSeedScreen extends React.Component {
+class ImportSeedScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -235,6 +245,7 @@ export class ImportSeedScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -245,11 +256,11 @@ export class ImportSeedScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        Enter your mnemonic seed...
+                        {t('enterMnemonic')}
                     </Text>
 
                     <Text style={{ fontFamily: 'Montserrat-Regular', color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 30 }}>
-                        This should be 25 english words.
+                        {t('enterMnemonicSubtitle')}
                     </Text>
                 </View>
 
@@ -269,7 +280,7 @@ export class ImportSeedScreen extends React.Component {
                             borderWidth: 1,
                             borderRadius: 2,
                         }}
-                        label={'Mnemonic seed'}
+                        label={t('mnemonicSeed')}
                         labelStyle={{
                             marginBottom: 5,
                             marginRight: 2,
@@ -292,7 +303,7 @@ export class ImportSeedScreen extends React.Component {
                 </View>
 
                 <BottomButton
-                    title='Continue'
+                    title={t('continue')}
                     onPress={() => this.importWallet()}
                     disabled={!this.state.seedIsGood}
                     {...this.props}
@@ -301,9 +312,10 @@ export class ImportSeedScreen extends React.Component {
         );
     }
 }
+export const ImportSeedScreen = withTranslation()(ImportSeedScreenNoTranslation)
 
 /* Pick between keys and mnemonic seed */
-export class ImportKeysScreen extends React.Component {
+class ImportKeysScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: 'Import Keys',
     };
@@ -377,6 +389,7 @@ export class ImportKeysScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -387,11 +400,11 @@ export class ImportKeysScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        Enter your private spend and view key...
+                        {t('enterKeys')}
                     </Text>
 
                     <Text style={{ color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 60 }}>
-                        These are both 64 character, hexadecimal strings.
+                        {t('enterKeysSubtitle')}
                     </Text>
                 </View>
 
@@ -463,7 +476,7 @@ export class ImportKeysScreen extends React.Component {
                 </View>
 
                 <BottomButton
-                    title="Continue"
+                    title={t('continue')}
                     onPress={() => this.importWallet()}
                     disabled={!this.state.continueEnabled}
                     {...this.props}
@@ -472,3 +485,4 @@ export class ImportKeysScreen extends React.Component {
         );
     }
 }
+export const ImportKeysScreen = withTranslation()(ImportKeysScreenNoTranslation)

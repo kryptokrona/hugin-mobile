@@ -394,7 +394,7 @@ class ModifyNickname extends React.Component {
     }
 }
 
-export class ModifyPayeeScreen extends React.Component {
+export class ModifyPayeeScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -430,6 +430,7 @@ export class ModifyPayeeScreen extends React.Component {
     }
 
     render() {
+        const { t } = this.props;
         return(
             <View style={{
                 flex: 1,
@@ -451,7 +452,7 @@ export class ModifyPayeeScreen extends React.Component {
                         fontWeight: 'bold',
                         fontFamily: 'Montserrat-SemiBold'
                     }}>
-                        {this.state.nickname}'s details
+                        {this.state.nickname + t('details')}
                     </Text>
                 </View>
 
@@ -474,7 +475,7 @@ export class ModifyPayeeScreen extends React.Component {
 
                         <CopyButton
                             data={this.state.address + this.state.paymentID}
-                            name="Copied contact's address"
+                            name={this.state.address + this.state.paymentID + t('copied')}
                             {...this.props}
                         />
 
@@ -516,11 +517,11 @@ export class ModifyPayeeScreen extends React.Component {
                                 color: this.props.screenProps.theme.primaryColour,
                                 fontFamily: 'Montserrat-SemiBold'
                             }}>
-                                Name
+                                {t('name')}
                             </Text>
 
                             <Button
-                                title='Change'
+                                title={t('change')}
                                 onPress={() => {
                                     this.setState({
                                         modifyNickname: !this.state.modifyNickname,
@@ -587,11 +588,11 @@ export class ModifyPayeeScreen extends React.Component {
                                 color: this.props.screenProps.theme.primaryColour,
                                 fontFamily: 'Montserrat-SemiBold'
                             }}>
-                                Address
+                                {t('address')}
                             </Text>
 
                             <Button
-                                title='Change'
+                                title={t('change')}
                                 onPress={() => {
                                     this.setState({
                                         modifyAddress: !this.state.modifyAddress,
@@ -664,11 +665,11 @@ export class ModifyPayeeScreen extends React.Component {
                                 color: this.props.screenProps.theme.primaryColour,
                                 fontFamily: 'Montserrat-SemiBold'
                             }}>
-                                Payment ID
+                                {t('messageKey')}
                             </Text>
 
                             <Button
-                                title='Change'
+                                title={t('change')}
                                 onPress={() => {
                                     this.setState({
                                         modifyPaymentID: !this.state.modifyPaymentID,
@@ -733,7 +734,7 @@ export class ModifyPayeeScreen extends React.Component {
                         borderRadius: 10,
                     }}>
                         <RNEButton
-                            title='Update'
+                            title={t('update')}
                             onPress={() => {
                                 Globals.removePayee(this.state.initialNickname, false);
 
@@ -767,13 +768,13 @@ export class ModifyPayeeScreen extends React.Component {
                         borderRadius: 10,
                     }}>
                         <RNEButton
-                            title='Remove'
+                            title={t('remove')}
                             onPress={() => {
                                 Alert.alert(
-                                    'Delete Recipient?',
-                                    'Are you sure you want to delete this recipient?',
+                                    t('remove'),
+                                    t('removeWarning'),
                                     [
-                                        { text: 'Delete', onPress: () => {
+                                        { text: t('remove'), onPress: () => {
                                             console.log('initialAddress', this.state.initialAddress);
                                             Globals.removePayee(this.state.initialNickname, true);
                                             console.log(Globals.payees);
@@ -782,7 +783,7 @@ export class ModifyPayeeScreen extends React.Component {
                                             });
                                             this.props.navigation.pop(2);
                                         }},
-                                        { text: 'Cancel', style: 'cancel'},
+                                        { text: t('cancel'), style: 'cancel'},
                                     ],
                                 );
                             }}
@@ -794,6 +795,9 @@ export class ModifyPayeeScreen extends React.Component {
         );
     }
 }
+
+export const ModifyPayeeScreen = withTranslation()(ModifyPayeeScreenNoTranslation)
+
 //
 // export class MessageBubble extends React.Component {
 //     constructor(props) {

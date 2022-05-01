@@ -18,7 +18,10 @@ import { Styles } from './Styles';
 import { BottomButton } from './SharedComponents';
 import { getApproximateBlockHeight, dateToScanHeight } from './Utilities';
 
-export class PickMonthScreen extends React.Component {
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
+
+class PickMonthScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -32,6 +35,7 @@ export class PickMonthScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -42,11 +46,7 @@ export class PickMonthScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        Which month did you create your wallet?
-                    </Text>
-
-                    <Text style={{fontFamily: 'Montserrat-Regular', color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 60 }}>
-                        This helps us scan your wallet faster.
+                        {t('whichMonth')}
                     </Text>
                 </View>
 
@@ -71,7 +71,7 @@ export class PickMonthScreen extends React.Component {
                                 marginRight: 10,
                                 fontFamily: 'Montserrat-SemiBold',
                             }}>
-                                Next
+                                {t('next')}
                             </Text>
                         }
                         prevIcon={
@@ -81,7 +81,7 @@ export class PickMonthScreen extends React.Component {
                                 marginLeft: 10,
                                 fontFamily: 'Montserrat-SemiBold',
                             }}>
-                                Prev
+                                {t('previous')}
                             </Text>
                         }
                         yearTextStyle={{
@@ -98,7 +98,7 @@ export class PickMonthScreen extends React.Component {
                 </View>
 
                 <BottomButton
-                    title='Continue'
+                    title={t('continue')}
                     onPress={() => this.props.navigation.navigate('ImportKeysOrSeed', { scanHeight: dateToScanHeight(this.state.month) })}
                     {...this.props}
                 />
@@ -107,8 +107,11 @@ export class PickMonthScreen extends React.Component {
         );
     }
 }
+export const PickMonthScreen = withTranslation()(PickMonthScreenNoTranslation)
 
-export class PickExactBlockHeightScreen extends React.Component {
+
+
+class PickExactBlockHeightScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -156,6 +159,8 @@ export class PickExactBlockHeightScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
+
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -166,11 +171,7 @@ export class PickExactBlockHeightScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        What block did you create your wallet at?
-                    </Text>
-
-                    <Text style={{ fontFamily: 'Montserrat-Regular', color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 60 }}>
-                        This helps us scan your wallet faster.
+                        {t('whichBlock')}
                     </Text>
                 </View>
 
@@ -203,7 +204,7 @@ export class PickExactBlockHeightScreen extends React.Component {
                 </View>
 
                 <BottomButton
-                    title='Continue'
+                    title={t('continue')}
                     onPress={() => this.props.navigation.navigate('ImportKeysOrSeed', { scanHeight: Number(this.state.value) })}
                     disabled={!this.state.valid}
                     {...this.props}
@@ -212,8 +213,9 @@ export class PickExactBlockHeightScreen extends React.Component {
         );
     }
 }
+export const PickExactBlockHeightScreen = withTranslation()(PickExactBlockHeightScreenNoTranslation)
 
-export class PickBlockHeightScreen extends React.Component {
+class PickBlockHeightScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -248,6 +250,8 @@ export class PickBlockHeightScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
+
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -258,12 +262,9 @@ export class PickBlockHeightScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{fontFamily: 'Montserrat-SemiBold', color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 5 }}>
-                        Between which block heights did you create your wallet?
+                        {t('betweenWhichBlocks')}
                     </Text>
 
-                    <Text style={{ fontFamily: 'Montserrat-Regular',color: this.props.screenProps.theme.primaryColour, fontSize: 16, marginBottom: 60 }}>
-                        This helps us scan your wallet faster.
-                    </Text>
                 </View>
 
                 <View style={{ justifyContent: 'center', alignItems: 'flex-start' }}>
@@ -293,3 +294,4 @@ export class PickBlockHeightScreen extends React.Component {
         );
     }
 }
+export const PickBlockHeightScreen = withTranslation()(PickBlockHeightScreenNoTranslation)

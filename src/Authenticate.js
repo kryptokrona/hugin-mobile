@@ -25,6 +25,8 @@ import { XKRLogo } from './XKRLogo';
 import { setHaveWallet, savePreferencesToDatabase } from './Database';
 import { BottomButton } from './SharedComponents';
 import { navigateWithDisabledBack } from './Utilities';
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
 
 /* Dummy component that redirects to pin auth or hardware auth as appropriate */
 export async function Authenticate(navigation, subtitle, finishFunction, disableBack = false) {
@@ -207,7 +209,7 @@ export class RequestHardwareAuthScreen extends React.Component {
     }
 }
 
-export class ChooseAuthMethodScreen extends React.Component {
+class ChooseAuthMethodScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -219,6 +221,7 @@ export class ChooseAuthMethodScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -236,7 +239,7 @@ export class ChooseAuthMethodScreen extends React.Component {
                         marginRight: 20,
                         fontFamily: "Montserrat-SemiBold",
                     }}>
-                        How would you like to secure your account?
+                        {t('authenticateHow')}
                     </Text>
 
                     <View style={{ flexDirection: 'row', marginRight: 20, marginLeft: 25, marginBottom: 20 }}>
@@ -258,7 +261,7 @@ export class ChooseAuthMethodScreen extends React.Component {
                                 color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                 fontFamily: "Montserrat-Regular",
                             }}>
-                                Use Hardware Authentication where available (Fingerprint, FaceID, TouchID), and if not available, fallback to a PIN Code.
+                                {t('useHardware')}
                             </Text>
                         </View>
                     </View>
@@ -282,7 +285,7 @@ export class ChooseAuthMethodScreen extends React.Component {
                                 color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                 fontFamily: "Montserrat-Regular",
                             }}>
-                                Use a 6 digit PIN Code.
+                                {t('usePinCode')}
                             </Text>
                         </View>
 
@@ -307,14 +310,14 @@ export class ChooseAuthMethodScreen extends React.Component {
                                 color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                 fontFamily: "Montserrat-Regular",
                             }}>
-                                Use no authentication at all.
+                                {t('noAuth')}
                             </Text>
                         </View>
 
                     </View>
 
                     <BottomButton
-                        title="Continue"
+                        title={t('continue')}
                         onPress={() => {
                             (async() => {
                                 let method = 'none';
@@ -348,6 +351,8 @@ export class ChooseAuthMethodScreen extends React.Component {
         );
     }
 }
+
+export const ChooseAuthMethodScreen = withTranslation()(ChooseAuthMethodScreenNoTranslation)
 
 /**
  * Enter a pin for the new wallet

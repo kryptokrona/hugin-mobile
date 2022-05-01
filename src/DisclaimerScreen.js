@@ -11,7 +11,10 @@ import Config from './Config';
 import { Styles } from './Styles';
 import { BottomButton } from './SharedComponents';
 
-export class DisclaimerScreen extends React.Component {
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
+
+class DisclaimerScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: '',
     };
@@ -31,6 +34,7 @@ export class DisclaimerScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -51,7 +55,7 @@ export class DisclaimerScreen extends React.Component {
                         marginRight: 20,
                         fontFamily: "Montserrat-SemiBold",
                     }}>
-                        Before we continue, please take a minute to read and agree to the below statements.
+                        {t('disclaimer')}
                     </Text>
 
                     {Config.devFeePercentage > 0 && <View style={{ flexDirection: 'row', marginRight: 20, marginLeft: 25, marginBottom: 20 }}>
@@ -92,7 +96,7 @@ export class DisclaimerScreen extends React.Component {
                                 color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                 fontFamily: "Montserrat-Regular",
                             }}>
-                                I understand that I am the sole owner of my private keys/seed, and if I lose them, my wallet cannot be recovered.
+                                {t('privateKeyWarning')}
                             </Text>
                         </View>
 
@@ -115,14 +119,14 @@ export class DisclaimerScreen extends React.Component {
                                 color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                 fontFamily: "Montserrat-Regular",
                             }}>
-                                I understand that no warranty or guarantee is provided, expressed, or implied when using this app and any funds lost in using this app are not the responsibility of the application creator, publisher, or distributor.
+                                {t('warrantyWarning')}
                             </Text>
                         </View>
 
                     </View>
 
                     <BottomButton
-                        title="Continue"
+                        title={t('continue')}
                         onPress={() => {
                             this.props.navigation.navigate('ChooseAuthMethod', { nextRoute: this.props.navigation.state.params.nextRoute })
                         }}
@@ -134,3 +138,5 @@ export class DisclaimerScreen extends React.Component {
         );
     }
 }
+
+export const DisclaimerScreen = withTranslation()(DisclaimerScreenNoTranslation)

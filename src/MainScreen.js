@@ -530,7 +530,7 @@ class AddressComponent extends React.Component {
                       fontFamily: 'Montserrat-Regular'
                   }]} onPress={() => {
                       Clipboard.setString(this.state.address);
-                      toastPopUp(this.state.address + ' copied');
+                      toastPopUp(this.state.address + t('copied'));
                       }
                   }
                 >
@@ -551,7 +551,7 @@ class AddressComponent extends React.Component {
 
                   <Text onPress={() => {
                       Clipboard.setString(Buffer.from(getKeyPair().publicKey).toString('hex'));
-                      toastPopUp(Buffer.from(getKeyPair().publicKey).toString('hex') + ' copied');
+                      toastPopUp(Buffer.from(getKeyPair().publicKey).toString('hex') + t('copied'));
                       }
                   } numberOfLines={2} style={[Styles.centeredText, {
                       color: this.props.screenProps.theme.primaryColour,

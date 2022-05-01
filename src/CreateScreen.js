@@ -19,11 +19,13 @@ import { XKRLogo } from './XKRLogo';
 import { updateCoinPrice } from './Currency';
 import { navigateWithDisabledBack } from './Utilities';
 import { BottomButton, SeedComponent } from './SharedComponents';
+import './i18n.js';
+import { withTranslation } from 'react-i18next';
 
 /**
  * Create or import a wallet
  */
-export class WalletOptionScreen extends React.Component {
+class WalletOptionScreenNoTranslation extends React.Component {
     static navigationOptions = {
         header: null,
     };
@@ -33,6 +35,7 @@ export class WalletOptionScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, justifyContent: 'flex-start', backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 150}}>
@@ -51,13 +54,13 @@ export class WalletOptionScreen extends React.Component {
                         color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                         textAlign: 'center'
                     }}>
-                         Welcome to the open beta of Hugin Messenger, the blockchain messenger!
+                         {t('welcomeMessage')}
                     </Text>
                 </View>
 
                 <View style={[Styles.buttonContainer, {fontFamily: "Montserrat-Regular", bottom: 100, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
                     <Button
-                        title='Create New Account'
+                        title={t('createNewAccount')}
                         /* Request a pin for the new wallet */
                         onPress={() => this.props.navigation.navigate('Disclaimer', { nextRoute: 'CreateWallet' })}
                         color={this.props.screenProps.theme.buttonColour}
@@ -66,7 +69,7 @@ export class WalletOptionScreen extends React.Component {
 
                 <View style={[Styles.buttonContainer, {bottom: 40, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
                     <Button
-                        title='Restore Account'
+                        title={t('restoreAccount')}
                         /* Get the import data */
                         onPress={() => this.props.navigation.navigate('Disclaimer', { nextRoute: 'ImportWallet' })}
                         color={this.props.screenProps.theme.buttonColour}
@@ -77,11 +80,13 @@ export class WalletOptionScreen extends React.Component {
         );
     }
 }
+export const WalletOptionScreen = withTranslation()(WalletOptionScreenNoTranslation)
+
 
 /**
  * Create a new wallet
  */
-export class CreateWalletScreen extends React.Component {
+class CreateWalletScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: 'Create',
         header: null,
@@ -111,6 +116,7 @@ export class CreateWalletScreen extends React.Component {
     }
 
     render() {
+      const { t } = this.props;
         return(
             <View style={{ flex: 1, justifyContent: 'flex-start', backgroundColor: this.props.screenProps.theme.backgroundColour }}>
                 <View style={{
@@ -121,16 +127,15 @@ export class CreateWalletScreen extends React.Component {
                     marginRight: 10,
                 }}>
                     <Text style={{ color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 40, fontFamily: "Montserrat-SemiBold", }}>
-                        Your wallet has been created!
+                        {t('walletCreated')}
                     </Text>
 
                     <Text style={{ fontFamily: "Montserrat-Regular",fontSize: 15, marginBottom: 20, color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
-                        Please save the following backup words somewhere safe.
+                        {t('walletCreatedSubtitle')}
                     </Text>
 
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: '#BB4433', marginBottom: 20 }}>
-                        Without this seed, if your phone gets lost, or your wallet gets corrupted,
-                        you cannot restore your wallet, and your funds will be lost forever!
+                        {t('walletCreatedSubtitleSubtitle')}
                     </Text>
                 </View>
 
@@ -152,3 +157,4 @@ export class CreateWalletScreen extends React.Component {
         );
     }
 }
+export const CreateWalletScreen = withTranslation()(CreateWalletScreenNoTranslation)
