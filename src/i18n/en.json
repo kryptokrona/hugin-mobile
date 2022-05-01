@@ -1,6 +1,6 @@
 {
   paymentAddress: 'Payment address',
-  messageKey: 'Message keykey',
+  messageKey: 'Message key',
   copy: 'Copy',
   copied: ' copied',
   noTxMessage: 'You don\'t have any transactions yet 😥',
