@@ -947,7 +947,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 </View>
 
-                <View
+                <ScrollView
                     style={{
                         marginRight: 30,
                         marginBottom: 0,
@@ -960,7 +960,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 {items}
 
-                </View>
+                </ScrollView>
 
                 <KeyboardAvoidingView
                  behavior={Platform.OS == "ios" ? "padding" : "height"}
