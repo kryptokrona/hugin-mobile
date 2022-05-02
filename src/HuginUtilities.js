@@ -239,7 +239,7 @@ export async function optimizeMessages(nbrOfTxs) {
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
   if (inputs.length > 8) {
-    toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+    // toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
     return;
   }
 
@@ -282,9 +282,9 @@ export async function optimizeMessages(nbrOfTxs) {
   );
 
   if (result.success) {
-    toastPopUp('Optimizing wallet!');
+    // toastPopUp('Optimizing wallet!');
   } else {
-    toastPopUp('Failed to optimize wallet');
+    // toastPopUp('Failed to optimize wallet');
     // console.log('Removing subwallet:', new_address);
     Globals.wallet.deleteSubWallet(new_address);
   }
