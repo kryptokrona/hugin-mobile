@@ -489,7 +489,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
 
                 </View>
 
-                <ScrollView
+                <View
                     style={{
                         marginRight: 30,
                         marginBottom: 130,
@@ -720,7 +720,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                             </Text>
                         }
                     </View>
-                </ScrollView>
+                </View>
 
                 <View style={{
                     marginHorizontal: 30,
@@ -896,9 +896,9 @@ export class ChatScreenNoTranslation extends React.Component {
          if (this.state.address == this.state.messages[message].conversation){
            let timestamp = this.state.messages[message].timestamp / 1000;
            if (this.state.messages[message].type == 'received'){
-              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            } else {
-             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            }
 
        }
@@ -947,7 +947,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 </View>
 
-                <ScrollView
+                <View
                     style={{
                         marginRight: 30,
                         marginBottom: 0,
@@ -960,7 +960,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 {items}
 
-                </ScrollView>
+                </View>
 
                 <KeyboardAvoidingView
                  behavior={Platform.OS == "ios" ? "padding" : "height"}
