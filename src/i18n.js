@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from './i18n/en.json';
 import sv from './i18n/sv.json';
+import no from './i18n/no.json';
 // import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
@@ -19,6 +20,12 @@ i18next
       },
       sv: {
         translation: sv,
+      },
+      no: {
+        translation: no,
+      },
+      nb: {
+        translation: no,
       },
     },
   });
