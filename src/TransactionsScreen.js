@@ -244,9 +244,14 @@ export class TransactionsScreenNoTranslation extends React.Component {
     }
 
     async componentDidMount() {
-     /* Don't display fusions, and display newest first */
-     const transactions = await Globals.wallet.getTransactions(0, Constants.numTransactionsPerPage, false);
-     const numTransactions = await Globals.wallet.getNumTransactions();
+
+     const all_transactions = await Globals.wallet.getTransactions();
+
+     const filtered_transactions = all_transactions.filter(tx => {
+       return tx.totalAmount() > 1 || tx.totalAmount() < -10000;
+     });
+     const transactions = filtered_transactions.slice(0, Constants.numTransactionsPerPage);
+     const numTransactions = filtered_transactions.length; //await Globals.wallet.getNumTransactions();
 
      this.setState({
          numTransactions,
@@ -257,15 +262,18 @@ export class TransactionsScreenNoTranslation extends React.Component {
  }
 
     async updateTransactions() {
-        /* Don't display fusions */
-        const transactions = await Globals.wallet.getTransactions(
-            this.state.pageNum * Constants.numTransactionsPerPage,
-            Constants.numTransactionsPerPage,
-            false
-        );
+
+
+       const all_transactions = await Globals.wallet.getTransactions();
+
+       let transactions_filtered = all_transactions.filter(tx => {
+         return tx.totalAmount() > 1 || tx.totalAmount() < -10000;
+       })
+
+       const transactions = transactions_filtered.slice(this.state.pageNum * Constants.numTransactionsPerPage);
 
         this.setState({
-            numTransactions: await Globals.wallet.getNumTransactions(),
+            numTransactions: transactions_filtered.length,
             transactions,
         });
     }
@@ -425,6 +433,7 @@ class TransactionListNoTranslation extends React.Component {
                         data={this.props.transactions}
                         keyExtractor={item => item.hash}
                         renderItem={({item}) => (
+
                             <ListItem
                                 title={prettyPrintAmount(Math.abs(item.totalAmount()) - (item.totalAmount() > 0 ? 0 : item.fee), Config)}
                                 subtitle={item.timestamp === 0 ? t('processing') + prettyPrintDate() : t('completed') + prettyPrintUnixTimestamp(item.timestamp)}
