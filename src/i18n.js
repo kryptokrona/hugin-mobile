@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import en from './i18n/en.json';
 import sv from './i18n/sv.json';
 import no from './i18n/no.json';
+import zh from './i18n/zh.json';
 // import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
@@ -26,6 +27,9 @@ i18next
       },
       nb: {
         translation: no,
+      },
+      zh: {
+        translation: zh,
       },
     },
   });
