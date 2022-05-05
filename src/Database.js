@@ -605,6 +605,28 @@ export async function getMessages() {
     return undefined;
 }
 
+export async function messageExists(timestamp) {
+    const [data] = await database.executeSql(
+        `SELECT
+            conversation,
+            type,
+            message,
+            timestamp
+        FROM
+            message_db
+        WHERE
+            timestamp = ${timestamp}
+        `
+    );
+    if (data && data.rows && data.rows.length) {
+      return true;
+    } else {
+      return false;
+    }
+
+}
+
+
 
 export async function saveToDatabase(wallet) {
     try {

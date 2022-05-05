@@ -153,7 +153,7 @@ async function fromHeadlessJSInit() {
     Globals.wallet = wallet;
 
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
-    Globals.wallet.enableAutoOptimization(Globals.preferences.autoOptimize);
+    Globals.wallet.enableAutoOptimization(false);
 
     /* Remove any previously added listeners to pretend double notifications */
     Globals.wallet.removeAllListeners('incomingtx');

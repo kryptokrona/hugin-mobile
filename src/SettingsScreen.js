@@ -1216,6 +1216,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         Globals.wallet.stop();
                                     } else {
                                         Globals.wallet.start();
+                                        Globals.wallet.enableAutoOptimization(false);
                                     }
 
                                     toastPopUp(Globals.preferences.limitData ? 'Data limiting enabled' : 'Data limiting disabled');

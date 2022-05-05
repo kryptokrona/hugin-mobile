@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase } from './Database';
+import { getMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase, messageExists } from './Database';
 
 
 import {
@@ -133,7 +133,6 @@ export function hashCode(str) {
 
 
 export function get_avatar(hash, size) {
-  console.log('hash', hash);
   // Displays a fixed identicon until user adds new contact address in the input field
   if (hash.length < 15) {
     hash = 'SEKReYanL2qEQF2HA8tu9wTpKBqoCA8TNb2mNRL5ZDyeFpxsoGNgBto3s3KJtt5PPrRH36tF7DBEJdjUn5v8eaESN2T5DPgRLVY';
@@ -613,10 +612,10 @@ export async function getExtra(hash){
 
 export async function getMessage(extra){
 
+
   Globals.logger.addLogMessage('Getting payees..');
 
   let payees = await loadPayeeDataFromDatabase();
-  let old_messages = await getMessages();
 
   Globals.logger.addLogMessage('Payees: ' + JSON.stringify(payees));
 
@@ -675,6 +674,7 @@ export async function getMessage(extra){
 
         if (tx.m || tx.b || tx.brd) {
           reject();
+          return;
         }
 
         // If no key is appended to message we need to try the keys in our payload_keychain
@@ -684,6 +684,11 @@ export async function getMessage(extra){
         //console.log('tx', tx);
 
         let timestamp = tx.t;
+
+        if (messageExists(timestamp)) {
+          reject();
+          return;
+        }
 
         let decryptBox = false;
         let createNewPayee = false;
@@ -764,19 +769,6 @@ export async function getMessage(extra){
 
               }
 
-              let is_known = false;
-
-                      for (msg in old_messages) {
-                        // //console.log('old_messages[msg].timestamp', old_messages[msg].timestamp);
-                        // //console.log('payload_json.t', payload_json.t);
-                        if (old_messages[msg].timestamp == payload_json.t) {
-                          is_known = true;
-                        }
-
-                      }
-
-                      //console.log('is_known', is_known);
-              if (!is_known) {
 
                 saveMessage(payload_json.from, 'received', payload_json.msg, payload_json.t);
                 // console.log('from', from);
@@ -793,9 +785,6 @@ export async function getMessage(extra){
                       largeIconUrl: get_avatar(payload_json.from, 64),
                   });
                 }
-
-
-              }
 
               resolve(payload_json);
 

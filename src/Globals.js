@@ -36,6 +36,8 @@ class globals {
         /* Want to cache this so we don't have to keep loading from DB/internet */
         this.coinPrice = 0;
 
+        this.syncingMessages = false;
+
         /* Preferences loaded from DB */
         this.preferences = {
             currency: 'usd',
@@ -175,6 +177,7 @@ function updateConnection(connection) {
         Globals.wallet.stop();
     } else {
         Globals.wallet.start();
+        Globals.wallet.enableAutoOptimization(false);
     }
 }
 
@@ -207,6 +210,7 @@ export async function initGlobals() {
         );
     } else {
         Globals.wallet.start();
+        Globals.wallet.enableAutoOptimization(false);
     }
 
     await Globals.updateNodeList();

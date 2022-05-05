@@ -57,7 +57,7 @@ String.prototype.hashCode = function() {
 
 async function init(navigation) {
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
-    Globals.wallet.enableAutoOptimization(Globals.preferences.autoOptimize);
+    Globals.wallet.enableAutoOptimization(false);
 
     /* Remove any previously added listeners */
     Globals.wallet.removeAllListeners('incomingtx');
@@ -832,6 +832,14 @@ async function backgroundSave() {
 
 async function backgroundSyncMessages() {
 
+  if (Globals.syncingMessages) {
+    console.log('Already syncing.. skipping.');
+    return;
+  } else {
+    console.log('Commencing message sync.');
+  }
+  Globals.syncingMessages = true;
+
   // Globals.updatePayeeFunctions.push(() => {
   //     this.setState(prevState => ({
   //         payees: Globals.payees,
@@ -920,12 +928,15 @@ async function backgroundSyncMessages() {
             // console.log('no extra apparently');
           }
 
+
         } catch (err) {
           //console.log('Problem', err);
           continue;
         }
 
         }
+
+        Globals.syncingMessages = false;
 
 
 
