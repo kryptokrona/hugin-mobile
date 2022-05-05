@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase, messageExists } from './Database';
+import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase, messageExists } from './Database';
 
 
 import {
@@ -139,7 +139,6 @@ export function get_avatar(hash, size) {
   }
   // Get custom color scheme based on address
   let rgb = intToRGB(hashCode(hash));
-  console.log('hash2', rgb);
   // Options for avatar
   var options = {
         foreground: [rgb.red, rgb.green, rgb.blue, 255],               // rgba black
@@ -619,7 +618,7 @@ export async function getMessage(extra){
 
   Globals.logger.addLogMessage('Payees: ' + JSON.stringify(payees));
 
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
 
     let data = trimExtra(extra);
 
@@ -685,7 +684,7 @@ export async function getMessage(extra){
 
         let timestamp = tx.t;
 
-        if (messageExists(timestamp)) {
+        if (await messageExists(timestamp)) {
           reject();
           return;
         }
