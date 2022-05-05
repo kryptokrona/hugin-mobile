@@ -53,7 +53,7 @@ export class FaqScreen extends React.Component {
     }
 
     render() {
-        let arrivalTime = getArrivalTime();
+        let arrivalTime = getArrivalTime(['minutes','seconds']);
         /* Chop the '!' off the end */
         arrivalTime = arrivalTime.substr(0, arrivalTime.length - 1);
 
@@ -218,7 +218,7 @@ export class DisableDozeScreen extends React.Component {
     }
 
     render() {
-        let arrivalTime = getArrivalTime();
+        let arrivalTime = getArrivalTime(['minutes','seconds']);
         /* Chop the '!' off the end */
         arrivalTime = arrivalTime.substr(0, arrivalTime.length - 1);
 
