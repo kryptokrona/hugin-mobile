@@ -34,7 +34,7 @@ import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
-import { saveToDatabase, getMessages, removeMessage } from './Database';
+import { saveToDatabase, getMessages, getLatestMessages, removeMessage } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -728,7 +728,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                     <View style={{
                         alignItems: 'stretch',
                         width: '100%',
-                        bottom: 85,
+                        bottom: 105,
                         position: 'absolute',
                         borderRadius: 10,
                     }}>
@@ -762,7 +762,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                     <View style={{
                         alignItems: 'stretch',
                         width: '100%',
-                        bottom: 30,
+                        bottom: 50,
                         position: 'absolute',
                         borderRadius: 10,
                     }}>
@@ -867,7 +867,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
     async componentDidMount() {
 
-        const messages = await getMessages();
+        const messages = await getMessages(this.state.address);
 
         console.log(messages);
 

@@ -531,17 +531,16 @@ export async function loadPayeeDataFromDatabase() {
             if (latestMessage.rows.length) {
               thisMessage = latestMessage.rows.item(0).message;
               thisMessageTimestamp = latestMessage.rows.item(0).timestamp;
-              console.log(thisMessageTimestamp);
+
             }
             // //console.log('latestMessage', latestMessage);
             // // let latestMessage2 = latestMessage.rows.item(1);
             // //console.log('latestMessage2', latestMessage.rows.item(0));
             let saved = false;
             if (thisMessageTimestamp) {
-              console.log('res has length, doing some stuff');
+
             for (payee in res) {
-              console.log('res[payee].lastMessageTimestamp', res[payee].lastMessageTimestamp);
-              console.log('res[payee]', res[payee]);
+
               if (res[payee].lastMessageTimestamp < thisMessageTimestamp) {
                 res.splice(payee, 0, {
                     nickname: item.nickname,
@@ -565,14 +564,41 @@ export async function loadPayeeDataFromDatabase() {
             })
           }
         }
-        console.log('res', res);
         return res;
     }
 
     return undefined;
 }
 
-export async function getMessages() {
+export async function getLatestMessages() {
+    const [data] = await database.executeSql(
+        `
+        SELECT *
+        FROM message_db D
+        WHERE timestamp = (SELECT MAX(timestamp) FROM message_db WHERE conversation = D.conversation)
+        `);
+        console.log(data);
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            res.push({
+                conversation: item.conversation,
+                type: item.type,
+                message: item.message,
+                timestamp: item.timestamp
+            });
+        }
+        console.log(res);
+        return res;
+    }
+
+    return undefined;
+}
+
+export async function getMessages(conversation=false) {
+
     const [data] = await database.executeSql(
         `SELECT
             conversation,
@@ -581,6 +607,7 @@ export async function getMessages() {
             timestamp
         FROM
             message_db
+        ${conversation ? 'WHERE conversation = "' + conversation + '"' : ''}
         ORDER BY
             timestamp
         ASC`
