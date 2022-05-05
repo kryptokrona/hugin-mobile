@@ -11,7 +11,7 @@ import { Globals } from './Globals';
 
 export async function getCoinPriceFromAPI() {
     /* Note: Coingecko has to support your coin for this to work */
-    let uri = `${Config.priceApiLink}?ids=${Config.coinName.toLowerCase()}&vs_currencies=${getCurrencyTickers()}`;
+    let uri = `${Config.priceApiLink}`; //?ids=${Config.coinName.toLowerCase()}&vs_currencies=${getCurrencyTickers()}`;
 
     try {
         const data = await request({
@@ -21,10 +21,10 @@ export async function getCoinPriceFromAPI() {
             url: uri,
         });
 
-        const coinData = data[Config.coinName.toLowerCase()];
+        const coinData = data['quotes'].USD.price; //Config.coinName.toLowerCase()];
 
         Globals.logger.addLogMessage('Updated coin price from API');
-
+        Globals.logger.addLogMessage('PRICE:' + coinData);
         return coinData;
     } catch (error) {
         Globals.logger.addLogMessage('Failed to get price from API: ' + error.toString());
@@ -40,11 +40,11 @@ export async function coinsToFiat(amount, currencyTicker) {
     /* Coingecko returns price with decimal places, not atomic */
     let nonAtomic = amount / (10 ** Config.decimalPlaces);
 
-    let prices = Globals.coinPrice || {};
+    let prices = Globals.coinPrice || 0;
 
-    for (const currency of Constants.currencies) {
-        if (currencyTicker === currency.ticker) {
-            let converted = prices[currency.ticker] * nonAtomic;
+    // for (const currency of Constants.currencies) {
+        // if (currencyTicker === currency.ticker) {
+            let converted = prices * nonAtomic;
 
             if (converted === undefined || isNaN(converted)) {
                 return '';
@@ -59,13 +59,15 @@ export async function coinsToFiat(amount, currencyTicker) {
                 convertedString = converted.toFixed(8);
             }
 
-            if (currency.symbolLocation === 'prefix') {
-                return currency.symbol + convertedString;
-            } else {
-                return convertedString + ' ' + currency.symbol;
-            }
-        }
-    }
+            return "$" + convertedString
+
+            // if (currency.symbolLocation === 'prefix') {
+            //     return currency.symbol + convertedString;
+            // } else {
+            //     return convertedString + ' ' + currency.symbol;
+            // }
+    //     }
+    // }
 
     Globals.logger.addLogMessage('Failed to find currency: ' + currencyTicker);
 

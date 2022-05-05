@@ -34,7 +34,7 @@ class globals {
         this.backgroundSaveTimer = undefined;
 
         /* Want to cache this so we don't have to keep loading from DB/internet */
-        this.coinPrice = {};
+        this.coinPrice = 0;
 
         /* Preferences loaded from DB */
         this.preferences = {

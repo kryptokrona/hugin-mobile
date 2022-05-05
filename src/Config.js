@@ -182,7 +182,7 @@ const Config = new function() {
      * you just set this to an empty string. If you have another API you want
      * it to support, you're going to have to modify the code in Currency.js.
      */
-    this.priceApiLink = 'https://api.coingecko.com/api/v3/simple/price';
+    this.priceApiLink = 'https://api.coinpaprika.com/v1/tickers/xkr-kryptokrona';
 
     /**
      * Default daemon to use. Can either be a BlockchainCacheApi(baseURL, SSL),

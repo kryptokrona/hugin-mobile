@@ -210,7 +210,7 @@ export async function sendNotification(transaction) {
 /**
  * Sync screen, balance
  */
-export class MainScreen extends React.Component {
+export class MainScreen extends React.PureComponent {
     static navigationOptions = ({ navigation, screenProps }) => ({
         title: 'Home',
         tabBarOptions: {
@@ -262,7 +262,7 @@ export class MainScreen extends React.Component {
         Globals.wallet.on('createdfusiontx', () => {
             this.updateBalance();
         });
-        Globals.wallet.on('heightchange', () => {
+        Globals.wallet.on('sync', () => {
             this.updateBalance();
         });
 
@@ -279,11 +279,16 @@ export class MainScreen extends React.Component {
    }
 
     async updateBalance() {
-        const tmpPrice = await getCoinPriceFromAPI();
 
-        if (tmpPrice !== undefined) {
-            Globals.coinPrice = tmpPrice;
+        if (Globals.coinPrice == 0) {
+            const tmpPrice = await getCoinPriceFromAPI();
+            console.log('tmpPrice', tmpPrice);
+
+            if (tmpPrice !== undefined) {
+                Globals.coinPrice = tmpPrice;
+            }
         }
+
 
         const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
 
@@ -378,8 +383,6 @@ export class MainScreen extends React.Component {
         this.setState({
             refreshing: true,
         });
-
-        await this.updateBalance();
 
         this.setState({
             refreshing: false
@@ -481,7 +484,7 @@ export class MainScreen extends React.Component {
 }
 
 /* Display address, and QR code */
-class AddressComponent extends React.Component {
+class AddressComponent extends React.PureComponent {
     constructor(props) {
         super(props);
 
@@ -828,6 +831,7 @@ async function backgroundSave() {
 }
 
 async function backgroundSyncMessages() {
+
   // Globals.updatePayeeFunctions.push(() => {
   //     this.setState(prevState => ({
   //         payees: Globals.payees,
@@ -837,9 +841,9 @@ async function backgroundSyncMessages() {
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-      console.log(Globals.wallet);
-      console.log(Globals.wallet.subWallets.subWallets);
-      console.log(Globals.wallet.subWallets.subWallets); //d74ba9d19b7e9c4e3e76b6f1331d91f28623bdf496bb7f4ce9ce0350cd2f268c
+      // console.log(Globals.wallet);
+      // console.log(Globals.wallet.subWallets.subWallets);
+      // console.log(Globals.wallet.subWallets.subWallets); //d74ba9d19b7e9c4e3e76b6f1331d91f28623bdf496bb7f4ce9ce0350cd2f268c
       // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getSpendableInputs());
       // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getBalance());
       // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getUnconfirmedChange());
