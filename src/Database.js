@@ -503,69 +503,28 @@ export async function loadPayeeDataFromDatabase() {
     );
 
     if (data && data.rows && data.rows.length) {
+
         const res = [];
+        const payees = data.rows.raw();
+
+        let latestMessages = await getLatestMessages();
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
+            const latestMessage = latestMessages.filter(m => m.conversation == item.address);
 
-            const [latestMessage] = await database.executeSql(
-                `SELECT
-                    message,
-                    timestamp
-                FROM
-                    message_db
-                WHERE
-                    conversation = ?
-                ORDER BY
-                    timestamp
-                DESC
-                LIMIT
-                    1
-                    `,
-                    [
-                        item.address
-                    ]
-            );
-            let thisMessage = '';
-            let thisMessageTimestamp = 0;
-            if (latestMessage.rows.length) {
-              thisMessage = latestMessage.rows.item(0).message;
-              thisMessageTimestamp = latestMessage.rows.item(0).timestamp;
-
-            }
-            // //console.log('latestMessage', latestMessage);
-            // // let latestMessage2 = latestMessage.rows.item(1);
-            // //console.log('latestMessage2', latestMessage.rows.item(0));
-            let saved = false;
-            if (thisMessageTimestamp) {
-
-            for (payee in res) {
-
-              if (res[payee].lastMessageTimestamp < thisMessageTimestamp) {
-                res.splice(payee, 0, {
-                    nickname: item.nickname,
-                    address: item.address,
-                    paymentID: item.paymentid,
-                    lastMessage: thisMessage,
-                    lastMessageTimestamp: thisMessageTimestamp
-                })
-                saved = true;
-                break;
-              }
-            }
-          }
-          if (!saved) {
             res.push({
                 nickname: item.nickname,
                 address: item.address,
                 paymentID: item.paymentid,
-                lastMessage: thisMessage,
-                lastMessageTimestamp: thisMessageTimestamp
+                lastMessage: latestMessage.length ? latestMessage[0].message : false,
+                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0
             })
           }
-        }
-        return res;
+
+        return res.sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp)
     }
+
 
     return undefined;
 }
@@ -576,6 +535,9 @@ export async function getLatestMessages() {
         SELECT *
         FROM message_db D
         WHERE timestamp = (SELECT MAX(timestamp) FROM message_db WHERE conversation = D.conversation)
+        ORDER BY
+            timestamp
+        ASC
         `);
         console.log(data);
     if (data && data.rows && data.rows.length) {
