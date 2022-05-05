@@ -270,7 +270,7 @@ export class TransactionsScreenNoTranslation extends React.Component {
          return tx.totalAmount() > 1 || tx.totalAmount() < -10000;
        })
 
-       const transactions = transactions_filtered.slice(this.state.pageNum * Constants.numTransactionsPerPage);
+       const transactions = transactions_filtered.slice(this.state.pageNum * Constants.numTransactionsPerPage, Constants.numTransactionsPerPage + (this.state.pageNum * Constants.numTransactionsPerPage) );
 
         this.setState({
             numTransactions: transactions_filtered.length,
