@@ -80,10 +80,10 @@ TransactionNavigator.navigationOptions = ({ navigation, screenProps }) => ({
         showLabel: false,
         style: {
           borderTopWidth: 0,
-          height: 64,
-          textAlignVertical: "top",
+          height: 46,
+          textAlignVertical: "bottom",
           backgroundColor: "#FF00FF",
-          marginBottom: 33
+          marginBottom: 5
         }
     }
 });
@@ -124,10 +124,10 @@ TransferNavigator.navigationOptions = ({ navigation, screenProps }) => {
             showLabel: false,
             style: {
               borderTopWidth: 0,
-              height: 64,
-              textAlignVertical: "top",
+              height: 46,
+              textAlignVertical: "bottom",
               backgroundColor: "#FF00FF",
-              marginBottom: 33
+              marginBottom: 5
             }
         }
     };
@@ -173,10 +173,10 @@ SettingsNavigator.navigationOptions = ({ navigation, screenProps }) => ({
         showLabel: false,
         style: {
           borderTopWidth: 0,
-          height: 64,
-          textAlignVertical: "top",
+          height: 46,
+          textAlignVertical: "bottom",
           backgroundColor: "#FF00FF",
-          marginBottom: 33
+          marginBottom: 5
         }
     }
 });
@@ -211,10 +211,10 @@ RecipientNavigator.navigationOptions = ({ navigation, screenProps }) => ({
         showLabel: false,
         style: {
           borderTopWidth: 0,
-          height: 64,
-          textAlignVertical: "top",
+          height: 46,
+          textAlignVertical: "bottom",
           backgroundColor: "#FF00FF",
-          marginBottom: 33
+          marginBottom: 5
         }
     }
 });
@@ -235,10 +235,10 @@ const HomeNavigator = createBottomTabNavigator(
             showLabel: false,
             style: {
               borderTopWidth: 0,
-              height: 64,
-              textAlignVertical: "top",
+              height: 46,
+              textAlignVertical: "bottom",
               backgroundColor: "#FF00FF",
-              marginBottom: 33
+              marginBottom: 5
             }
 
         },

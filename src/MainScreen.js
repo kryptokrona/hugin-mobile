@@ -221,10 +221,10 @@ export class MainScreen extends React.PureComponent {
             showLabel: false,
             style: {
                 borderTopWidth: 0,
-                height: 64,
-                textAlignVertical: "top",
+                height: 46,
+                textAlignVertical: "bottom",
                 backgroundColor: "#FF00FF",
-                marginBottom: 33
+                marginBottom: 5
             }
         }
     });

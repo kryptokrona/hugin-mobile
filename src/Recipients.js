@@ -657,7 +657,6 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                         <View style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            marginTop: 15,
                             width: '100%',
                             justifyContent: 'space-between'
                         }}>
