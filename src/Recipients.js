@@ -728,7 +728,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                     <View style={{
                         alignItems: 'stretch',
                         width: '100%',
-                        bottom: 105,
+                        bottom: 125,
                         position: 'absolute',
                         borderRadius: 10,
                     }}>
@@ -762,7 +762,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                     <View style={{
                         alignItems: 'stretch',
                         width: '100%',
-                        bottom: 50,
+                        bottom: 70,
                         position: 'absolute',
                         borderRadius: 10,
                     }}>
