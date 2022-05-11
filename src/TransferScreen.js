@@ -442,12 +442,13 @@ class AddressBook extends React.Component {
     }
 }
 
-class ExistingPayees extends React.Component {
+class ExistingPayeesNoTranslation extends React.Component {
     constructor(props) {
         super(props);
     }
 
     render() {
+      const { t } = this.props;
         const noPayeesComponent =
             <View>
                 <Text style={{
@@ -456,7 +457,7 @@ class ExistingPayees extends React.Component {
                     fontSize: 16,
                     fontFamily: 'Montserrat-Regular'
                 }}>
-                    Your address book is empty! Add a new recipient above to populate it.
+                    {t('emptyAddressBook')}
                 </Text>
             </View>
 
@@ -482,6 +483,8 @@ class ExistingPayees extends React.Component {
         );
     }
 }
+
+const ExistingPayees = withTranslation()(ExistingPayeesNoTranslation)
 
 export class NewPayeeScreenNoTranslation extends React.Component {
     static navigationOptions = ({ navigation }) => {
@@ -928,7 +931,6 @@ export class ConfirmScreenNoTranslation extends React.Component {
         if (result.success) {
             let actualAmount = this.state.amount;
             for (const input of result.preparedTransaction.inputs) {
-              console.log('input', input.input);
             }
             if (this.state.sendAll) {
                 let transactionSum = 0;

@@ -587,7 +587,7 @@ const AddressComponentWithTranslation = withTranslation()(AddressComponent)
 /**
  * Balance component at top of screen
  */
-class BalanceComponent extends React.Component {
+class BalanceComponentNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
@@ -640,6 +640,7 @@ class BalanceComponent extends React.Component {
     }
 
     render() {
+        const {t} = this.props;
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
                                      style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'black' : 'black', fontSize: 24}}
@@ -682,11 +683,11 @@ class BalanceComponent extends React.Component {
 
               // Opening the link with some app, if the URL scheme is "http" the web link should be opened
               // by some browser in the mobile
-              await Linking.openURL('https://kryptokrona.org/faucet/faucet.html?address=' + this.props.address);
+              await Linking.openURL('https://kryptokrona.org/faucet?address=' + this.props.address);
 
           });
           if (!hasBalance) {
-            return <Button title={'⛽ Top up'} onPress={handlePress} />;
+            return <Button title={'⛽' + t('topUp')} onPress={handlePress} />;
           } else {
             return <View style={{alignItems: 'center'}}></View>;
           }
@@ -723,6 +724,8 @@ class BalanceComponent extends React.Component {
         );
     }
 }
+
+const BalanceComponent = withTranslation()(BalanceComponentNoTranslation)
 
 /**
  * Sync status at bottom of screen
