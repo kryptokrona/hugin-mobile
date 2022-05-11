@@ -118,5 +118,6 @@
   walletCreatedSubtitle: 'Lütfen aşağıdaki yedek kelimeleri güvenli bir yere kaydedin.',
   walletCreatedSubtitleSubtitle: 'Bu tohum olmadan, telefonunuz kaybolursa veya cüzdanınız bozulursa, cüzdanınızı geri yükleyemezsiniz ve paranız sonsuza kadar kaybolur!',
   topUp: 'Tamamla',
-  send: 'Gönder'
+  send: 'Gönder',
+  settingsTitle: 'Ayarlar'
 }

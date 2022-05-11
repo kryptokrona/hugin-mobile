@@ -16,7 +16,7 @@ import TextTicker from 'react-native-text-ticker';
 import { HeaderButtons, HeaderButton, Item } from 'react-navigation-header-buttons';
 
 import { HeaderBackButton, StackActions } from 'react-navigation';
-
+import {get_avatar} from './HuginUtilities'
 import {
     validateAddresses, WalletErrorCode, validatePaymentID, prettyPrintAmount,
 } from 'kryptokrona-wallet-backend-js';
@@ -461,18 +461,11 @@ class ExistingPayeesNoTranslation extends React.Component {
         return(
             <View style={{
                 width: '90%',
-                maxHeight: '70%',
-                borderWidth: 0
+                borderWidth: 0,
+                marginBottom: 15
             }}>
                 <View style={{
                 }}>
-                    <Text style={{
-                        color: this.props.screenProps.theme.primaryColour,
-                        marginTop: 40,
-                        fontFamily: 'Montserrat-SemiBold'
-                    }}>
-                        Address Book
-                    </Text>
 
                     {Globals.payees.length > 0 ? <AddressBook {...this.props}/> : noPayeesComponent}
                 </View>
@@ -617,7 +610,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                 flex: 1,
             }}>
                 <View style={{
-                    alignItems: 'flex-start',
+                    alignItems: 'center',
                     justifyContent: 'flex-start',
                     flex: 1,
                     marginTop: 60,
@@ -625,6 +618,12 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 40, marginLeft: 30 }}>
                         {t('newContact')}
                     </Text>
+
+                    <Image
+                      style={{width: 50, height: 50}}
+                      source={{uri: get_avatar(this.state.address)}}
+                    />
+
 
                     <Input
                         containerStyle={{
@@ -639,7 +638,6 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                             backgroundColor: "rgba(0,0,0,0.2)",
                             borderColor: 'transparent'
                         }}
-                        label={t('name')}
                         labelStyle={{
                             fontFamily: 'Montserrat-Regular',
                             marginBottom: 5,
@@ -648,10 +646,11 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         }}
                         inputStyle={{
                             color: this.props.screenProps.theme.primaryColour,
-                            fontSize: 30,
+                            fontSize: 14,
                             marginLeft: 5,
                             fontFamily: 'Montserrat-SemiBold',
                         }}
+                        label={t('name')}
                         value={this.state.nickname}
                         onChangeText={(text) => {
                             this.setState({
@@ -662,29 +661,32 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                     />
 
                     <Input
-                        containerStyle={{
-                            width: '90%',
-                            marginLeft: 20,
-                        }}
-                        inputContainerStyle={{
-                          borderWidth: 0,
-                          borderRadius: 15,
-                          backgroundColor: "rgba(0,0,0,0.2)",
-                          borderColor: 'transparent'
-                        }}
+                    containerStyle={{
+                        width: '90%',
+                        marginLeft: 20,
+                        marginBottom: 30,
+                        fontFamily: 'Montserrat-Regular',
+                    }}
+                    inputContainerStyle={{
+                        borderWidth: 0,
+                        borderRadius: 15,
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        borderColor: 'transparent'
+                    }}
+                    labelStyle={{
+                        fontFamily: 'Montserrat-Regular',
+                        marginBottom: 5,
+                        marginRight: 2,
+                        color: this.props.screenProps.theme.slightlyMoreVisibleColour,
+                    }}
+                    inputStyle={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        fontSize: 14,
+                        marginLeft: 5,
+                        fontFamily: 'Montserrat-SemiBold',
+                    }}
                         maxLength={Config.integratedAddressLength}
                         label={t('paymentAddress')}
-                        labelStyle={{
-                            fontFamily: 'Montserrat-Regular',
-                            marginBottom: 5,
-                            marginRight: 2,
-                            color: this.props.screenProps.theme.slightlyMoreVisibleColour,
-                        }}
-                        inputStyle={{
-                            color: this.props.screenProps.theme.primaryColour,
-                            fontSize: 15,
-                            marginLeft: 5
-                        }}
                         value={this.state.address}
                         onChangeText={(text) => {
                             this.setState({
@@ -694,7 +696,44 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         errorMessage={this.state.addressError}
                     />
 
-                    <View style={{ marginLeft: '63%', marginTop: 8, borderRadius: 3, paddingTop: 0,
+                    <Input
+                    containerStyle={{
+                        width: '90%',
+                        marginLeft: 20,
+                        marginBottom: 30,
+                        fontFamily: 'Montserrat-Regular',
+                    }}
+                    inputContainerStyle={{
+                        borderWidth: 0,
+                        borderRadius: 15,
+                        backgroundColor: "rgba(0,0,0,0.2)",
+                        borderColor: 'transparent'
+                    }}
+                    labelStyle={{
+                        fontFamily: 'Montserrat-Regular',
+                        marginBottom: 5,
+                        marginRight: 2,
+                        color: this.props.screenProps.theme.slightlyMoreVisibleColour,
+                    }}
+                    inputStyle={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        fontSize: 14,
+                        marginLeft: 5,
+                        fontFamily: 'Montserrat-SemiBold',
+                    }}
+                        maxLength={64}
+                        label={t('messageKey')}
+                        value={this.state.paymentID}
+                        onChangeText={(text) => {
+                            this.setState({
+                                paymentID: text
+                            }, () => this.checkErrors());
+                        }}
+                        editable={this.state.paymentIDEnabled}
+                        errorMessage={this.state.paymentIDError}
+                    />
+
+                    <View style={{ alignItems: 'center', marginTop: 8, borderRadius: 3, paddingTop: 0,
                                     borderColor: this.props.screenProps.theme.borderColour,
                                     borderWidth: 1,}}>
                         <Button
@@ -723,41 +762,6 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                             type="clear"
                         />
                     </View>
-
-                    <Input
-                        containerStyle={{
-                            width: '90%',
-                            marginLeft: 20,
-                        }}
-                        inputContainerStyle={{
-                          borderWidth: 0,
-                          borderRadius: 15,
-                          backgroundColor: "rgba(0,0,0,0.2)",
-                          borderColor: 'transparent'
-                        }}
-                        maxLength={64}
-                        label={t('messageKey')}
-                        labelStyle={{
-                            marginBottom: 5,
-                            marginRight: 2,
-                            color: this.props.screenProps.theme.slightlyMoreVisibleColour,
-                            fontFamily: 'Montserrat-Regular'
-                        }}
-                        inputStyle={{
-                            color: this.props.screenProps.theme.primaryColour,
-                            fontSize: 15,
-                            marginLeft: this.state.paymentIDEnabled ? 5 : 0,
-                            backgroundColor: "rgba(0,0,0,0.2)"
-                        }}
-                        value={this.state.paymentID}
-                        onChangeText={(text) => {
-                            this.setState({
-                                paymentID: text
-                            }, () => this.checkErrors());
-                        }}
-                        editable={this.state.paymentIDEnabled}
-                        errorMessage={this.state.paymentIDError}
-                    />
 
                     <BottomButton
                         title={t('continue')}
@@ -1338,41 +1342,14 @@ export class ChoosePayeeScreenNoTranslation extends React.Component {
                     alignItems: 'flex-start',
                     justifyContent: 'flex-start',
                     marginLeft: 30,
-                    marginTop: 60,
+                    marginTop: 20,
                     marginRight: 10,
                 }}>
-                    <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 30 }}>
+                    <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 24, marginBottom: 30 }}>
                         {t('sendToWho')}
                     </Text>
                 </View>
 
-                <View style={{
-                    marginLeft: 24,
-                    width: 120,
-                    alignItems: 'flex-start',
-                    justifyContent: 'flex-start',
-                    borderRadius: 3, paddingTop: 0,
-                                    borderColor: this.props.screenProps.theme.borderColour,
-                                    borderWidth: 1
-                }}>
-                    <Button
-                        title={t('scanQR')}
-                        onPress={() => {
-                            const func = (data) => {
-                                handleURI(data, this.props.navigation);
-                            };
-
-                            this.props.navigation.navigate('QrScanner', {
-                                setAddress: func
-                            });
-                        }}
-                        titleStyle={{
-                            color: this.props.screenProps.theme.primaryColour,
-                            fontFamily: 'Montserrat-SemiBold'
-                        }}
-                        type="clear"
-                    />
-                </View>
 
                 <View style={{
                     alignItems: 'flex-start',
@@ -1391,7 +1368,6 @@ export class ChoosePayeeScreenNoTranslation extends React.Component {
                             flexDirection: 'row',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            marginTop: 10,
 
                         }}>
                             <View style={{

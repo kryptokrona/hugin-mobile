@@ -118,6 +118,7 @@
   walletCreatedSubtitle: 'Spara din återställningsfras på ett säkert ställe.',
   walletCreatedSubtitleSubtitle: 'Utan din återställningsfras kan du inte komma åt kontot om du exempelvis byter enhet eller avinstallerar appen.',
   topUp: 'Fyll på',
-  send: 'Skicka'
+  send: 'Skicka',
+  settingsTitle: 'Inställningar'
 
 }

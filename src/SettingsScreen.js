@@ -1078,8 +1078,17 @@ export class SettingsScreenNoTranslation extends React.Component {
                 borderColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
                 borderWidth: 0,
-                paddingTop: 25
+                paddingTop: 15
             }}>
+            <Text style={{
+                marginLeft: 35,
+                marginBottom: 5,
+                color: this.props.screenProps.theme.primaryColour,
+                fontSize: 24,
+                fontFamily: "Montserrat-SemiBold"
+            }}>
+                {t('settingsTitle')}
+            </Text>
                 <ScrollView
                 showsVerticalScrollIndicator={false}>
                     <FlatList
@@ -1407,28 +1416,6 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                             },
                             {
-                                title: t('deleteWallet'),
-                                description: t('deleteWalletDescr'),
-                                icon: {
-                                    iconName: 'delete',
-                                    IconType: AntDesign,
-                                },
-                                onClick: () => {
-                                    if (Globals.preferences.authConfirmation) {
-                                        Authenticate(
-                                            this.props.navigation,
-                                            'to delete your wallet',
-                                            () => {
-                                                this.props.navigation.navigate('Settings');
-                                                deleteWallet(this.props.navigation)
-                                            }
-                                        );
-                                    } else {
-                                        deleteWallet(this.props.navigation)
-                                    }
-                                },
-                            },
-                            {
                                 title: t('resetWallet'),
                                 description: t('resetWalletDescr'),
                                 icon: {
@@ -1447,6 +1434,28 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         );
                                     } else {
                                         recoverWallet(this.props.navigation)
+                                    }
+                                },
+                            },
+                            {
+                                title: t('deleteWallet'),
+                                description: t('deleteWalletDescr'),
+                                icon: {
+                                    iconName: 'delete',
+                                    IconType: AntDesign,
+                                },
+                                onClick: () => {
+                                    if (Globals.preferences.authConfirmation) {
+                                        Authenticate(
+                                            this.props.navigation,
+                                            'to delete your wallet',
+                                            () => {
+                                                this.props.navigation.navigate('Settings');
+                                                deleteWallet(this.props.navigation)
+                                            }
+                                        );
+                                    } else {
+                                        deleteWallet(this.props.navigation)
                                     }
                                 },
                             },

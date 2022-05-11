@@ -118,5 +118,6 @@
   walletCreatedSubtitle: '请将以下助记词保存至安全的地方!',
   walletCreatedSubtitleSubtitle: '没有密钥，如果您的手机丢失了，或者您的钱包被损坏了，您将无法恢复您的钱包，您的资金将永远丢失!',
   topUp: '充值',
-  send: '发信息'
+  send: '发信息',
+  settingsTitle: '设置'
 }

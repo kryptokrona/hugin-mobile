@@ -118,5 +118,6 @@
     walletCreatedSubtitle: 'Bitte, bewahren Sie die folgenden Sicherunswörter an einem sicheren Ort auf.',
     walletCreatedSubtitleSubtitle: 'Wenn Ihr Telefon verloren geht oder Ihre Wallet beschädigt wird, können Sie ohne Seed Ihre Wallet nicht wiederherstellen und Ihr Geld ist für immer verloren!',
     topUp: 'Top up',
-    send: 'Senden'
+    send: 'Senden',
+    settingsTitle: 'Einstellungen'
   }

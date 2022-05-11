@@ -118,5 +118,6 @@
   walletCreatedSubtitle: 'Please save the following backup words somewhere safe.',
   walletCreatedSubtitleSubtitle: 'Without this seed, if your phone gets lost, or your wallet gets corrupted, you cannot restore your wallet, and your funds will be lost forever!',
   topUp: 'Top up',
-  send: 'Send'
+  send: 'Send',
+  settingsTitle: 'Settings'
 }
