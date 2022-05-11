@@ -490,6 +490,11 @@ export async function removeMessages() {
             `DELETE FROM message_db`
         );
     });
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM payees`
+        );
+    });
 }
 
 export async function loadPayeeDataFromDatabase() {
