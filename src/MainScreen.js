@@ -835,6 +835,10 @@ async function backgroundSave() {
 
 async function backgroundSyncMessages() {
 
+  if (Globals.syncingMessagesCount > 3) {
+    Globals.syncingMessages = false;
+  }
+
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
     return;
@@ -933,7 +937,7 @@ async function backgroundSyncMessages() {
 
 
         } catch (err) {
-          //console.log('Problem', err);
+          // console.log('Problem', err);
           continue;
         }
 
