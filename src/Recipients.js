@@ -93,7 +93,9 @@ export class RecipientsScreenNoTranslation extends React.Component {
 
 
         const addressBookComponent =
-            <List style={{
+            <ScrollView
+            showsVerticalScrollIndicator={false}
+             style={{
                 width: '100%',
                 height: '70%',
                 marginBottom: 20,
@@ -153,7 +155,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                             />
                         )}
                     />
-            </List>;
+            </ScrollView>;
 
         return(
             <View style={{
@@ -990,6 +992,8 @@ export class ChatScreenNoTranslation extends React.Component {
                 </View>
 
                 <ScrollView
+                    showsVerticalScrollIndicator={false}
+
                     style={{
                         marginRight: 30,
                         marginBottom: 0,

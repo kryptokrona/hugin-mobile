@@ -1077,14 +1077,11 @@ export class SettingsScreenNoTranslation extends React.Component {
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 borderColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
-                borderWidth: 0
+                borderWidth: 0,
+                paddingTop: 25
             }}>
-                <List style={{
-                    backgroundColor: this.props.screenProps.theme.backgroundColour,
-                    borderColor: this.props.screenProps.theme.backgroundColour,
-                    borderWidth: 0,
-
-                }}>
+                <ScrollView
+                showsVerticalScrollIndicator={false}>
                     <FlatList
                         ItemSeparatorComponent={null}
                         data={[
@@ -1496,7 +1493,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                             />
                         )}
                     />
-                </List>
+                </ScrollView>
             </View>
         );
     }

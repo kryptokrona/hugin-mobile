@@ -393,14 +393,12 @@ class AddressBook extends React.Component {
 
 
         return(
-            <List style={{
-                marginBottom: 20,
-                backgroundColor: this.props.screenProps.theme.backgroundColour,
-                borderColor: 'transparent',
-                borderWidth: 0
-            }}>
-                <ScrollView>
+
+                <ScrollView
+                showsVerticalScrollIndicator={false}
+                >
                     <FlatList
+                        showsVerticalScrollIndicator={false}
                         ItemSeparatorComponent={null}
                         extraData={this.state.index}
                         data={this.state.payees}
@@ -437,7 +435,6 @@ class AddressBook extends React.Component {
                         )}
                     />
                 </ScrollView>
-            </List>
         );
     }
 }
