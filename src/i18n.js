@@ -5,6 +5,7 @@ import sv from './i18n/sv.json';
 import no from './i18n/no.json';
 import zh from './i18n/zh.json';
 import tr from './i18n/tr.json';
+import de from './i18n/de.json';
 // import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
@@ -34,6 +35,9 @@ i18next
       },
       tr: {
         translation: tr,
+      },
+      de: {
+        translation: de,
       },
     },
   });

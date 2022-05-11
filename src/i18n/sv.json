@@ -117,6 +117,7 @@
   walletCreated: 'Ditt konto har skapats!',
   walletCreatedSubtitle: 'Spara din återställningsfras på ett säkert ställe.',
   walletCreatedSubtitleSubtitle: 'Utan din återställningsfras kan du inte komma åt kontot om du exempelvis byter enhet eller avinstallerar appen.',
-  topUp: 'Fyll på'
+  topUp: 'Fyll på',
+  send: 'Skicka'
 
 }

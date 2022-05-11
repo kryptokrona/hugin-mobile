@@ -118,5 +118,5 @@
   walletCreatedSubtitle: 'Vennligst lagre følgende sikkerhetskopi-ord et trygt sted.',
   walletCreatedSubtitleSubtitle: 'Uten dette seed-et, kan du ikke gjenoprette lommeboken hvis telefonen din går tapt, eller lommeboken din blir korruptert, og pengene dine vil gå tapt for alltid!',
   topUp: 'Toppen opp',
-
+  send: 'Sende'
 }

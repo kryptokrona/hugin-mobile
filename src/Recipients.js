@@ -103,7 +103,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.nickname}
-                                subtitle={item.lastMessage ? item.lastMessage : t('noMessages')}
+                                subtitle={item.lastMessage.length ? <Text><Text>{item.lastMessage}{"\n"}</Text><Moment style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
@@ -852,7 +852,9 @@ export class ChatScreenNoTranslation extends React.Component {
             nicknameValid: true,
             paymentIDValid: true,
 
-            messages: []
+            messages: [],
+            message: "",
+            messageHasLength: false
         }
 
 
@@ -868,8 +870,6 @@ export class ChatScreenNoTranslation extends React.Component {
     async componentDidMount() {
 
         const messages = await getMessages(this.state.address);
-
-        console.log(messages);
 
         this.setState({
           messages: messages
@@ -902,6 +902,43 @@ export class ChatScreenNoTranslation extends React.Component {
 
        }
        }
+
+
+           const submitMessage = async (text) => {
+
+             let updated_messages = await getMessages();
+             if (!updated_messages) {
+               updated_messages = [];
+             }
+             let temp_timestamp = Date.now();
+             updated_messages.push({
+                 conversation: this.state.address,
+                 type: 'sent',
+                 message: checkText(text),
+                 timestamp: temp_timestamp
+             });
+
+             this.setState({
+               messages: updated_messages,
+               messageHasLength: false
+             });
+
+             this.state.input.current.clear();
+
+             this.setState({messageHasLength: this.state.message.length > 0});
+
+             let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+             await removeMessage(temp_timestamp);
+             if (success) {
+             let updated_messages = await getMessages();
+
+               this.setState({
+                 messages: updated_messages,
+                 messageHasLength: false
+               })
+               // this.state.input.current.clear();
+             }
+           }
 
 
         return(
@@ -966,13 +1003,13 @@ export class ChatScreenNoTranslation extends React.Component {
                  style={{
                     marginHorizontal: 10,
                     marginBottom: 5,
-                    flex: 1,
+                    flexDirection: 'row'
                 }}>
-
                 <Input
+                    returnKeyType='send'
                     ref={this.state.input}
                     containerStyle={{
-                        width: '100%',
+                      width: this.state.messageHasLength ? '80%' : '100%'
                     }}
                     inputContainerStyle={{
                         backgroundColor: 'rgba(0,0,0,0.2)',
@@ -991,46 +1028,36 @@ export class ChatScreenNoTranslation extends React.Component {
                     maxLength={Config.integratedAddressLength}
                     placeholder={t('typeMessageHere')}
                     onSubmitEditing={async (e) => {
-                        // if (this.props.onChange) {
-                        //     this.props.onChange(text);
-                        // }
-                          let text = e.nativeEvent.text;
-                          // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
-                          let updated_messages = await getMessages();
-                          if (!updated_messages) {
-                            updated_messages = [];
-                          }
-                          let temp_timestamp = Date.now();
-                          updated_messages.push({
-                              conversation: this.state.address,
-                              type: 'sent',
-                              message: checkText(text),
-                              timestamp: temp_timestamp
-                          });
 
-                          this.setState({
-                            messages: updated_messages
-                          })
-                          this.state.input.current.clear();
-
-                          let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-                          await removeMessage(temp_timestamp);
-                          if (success) {
-                          let updated_messages = await getMessages();
-
-                            this.setState({
-                              messages: updated_messages
-                            })
-                            // this.state.input.current.clear();
-                          }
+                        submitMessage(this.state.message);
+                        this.setState({message: '', messageHasLength: false});
                     }}
                     onChangeText={(text) => {
                         if (this.props.onChange) {
                             this.props.onChange(text);
                         }
+                        this.state.message = text;
+                        this.setState({messageHasLength: this.state.message.length > 0});
                     }}
                     errorMessage={this.props.error}
                 />
+                {this.state.messageHasLength &&
+
+                    <Button
+                        title={t('send')}
+                        onPress={() => {
+                          submitMessage(this.state.message);
+                          this.setState({message: '', messageHasLength: false});
+                        }}
+                        titleStyle={{
+
+                        }}
+                        type="clear"
+                    />
+
+                }
+
+
 
             </KeyboardAvoidingView>
             </View>
