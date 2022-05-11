@@ -12,7 +12,7 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getMessages } from './Database';
+import { getMessages, getLatestMessages } from './Database';
 
 import Config from './Config';
 
@@ -72,6 +72,8 @@ class globals {
 
         this.activeChat = '';
 
+        this.language = 'en-US';
+
     }
 
     reset() {
@@ -106,12 +108,9 @@ class globals {
     }
 
     async updateMessages() {
-      console.log('updateMessages');
       this.messages = await getMessages();
-      console.log('updateMessages', this.messages);
       this.updateChat();
       let payees = await loadPayeeDataFromDatabase();
-      console.log(payees);
 
       if (payees !== undefined) {
           Globals.payees = payees;
@@ -185,7 +184,6 @@ function updateConnection(connection) {
    if no internet. */
 export async function initGlobals() {
     const payees = await loadPayeeDataFromDatabase();
-    console.log(payees);
 
     if (payees !== undefined) {
         Globals.payees = payees;

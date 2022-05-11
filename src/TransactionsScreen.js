@@ -20,7 +20,7 @@ import Constants from './Constants';
 import { Styles } from './Styles';
 import { Globals } from './Globals';
 import { coinsToFiat } from './Currency';
-import { prettyPrintUnixTimestamp, prettyPrintDate } from './Utilities';
+import { prettyPrintUnixTimestamp, prettyPrintDate, prettyPrintDate2 } from './Utilities';
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 class ItemDescription extends React.Component {
@@ -119,7 +119,7 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
                     >
                         <ItemDescription
                             title={this.state.transaction.totalAmount() > 0 ? t('received') : t('sent')}
-                            item={this.state.complete ? prettyPrintUnixTimestamp(this.state.transaction.timestamp) : prettyPrintDate()}
+                            item={this.state.complete ? prettyPrintUnixTimestamp(this.state.transaction.timestamp) : prettyPrintDate2(Date.now()/1000)}
                             {...this.props}
                         />
 
@@ -436,7 +436,7 @@ class TransactionListNoTranslation extends React.Component {
 
                             <ListItem
                                 title={prettyPrintAmount(Math.abs(item.totalAmount()) - (item.totalAmount() > 0 ? 0 : item.fee), Config)}
-                                subtitle={item.timestamp === 0 ? t('processing') + prettyPrintDate() : t('completed') + prettyPrintUnixTimestamp(item.timestamp)}
+                                subtitle={item.timestamp === 0 ? t('processing') + prettyPrintDate2(Date.now() / 1000) : t('completed') + prettyPrintDate2(item.timestamp)}
                                 leftIcon={
                                     <View style={{width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
                                         <Ionicons name={this.getIconName(item)} size={30} color={this.getIconColour(item)}/>

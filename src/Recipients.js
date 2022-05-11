@@ -26,6 +26,12 @@ import { Styles } from './Styles';
 
 import Moment from 'react-moment';
 
+import 'moment/locale/de';
+import 'moment/locale/sv';
+import 'moment/locale/tr';
+import 'moment/locale/zh-cn';
+import 'moment/locale/nb';
+
 import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
@@ -103,7 +109,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.nickname}
-                                subtitle={item.lastMessage.length ? <Text><Text>{item.lastMessage}{"\n"}</Text><Moment style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
+                                subtitle={item.lastMessage.length ? <Text><Text>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
@@ -895,9 +901,9 @@ export class ChatScreenNoTranslation extends React.Component {
          if (this.state.address == this.state.messages[message].conversation){
            let timestamp = this.state.messages[message].timestamp / 1000;
            if (this.state.messages[message].type == 'received'){
-              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            } else {
-             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            }
 
        }

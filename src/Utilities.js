@@ -6,6 +6,14 @@ import React from 'react';
 
 import moment from 'moment';
 
+import Moment from 'react-moment';
+
+import 'moment/locale/de';
+import 'moment/locale/sv';
+import 'moment/locale/tr';
+import 'moment/locale/zh-cn';
+import 'moment/locale/nb';
+
 import { Text, Platform, ToastAndroid, Alert } from 'react-native';
 
 import { StackActions, NavigationActions } from 'react-navigation';
@@ -52,7 +60,15 @@ export function navigateWithDisabledBack(route, routeParams) {
 }
 
 export function prettyPrintUnixTimestamp(timestamp) {
-    return prettyPrintDate(moment(timestamp * 1000));
+    return <Moment locale={Globals.language} element={Text} unix fromNow>{timestamp}</Moment>
+}
+
+export function prettyPrintDate2(timestamp) {
+  let date = new Date(timestamp*1000);
+
+  return date.toLocaleString(Globals.language);
+
+
 }
 
 export function prettyPrintDate(date) {
