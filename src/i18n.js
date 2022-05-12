@@ -9,7 +9,11 @@ import de from './i18n/de.json';
 import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
-Globals.language = i18nextReactNative.detect();
+Globals.language = i18nextReactNative.detect().substring(0,2);
+
+if (Globals.language == "zh") {
+  Globals.language = 'zh-cn';
+}
 
 i18next
   // .use(languageDetector)
