@@ -1193,15 +1193,15 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     this.props.navigation.navigate('SwapNode')
                                 },
                             },
-                            {
-                                title: t('swapCurrency'),
-                                description: t('swapCurrencyDescr'),
-                                icon: {
-                                    iconName: 'currency-usd',
-                                    IconType: MaterialCommunityIcons,
-                                },
-                                onClick: () => { this.props.navigation.navigate('SwapCurrency') },
-                            },
+                            // {
+                            //     title: t('swapCurrency'),
+                            //     description: t('swapCurrencyDescr'),
+                            //     icon: {
+                            //         iconName: 'currency-usd',
+                            //         IconType: MaterialCommunityIcons,
+                            //     },
+                            //     onClick: () => { this.props.navigation.navigate('SwapCurrency') },
+                            // },
                             {
                                 title: t('limitData'),
                                 description: t('limitDataDescr'),

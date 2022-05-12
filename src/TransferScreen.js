@@ -31,6 +31,7 @@ import { Input, Button } from 'react-native-elements';
 import Config from './Config';
 import ListItem from './ListItem';
 import List from './ListContainer';
+import Constants from './Constants'
 
 import { Styles } from './Styles';
 import { Globals } from './Globals';
@@ -259,6 +260,15 @@ export class TransferScreenNoTranslation extends React.Component {
 
     render() {
       const { t } = this.props;
+      // const otherCoinValue = toString(this.state.amount * Globals.coinPrice);
+      // console.log('otherCoinValue', otherCoinValue);
+      // const otherCoin = Constants.currencies.filter( c => {return c.ticker == Globals.preferences.currency});
+      // const otherCoinFormatting = otherCoin.symbolLocation == 'prefix' ? otherCoin.symbol + otherCoinValue : otherCoinValue + otherCoin.symbol + " ";
+      // console.log('otherCoinFormatting', otherCoinFormatting);
+      const otherCoinAmount = (this.state.amount * Globals.coinPrice).toFixed(2);
+      const otherCoin = Constants.currencies.filter( c => {return c.ticker == Globals.preferences.currency})[0];
+      const otherCoinFormatting = otherCoinAmount ? otherCoin.symbol + otherCoinAmount : false;
+
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -300,16 +310,28 @@ export class TransferScreenNoTranslation extends React.Component {
                         {...this.props}
                     />
 
-                    <View style={{ marginLeft: '70%' }}>
+                    <View style={{ marginTop: 20, justifyContent: 'space-between', width: "100%", alignItems: 'center' }}>
+                    {otherCoinAmount > 0 &&
+                    <Text
+                    style={{color: this.props.screenProps.theme.primaryColour,
+                    fontSize: 10,
+                    fontFamily: 'Montserrat-SemiBold'}}
+                    >
+
+                       {otherCoinFormatting}
+
+                    </Text>
+                  }
+
                         <Button
                             title={t('sendMaxButton')}
                             onPress={() => {
                                 this.setState({
-                                    sendAll: true,
-                                    amount: t('sendAllLabel'),
-                                    amountFontSize: 20,
+                                    amount: ((this.state.unlockedBalance / 100000)).toFixed(5),
+                                    amountAtomic: this.state.unlockedBalance,
+                                    sendAll: true
                                 }, () => {
-                                    this.checkErrors(this.state.unlockedBalanceHuman);
+                                    this.checkErrors(this.state.amount);
                                 });
                             }}
                             titleStyle={{
