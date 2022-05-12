@@ -76,6 +76,8 @@ class globals {
 
         this.language = 'en-US';
 
+        this.fromChat = false;
+
     }
 
     reset() {

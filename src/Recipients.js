@@ -172,6 +172,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                 }}>
                     <TouchableWithoutFeedback
                         onPress={() => {
+                            Globals.fromChat = true;
                             this.props.navigation.navigate('NewPayee', {
                                 finishFunction: (item) => {
                                     this.props.navigation.navigate(
@@ -187,8 +188,6 @@ export class RecipientsScreenNoTranslation extends React.Component {
                             justifyContent: 'space-between',
                             height: 40,
                         }}>
-
-
                             <Text style={{
                                 marginLeft: 15,
                                 color: this.props.screenProps.theme.primaryColour,

@@ -797,16 +797,18 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                             /* Add payee to global payee store */
                             Globals.addPayee(payee);
 
-                            const finishFunction = this.props.navigation.getParam('finishFunction', undefined);
+                            const finishFunction = Globals.fromChat; // = this.props.navigation.getParam('finishFunction', undefined);
 
                             if (finishFunction) {
-                                finishFunction(payee);
-                            } else {
+                              Globals.fromChat = false;
                               this.props.navigation.navigate(
                                   'ChatScreen', {
                                       payee: payee,
                                   });
+
                                   return;
+
+                            } else {
                                 const amount = this.props.navigation.getParam('amount', undefined);
 
                                 /* Already have an amount, don't need to go to transfer screen */
