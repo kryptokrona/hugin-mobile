@@ -119,5 +119,8 @@
   walletCreatedSubtitleSubtitle: 'Bu tohum olmadan, telefonunuz kaybolursa veya cüzdanınız bozulursa, cüzdanınızı geri yükleyemezsiniz ve paranız sonsuza kadar kaybolur!',
   topUp: 'Tamamla',
   send: 'Gönder',
-  settingsTitle: 'Ayarlar'
+  settingsTitle: 'Ayarlar',
+  autoSelectNode: 'Düğümü otomatik olarak seç',
+  pickNodeList: 'veya listeden bir düğüm seçin',
+  pullToCheck: 'Düğümlerin durumunu kontrol etmek için aşağı çekin'
 }

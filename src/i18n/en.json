@@ -119,5 +119,8 @@
   walletCreatedSubtitleSubtitle: 'Without this seed, if your phone gets lost, or your wallet gets corrupted, you cannot restore your wallet, and your funds will be lost forever!',
   topUp: 'Top up',
   send: 'Send',
-  settingsTitle: 'Settings'
+  settingsTitle: 'Settings',
+  autoSelectNode: 'Select node automatically',
+  pickNodeList: 'or pick a node from the list',
+  pullToCheck: 'Pull down to check status of nodes'
 }

@@ -119,6 +119,9 @@
   walletCreatedSubtitleSubtitle: 'Utan din återställningsfras kan du inte komma åt kontot om du exempelvis byter enhet eller avinstallerar appen.',
   topUp: 'Fyll på',
   send: 'Skicka',
-  settingsTitle: 'Inställningar'
+  settingsTitle: 'Inställningar',
+  autoSelectNode: 'Välj nod automatiskt',
+  pickNodeList: 'eller välj en nod i listan',
+  pullToCheck: 'Dra ned för att uppdatera nodernas status'
 
 }
