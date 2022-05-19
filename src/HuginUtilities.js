@@ -55,6 +55,77 @@ export function getKeyPair() {
 
 }
 
+function tryNode(this_node) {
+    return new Promise((resolve) => {
+
+
+  });
+}
+
+export async function getBestNode(ssl=true) {
+
+  let recommended_node = undefined;
+
+  await Globals.updateNodeList();
+
+  let node_requests = [];
+  let ssl_nodes =[];
+  if (ssl) {
+      ssl_nodes = Globals.daemons.filter(node => {return node.ssl});
+  } else {
+      ssl_nodes = Globals.daemons.filter(node => {return !node.ssl});
+  }
+
+
+  for (node in ssl_nodes) {
+    let this_node = ssl_nodes[node];
+
+    let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
+
+    let promise = new Promise((resolve,reject) => {
+
+      fetch(nodeURL, {
+         method: 'GET'
+       }, 1000)
+       .then( (ping) => {
+        if (!recommended_node && ping.status == 200 && this_node.url) {
+          console.log('recommending', this_node);
+          recommended_node = this_node;
+        }
+         resolve(this_node);
+
+      })
+      .catch( (e) => {
+        console.log(e);
+        resolve(e);
+      })
+
+    })
+
+    node_requests.push(promise);
+
+  }
+
+
+  return await Promise.all(node_requests)
+       .then(async (results) => {
+           console.log("All done", recommended_node);
+           if (!recommended_node && ssl) {
+               return await getBestNode(false);
+
+           } else {
+              console.log(recommended_node);
+               return recommended_node;
+           }
+       })
+       .catch((e) => {
+           // Handle errors here
+           console.log('all done, but failed ');
+           console.log(e);
+       });
+
+}
+
 
 function trimExtra (extra) {
 
@@ -75,13 +146,14 @@ function trimExtra (extra) {
 
     PushNotification.configure({
       onNotification: function (notification) {
-        // console.log("NOTIFICATION:", notification);
 
-              navigation.navigate(
-                  'ChatScreen', {
-                      payee: {none: none},
-                  }
-              );
+        // let payee = notification.userInfo;
+
+              // navigation.navigate(
+              //     'ChatScreen', {
+              //         payee: payee,
+              //     }
+              // );
         // process the notification
 
         // (required) Called when a remote is received or opened, or local notification is opened
@@ -133,6 +205,7 @@ export function hashCode(str) {
 
 
 export function get_avatar(hash, size) {
+
   // Displays a fixed identicon until user adds new contact address in the input field
   if (hash.length < 15) {
     hash = 'SEKReYanL2qEQF2HA8tu9wTpKBqoCA8TNb2mNRL5ZDyeFpxsoGNgBto3s3KJtt5PPrRH36tF7DBEJdjUn5v8eaESN2T5DPgRLVY';
@@ -692,6 +765,8 @@ export async function getMessage(extra){
         let decryptBox = false;
         let createNewPayee = false;
 
+        let key = '';
+
         try {
          decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
          nonceFromTimestamp(timestamp),
@@ -717,6 +792,7 @@ export async function getMessage(extra){
                nonceFromTimestamp(timestamp),
                hexToUint(possibleKey),
                getKeyPair().secretKey);
+               key = possibleKey;
              } catch (err) {
                // //console.log('timestamp', timestamp);
                //console.log(err);
@@ -739,23 +815,45 @@ export async function getMessage(extra){
                let from = payload_json.from;
               //console.log('from', from);
               //console.log('walletaddr',  Globals.wallet.getPrimaryAddress());
+              let from_myself = false;
                if (from == Globals.wallet.getPrimaryAddress()) {
                  //console.log('Message is from self, ignore');
-                 return;
+                 from_myself = true;
                }
 
+              let from_address = from;
 
+              let from_payee = {};
+
+              if (!from_myself) {
 
               for (payee in payees) {
 
                 if (payees[payee].address == from) {
                   from = payees[payee].nickname;
                   createNewPayee = false;
+
+                  from_payee = {
+                      name: from,
+                      address: from_address,
+                      paymentID: payees[payee].paymentID,
+                  };
+
                 }
 
-              }
 
-              if (createNewPayee) {
+              }
+            } else {
+
+              console.log(key);
+              from_payee = payees.filter(payee => {
+                return payee.paymentID == key;
+              })
+              console.log(from_payee);
+
+            }
+
+              if (createNewPayee && !from_myself) {
                 // let new_payee = {nickname: payload_json.from, paymentID: payload_json.k, "address": payload_json.from};
                 // //console.log('Adding new payee', new_payee);
                 // savePayeeToDatabase(new_payee);
@@ -764,23 +862,32 @@ export async function getMessage(extra){
                     address: payload_json.from,
                     paymentID: payload_json.k,
                 };
+
                 Globals.addPayee(payee);
+
+                from_payee = payee;
 
               }
 
+                let received = 'received';
 
-                saveMessage(payload_json.from, 'received', payload_json.msg, payload_json.t);
+                if (from_myself) {
+                  payload_json.from = from_payee[0].address;
+                  received = 'sent';
+                }
+
+                saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
                 // console.log('from', from);
                 // console.log('message', payload_json.msg);
                 // console.log('payload_json.t', payload_json.t);
                 // console.log('activeChat=', Globals.activeChat, ' from=', payload_json.from);
-                if (Globals.activeChat != payload_json.from) {
+                if (Globals.activeChat != payload_json.from && !from_myself) {
                   PushNotification.localNotification({
                       title: from,//'Incoming transaction received!',
                       //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
                       message: payload_json.msg,
                       data: payload_json.t,
-
+                      userInfo: from_payee,
                       largeIconUrl: get_avatar(payload_json.from, 64),
                   });
                 }

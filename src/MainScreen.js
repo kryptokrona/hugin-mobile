@@ -9,7 +9,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import * as Animatable from 'react-native-animatable';
 
 import QRCode from 'react-native-qrcode-svg';
-
+import NativeLinking from "react-native/Libraries/Linking/NativeLinking";
 import PushNotification from 'react-native-push-notification';
 
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
@@ -132,15 +132,50 @@ async function init(navigation) {
         requestPermissions: true,
     });
 
-    const url = await Linking.getInitialURL();
+    NativeLinking.getInitialURL().then((url) => {
+      if (url) {
 
-    if (url) {
-        handleURI(url, navigation);
-    }
+        console.log(url);
+
+        if (url.startsWith('xkr://chat/')) {
+
+          const json_str = url.replace('xkr://chat/', '');
+
+          console.log(json_str);
+
+          const payee = JSON.parse(json_str);
+
+          navigation.navigate(
+              'ChatScreen', {
+                  payee: payee,
+              });
+
+        } else {
+
+          Globals.fromChat = true;
+          handleURI(url, navigation);
+
+        }
+
+
+      }
+    }).catch(err => console.error('An error occurred', err));
+
 }
 
 function handleNotification(notification) {
-    notification.finish(PushNotificationIOS.FetchResult.NoData);
+
+    let payee = notification.userInfo;
+
+    payee = new URLSearchParams(payee).toString();
+
+    let url = 'xkr://' + payee;
+
+    console.log(url);
+
+    Linking.openURL(url);
+
+    // notification.finish(PushNotificationIOS.FetchResult.NoData);
 }
 
 export async function sendNotification(transaction) {
