@@ -123,9 +123,32 @@ export function getArrivalTime(timeUnitTranslation) {
 }
 
 export async function handleURI(data, navigation) {
-    const result = await parseURI(data);
 
-    console.log('wtfm8', result);
+    if (data.url ) {
+
+
+
+      const params = Qs.parse(data.url.replace('xkr://', ''));
+
+
+      const address = params.address;
+      const name = params.name;
+
+      if (name == undefined) {
+        handleURI(data.url);
+        return;
+      }
+
+      const paymentID = params.paymentID;
+
+      navigation.navigate(
+          'ChatScreen', {
+              payee: {address: address, nickname: name, paymentID: paymentID},
+          });
+
+    }
+
+    const result = await parseURI(data);
 
     if (!result.valid) {
         Alert.alert(
@@ -136,6 +159,7 @@ export async function handleURI(data, navigation) {
             ]
         );
     } else {
+
         /* Hop into the transfer stack */
         navigation.navigate('ChoosePayee');
         /* Then navigate to the nested route, if needed */
@@ -144,6 +168,7 @@ export async function handleURI(data, navigation) {
 }
 
 export async function parseURI(qrData) {
+
     /* It's a URI, try and get the data from it */
     if (qrData.startsWith(Config.uriPrefix)) {
         /* Remove the turtlecoin:// prefix */
@@ -156,16 +181,12 @@ export async function parseURI(qrData) {
         }
 
         const address = data.substr(0, index);
-        console.log('wtfoi',address);
         const params = Qs.parse(data.substr(index));
 
-        console.log('wtfm8', params);
 
         const amount = params.amount;
         const name = params.name;
         let paymentID = params.paymentid;
-
-        console.log('wtfm8', paymentID);
 
         if (paymentID) {
             const pidError = validatePaymentID(paymentID);
@@ -189,7 +210,6 @@ export async function parseURI(qrData) {
 
         const addressError = await validateAddresses([address], true, Config);
 
-        console.log('wtfm8', addressError);
 
         /* Address isn't valid */
         if (addressError.errorCode !== WalletErrorCode.SUCCESS) {
