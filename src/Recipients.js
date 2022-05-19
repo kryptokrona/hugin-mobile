@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    KeyboardAvoidingView, View, Text, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import {
@@ -1016,32 +1016,38 @@ export class ChatScreenNoTranslation extends React.Component {
                     marginBottom: 5,
                     flexDirection: 'row'
                 }}>
-                <Input
-                    returnKeyType='send'
+                <View
+                style={{
+                    width: this.state.messageHasLength ? '80%' : '100%',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      borderWidth: 0,
+                      borderColor: 'transparent',
+                      borderRadius: 15,
+                      height: 50
+                  }}
+                >
+                <TextInput
+                    multiline={true}
+                    textAlignVertical={'top'}
                     ref={this.state.input}
-                    containerStyle={{
-                      width: this.state.messageHasLength ? '80%' : '100%'
-                    }}
-                    inputContainerStyle={{
-                        backgroundColor: 'rgba(0,0,0,0.2)',
-                        borderWidth: 0,
-                        borderColor: 'transparent',
-                        borderRadius: 15,
-                        width: '100%',
-                        height: 40,
-                        padding: 15
-                    }}
-                    inputStyle={{
+                    style={{
                         color: this.props.screenProps.theme.primaryColour,
                         fontFamily: 'Montserrat-Regular',
-                        fontSize: 15
+                        fontSize: 15,
+                        width: '100%',
+                        height: '100%',
+                        padding: 15,
+
                     }}
                     maxLength={Config.integratedAddressLength}
                     placeholder={t('typeMessageHere')}
+                    placeholderTextColor={'#ffffff'}
                     onSubmitEditing={async (e) => {
-
-                        submitMessage(this.state.message);
-                        this.setState({message: '', messageHasLength: false});
+                      console.log('wtf');
+                      e.preventDefault();
+                        // return;
+                        // submitMessage(this.state.message);
+                        // this.setState({message: '', messageHasLength: false});
                     }}
                     onChangeText={(text) => {
                         if (this.props.onChange) {
@@ -1052,6 +1058,7 @@ export class ChatScreenNoTranslation extends React.Component {
                     }}
                     errorMessage={this.props.error}
                 />
+                </View>
                 {this.state.messageHasLength &&
 
                     <Button
