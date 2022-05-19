@@ -7,7 +7,7 @@ import * as Animatable from 'react-native-animatable';
 
 import React from 'react';
 import TextTicker from 'react-native-text-ticker';
-import { optimizeMessages } from './HuginUtilities';
+import { optimizeMessages, getBestNode } from './HuginUtilities';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -600,9 +600,9 @@ export class SwapLanguageScreen extends React.Component {
 }
 
 
-export class SwapNodeScreen extends React.Component {
+class SwapNodeScreenNoTranslation extends React.Component {
     static navigationOptions = {
-        title: 'Available Nodes',
+        title: 'Available Nodes'
     };
 
     constructor(props) {
@@ -686,6 +686,8 @@ export class SwapNodeScreen extends React.Component {
     }
 
     render() {
+
+      const { t } = this.props;
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -705,17 +707,145 @@ export class SwapNodeScreen extends React.Component {
                         />
                     }
                 >
+
+                <View style={{
+                    backgroundColor: this.props.screenProps.theme.backgroundColour,
+                    marginHorizontal: 20,
+                }}>
                 <Text style={{
-                    fontSize: 10,
+                    fontSize: 20,
+                    textAlign: 'center',
+                    color: this.props.screenProps.theme.primaryColour,
+                }}>
+                    Use a custom node by
+                </Text>
+                <Text style={{
+                    fontSize: 12,
+                    color: this.props.screenProps.theme.primaryColour,
+                    textAlign: 'center',
+                    marginBottom: 5
+                }}>
+                    Format is: url:port:ssl
+                </Text>
+                </View>
+                <Input
+                    ref={this.state.input}
+                    containerStyle={{
+                        width: '100%',
+                    }}
+                    inputContainerStyle={{
+                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        borderWidth: 0,
+                        borderColor: 'transparent',
+                        borderRadius: 15,
+                        width: '100%',
+                        height: 40,
+                        padding: 15
+                    }}
+                    inputStyle={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        fontFamily: 'Montserrat-Regular',
+                        fontSize: 15
+                    }}
+                    placeholder={this.state.selectedNode}
+                    onSubmitEditing={async (e) => {
+                        // if (this.props.onChange) {
+                        //     this.props.onChange(text);
+                        // }
+                          let text = e.nativeEvent.text;
+                          text = text.split(':');
+                          let node = {url: text[0], port: text[1], ssl: text[2]};
+
+                          this.swapNode(node);
+                          // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
+                          // let updated_messages = await getMessages();
+                          // let temp_timestamp = Date.now();
+                          // updated_messages.push({
+                          //     conversation: this.state.address,
+                          //     type: 'sent',
+                          //     message: checkText(text),
+                          //     timestamp: temp_timestamp
+                          // });
+                          //
+                          // this.setState({
+                          //   messages: updated_messages
+                          // })
+                          // this.state.input.current.clear();
+                          //
+                          // let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+                          // await removeMessage(temp_timestamp);
+                          // if (success) {
+                          // let updated_messages = await getMessages();
+                          //
+                          //   this.setState({
+                          //     messages: updated_messages
+                          //   })
+                          //   // this.state.input.current.clear();
+                          // }
+                    }}
+                    onChangeText={(text) => {
+                        if (this.props.onChange) {
+                            this.props.onChange(text);
+                        }
+                    }}
+                    errorMessage={this.props.error}
+                />
+                <Text style={{
+                    fontSize: 20,
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'center'
                 }}>
-                    Pull down to check status of nodes
+                    or
                 </Text>
+                <View
+                style={{
+                    marginVertical: 20,
+                    marginHorizontal: 20,
+                    marginTop: 5
+                }}
+                >
+                    <Button
+                        title={t('autoSelectNode')}
+                        onPress={async () => {
+                          const best_node = await getBestNode();
+                          console.log('getBestNode', best_node);
+                            this.setState({
+                                node: best_node,
+                            });
+                            this.swapNode(best_node);
+                        }}
+                        color={this.props.screenProps.theme.buttonColour}
+                        titleStyle={{
+                            color: this.props.screenProps.theme.primaryColour,
+                            fontSize: 13
+                        }}
+                        type="clear"
+                    />
+
+                  </View>
+
                     {this.state.nodes.length > 0 ?
+
                         <List style={{
                             backgroundColor: this.props.screenProps.theme.backgroundColour,
+                            borderTopWidth: 0
                         }}>
+                        <Text style={{
+                            fontSize: 20,
+                            color: this.props.screenProps.theme.primaryColour,
+                            textAlign: 'center',
+
+                        }}>
+                            {t('pickNodeList')}
+                        </Text>
+                        <Text style={{
+                            fontSize: 10,
+                            color: this.props.screenProps.theme.primaryColour,
+                            textAlign: 'center',
+                            marginBottom: 5
+                        }}>
+                            {t('pullToCheck')}
+                        </Text>
                             <FlatList
                                 style={{marginHorizontal: 20}}
                                 extraData={this.state.forceUpdate}
@@ -788,90 +918,13 @@ export class SwapNodeScreen extends React.Component {
                             </Text>
                         </View>
                     }
-                    <View style={{
-                        backgroundColor: this.props.screenProps.theme.backgroundColour,
-                        marginHorizontal: 20,
-                    }}>
-                    <Text style={{
-                        fontSize: 20,
-                        color: this.props.screenProps.theme.primaryColour,
-                    }}>
-                        Use a custom node by typing the address below
-                    </Text>
-                    <Text style={{
-                        fontSize: 12,
-                        color: this.props.screenProps.theme.primaryColour,
-                    }}>
-                        Format is: url:port:ssl
-                    </Text>
-                    </View>
-                    <Input
-                        ref={this.state.input}
-                        containerStyle={{
-                            width: '100%',
-                        }}
-                        inputContainerStyle={{
-                            backgroundColor: 'rgba(0,0,0,0.2)',
-                            borderWidth: 0,
-                            borderColor: 'transparent',
-                            borderRadius: 15,
-                            width: '100%',
-                            height: 40,
-                            padding: 15
-                        }}
-                        inputStyle={{
-                            color: this.props.screenProps.theme.primaryColour,
-                            fontFamily: 'Montserrat-Regular',
-                            fontSize: 15
-                        }}
-                        placeholder={this.state.selectedNode}
-                        onSubmitEditing={async (e) => {
-                            // if (this.props.onChange) {
-                            //     this.props.onChange(text);
-                            // }
-                              let text = e.nativeEvent.text;
-                              text = text.split(':');
-                              let node = {url: text[0], port: text[1], ssl: text[2]};
 
-                              this.swapNode(node);
-                              // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
-                              // let updated_messages = await getMessages();
-                              // let temp_timestamp = Date.now();
-                              // updated_messages.push({
-                              //     conversation: this.state.address,
-                              //     type: 'sent',
-                              //     message: checkText(text),
-                              //     timestamp: temp_timestamp
-                              // });
-                              //
-                              // this.setState({
-                              //   messages: updated_messages
-                              // })
-                              // this.state.input.current.clear();
-                              //
-                              // let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-                              // await removeMessage(temp_timestamp);
-                              // if (success) {
-                              // let updated_messages = await getMessages();
-                              //
-                              //   this.setState({
-                              //     messages: updated_messages
-                              //   })
-                              //   // this.state.input.current.clear();
-                              // }
-                        }}
-                        onChangeText={(text) => {
-                            if (this.props.onChange) {
-                                this.props.onChange(text);
-                            }
-                        }}
-                        errorMessage={this.props.error}
-                    />
                 </ScrollView>
             </View>
         );
     }
 }
+export const SwapNodeScreen = withTranslation()(SwapNodeScreenNoTranslation)
 
 export class OptimizeScreen extends React.Component {
     static navigationOptions = ({ navigation, screenProps }) => ({
