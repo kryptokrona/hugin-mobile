@@ -122,5 +122,8 @@
   settingsTitle: '设置',
   autoSelectNode: '自动选择节点',
   pickNodeList: '或从列表中选择一个节点',
-  pullToCheck: '下拉查看节点状态'
+  pullToCheck: '下拉查看节点状态',
+  useCustomNode: '使用自定义节点',
+  customNodeFormat: '格式为 url:port:ssl (ssl=true/false)',
+  or: '或'
 }

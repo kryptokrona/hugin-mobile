@@ -122,5 +122,8 @@
   settingsTitle: 'Innstillinger',
   autoSelectNode: 'Velg node automatisk',
   pickNodeList: 'eller velg en node fra listen',
-  pullToCheck: 'Trekk ned for å sjekke statusen til nodene'
+  pullToCheck: 'Trekk ned for å sjekke statusen til nodene',
+  useCustomNode: 'Bruk en egendefinert node',
+  customNodeFormat: 'Format er url:port:ssl (ssl=true/false)',
+  or: 'eller'
 }

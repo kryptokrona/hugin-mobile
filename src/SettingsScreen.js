@@ -717,7 +717,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                     textAlign: 'center',
                     color: this.props.screenProps.theme.primaryColour,
                 }}>
-                    Use a custom node by
+                    {t('useCustomNode')}
                 </Text>
                 <Text style={{
                     fontSize: 12,
@@ -725,7 +725,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                     textAlign: 'center',
                     marginBottom: 5
                 }}>
-                    Format is: url:port:ssl
+                    {('customNodeFormat')}
                 </Text>
                 </View>
                 <Input
@@ -795,7 +795,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'center'
                 }}>
-                    or
+                    {t('or')}
                 </Text>
                 <View
                 style={{

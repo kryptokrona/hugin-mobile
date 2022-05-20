@@ -122,5 +122,8 @@
   settingsTitle: 'Settings',
   autoSelectNode: 'Select node automatically',
   pickNodeList: 'or pick a node from the list',
-  pullToCheck: 'Pull down to check status of nodes'
+  pullToCheck: 'Pull down to check status of nodes',
+  useCustomNode: 'Use a custom node',
+  customNodeFormat: 'Format is url:port:ssl (ssl=true/false)',
+  or: 'or'
 }

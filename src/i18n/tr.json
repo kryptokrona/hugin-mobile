@@ -122,5 +122,8 @@
   settingsTitle: 'Ayarlar',
   autoSelectNode: 'Düğümü otomatik olarak seç',
   pickNodeList: 'veya listeden bir düğüm seçin',
-  pullToCheck: 'Düğümlerin durumunu kontrol etmek için aşağı çekin'
+  pullToCheck: 'Düğümlerin durumunu kontrol etmek için aşağı çekin',
+  useCustomNode: 'Özel bir düğüm kullanın',
+  customNodeFormat: 'Biçim url:port:ssl (ssl=true/false)',
+  or: 'veya'
 }

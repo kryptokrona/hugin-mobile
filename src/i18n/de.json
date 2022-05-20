@@ -122,5 +122,8 @@
     settingsTitle: 'Einstellungen',
     autoSelectNode: 'Knoten automatisch auswählen',
     pickNodeList: 'oder wählen Sie einen Knoten aus der Liste aus',
-    pullToCheck: 'Nach unten ziehen, um den Status der Knoten zu prüfen'
+    pullToCheck: 'Nach unten ziehen, um den Status der Knoten zu prüfen',
+    useCustomNode: 'Verwenden Sie einen benutzerdefinierten Knoten',
+    customNodeFormat: 'Format ist url:port:ssl (ssl=true/false)',
+    or: 'oder'
   }

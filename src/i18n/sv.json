@@ -122,6 +122,9 @@
   settingsTitle: 'Inställningar',
   autoSelectNode: 'Välj nod automatiskt',
   pickNodeList: 'eller välj en nod i listan',
-  pullToCheck: 'Dra ned för att uppdatera nodernas status'
+  pullToCheck: 'Dra ned för att uppdatera nodernas status',
+  useCustomNode: 'Använd en egen nod',
+  customNodeFormat: 'Formatet är url:port:ssl (ssl=true/false)',
+  or: 'eller'
 
 }
