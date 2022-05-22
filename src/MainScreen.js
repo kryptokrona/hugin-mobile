@@ -56,6 +56,7 @@ String.prototype.hashCode = function() {
 }
 
 async function init(navigation) {
+
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
     Globals.wallet.enableAutoOptimization(false);
 
@@ -74,9 +75,9 @@ async function init(navigation) {
         let message_inputs = 0;
         for (input in inputs) {
           try {
-            // console.log(inputs[input]);
+
             let this_amount = inputs[input].input.amount;
-            // console.log(this_amount);
+
             if (this_amount == 10000) {
               message_inputs++;
             }
@@ -88,7 +89,7 @@ async function init(navigation) {
           optimizeMessages(10);
 
         } else {
-          // console.log("No need to optimize, got ", message_inputs, " inputs.");
+
         }
     });
 
@@ -106,8 +107,13 @@ async function init(navigation) {
     if (Globals.backgroundSaveTimer === undefined) {
         Globals.backgroundSaveTimer = setInterval(backgroundSave, Config.walletSaveFrequency);
     }
+
     if (Globals.backgroundSyncMessagesTimer === undefined) {
         Globals.backgroundSyncMessagesTimer = setInterval(backgroundSyncMessages, 5000);
+    }
+
+    if (Globals.checkIfStuck === undefined) {
+        Globals.checkIfStuck = setInterval(checkIfStuck, 5000);
     }
 
     /* Use our native C++ func to process blocks, provided we're on android */
@@ -135,13 +141,13 @@ async function init(navigation) {
     NativeLinking.getInitialURL().then((url) => {
       if (url) {
 
-        console.log(url);
+
 
         if (url.startsWith('xkr://chat/')) {
 
           const json_str = url.replace('xkr://chat/', '');
 
-          console.log(json_str);
+
 
           const payee = JSON.parse(json_str);
 
@@ -171,7 +177,7 @@ function handleNotification(notification) {
 
     let url = 'xkr://' + payee;
 
-    console.log(url);
+
 
     Linking.openURL(url);
 
@@ -180,23 +186,6 @@ function handleNotification(notification) {
 
 export async function sendNotification(transaction) {
     // /* Don't show notifications if disabled */
-    // if (!Globals.preferences.notificationsEnabled) {
-    //     return;
-    // }
-    //
-    // /* Don't show notifications in foreground */
-    // if (AppState.currentState !== 'background') {
-    //     return;
-    // }
-
-    //console.log(Globals.wallet);
-    //
-    // //console.log(transaction);
-    //
-    // //console.log(transaction.transfers);
-    //
-    // //console.log(transaction.transfers[0]);
-
 
     let this_addr = await Address.fromAddress(Globals.wallet.getPrimaryAddress());
 
@@ -317,7 +306,6 @@ export class MainScreen extends React.PureComponent {
 
         if (Globals.coinPrice == 0) {
             const tmpPrice = await getCoinPriceFromAPI();
-            console.log('tmpPrice', tmpPrice);
 
             if (tmpPrice !== undefined) {
                 Globals.coinPrice = tmpPrice;
@@ -868,6 +856,30 @@ async function backgroundSave() {
     }
 }
 
+async function checkIfStuck() {
+
+  const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+
+  if (networkHeight == 0) {
+    return;
+  }
+
+  if ( walletHeight == 0) {
+    Globals.stuckTicks ? Globals.stuckTicks += 1 : Globals.stuckTicks = 1;
+
+    if (Globals.stuckTicks > 3) {
+        Globals.wallet.rewind(networkHeight-100);
+    }
+
+  } else {
+    clearInterval(Globals.checkIfStuck);
+    Globals.checkIfStuck = undefined;
+  }
+
+
+
+}
+
 async function backgroundSyncMessages() {
 
   if (Globals.syncingMessagesCount > 3) {
@@ -891,13 +903,6 @@ async function backgroundSyncMessages() {
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-      // console.log(Globals.wallet);
-      // console.log(Globals.wallet.subWallets.subWallets);
-      // console.log(Globals.wallet.subWallets.subWallets); //d74ba9d19b7e9c4e3e76b6f1331d91f28623bdf496bb7f4ce9ce0350cd2f268c
-      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getSpendableInputs());
-      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getBalance());
-      // console.log(await Globals.wallet.subWallets.subWallets.get('6f14995572b99c9d28b0637bb4b301ba3dc53a2adee15e10e7dd79600a66e7ab').getUnconfirmedChange());
-
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',
@@ -908,41 +913,21 @@ async function backgroundSyncMessages() {
       .then((response) => response.json())
       .then(async (json) => {
 
-        // console.log(json);
-
         let addedTxs = json.addedTxs;
-
-        // let json_string = JSON.stringify(json);
-        //
-        // //console.log('doc', json_string);
-        //
-        // let json_cleaned = json_string.replace(/.txPrefix/gi,'');
-        //
-        // //console.log('doc', json_cleaned);
-        //
-        // json_cleaned = JSON.parse(json_cleaned);
-        //
-        // //console.log('doc', json_cleaned);
-        //
-        // let transactions = json_cleaned.addedTxs;
 
         let transactions = addedTxs;
 
-        // console.log('transactions.length', transactions.length);
-        // console.log('Globals.knownTXs', Globals.knownTXs);
         for (transaction in transactions) {
 
           try {
-            // console.log(transactions[transaction]);
+
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
                        Globals.knownTXs.push(thisHash);
                      } else {
-                       // console.log("This transaction is already known");
                        continue;
                      }
-          // console.log('Extra', thisExtra);
 
           if (thisExtra.length > 66) {
 
@@ -967,12 +952,12 @@ async function backgroundSyncMessages() {
 
 
           } else {
-            // console.log('no extra apparently');
+
           }
 
 
         } catch (err) {
-          // console.log('Problem', err);
+
           continue;
         }
 
