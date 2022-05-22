@@ -76,56 +76,32 @@ export async function getBestNode(ssl=true) {
       ssl_nodes = Globals.daemons.filter(node => {return !node.ssl});
   }
 
+  ssl_nodes = ssl_nodes.sort((a, b) => 0.5 - Math.random());
 
   for (node in ssl_nodes) {
     let this_node = ssl_nodes[node];
 
     let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
-
-    let promise = new Promise((resolve,reject) => {
-
-      fetch(nodeURL, {
+    try {
+      const resp = await fetch(nodeURL, {
          method: 'GET'
-       }, 1000)
-       .then( (ping) => {
-        if (!recommended_node && ping.status == 200 && this_node.url) {
-          console.log('recommending', this_node);
-          recommended_node = this_node;
-        }
-         resolve(this_node);
+      }, 1000);
 
-      })
-      .catch( (e) => {
-        console.log(e);
-        resolve(e);
-      })
-
-    })
-
-    node_requests.push(promise);
-
+     if (resp.ok) {
+       recommended_node = this_node;
+       return(this_node);
+     }
+  } catch (e) {
+    console.log(e);
   }
-
-
-  return await Promise.all(node_requests)
-       .then(async (results) => {
-           console.log("All done", recommended_node);
-           if (!recommended_node && ssl) {
-               return await getBestNode(false);
-
-           } else {
-              console.log(recommended_node);
-               return recommended_node;
-           }
-       })
-       .catch((e) => {
-           // Handle errors here
-           console.log('all done, but failed ');
-           console.log(e);
-       });
-
 }
 
+if (recommended_node == undefined) {
+  const recommended_non_ssl_node = await getBestNode(false);
+  return recommended_non_ssl_node;
+}
+
+}
 
 function trimExtra (extra) {
 
