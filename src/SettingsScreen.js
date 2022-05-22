@@ -1578,6 +1578,12 @@ function deleteWallet(navigation) {
                     /* Disabling saving */
                     clearInterval(Globals.backgroundSaveTimer);
 
+                    clearInterval(Globals.backgroundSyncMessagesTimer);
+
+                    Globals.syncingMessages = false;
+
+                    Globals.backgroundSyncMessagesTimer = undefined;
+
                     await setHaveWallet(false);
 
                     Globals.wallet.stop();
