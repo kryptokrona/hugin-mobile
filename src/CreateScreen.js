@@ -14,11 +14,12 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { Globals } from './Globals';
-import { saveToDatabase } from './Database';
+import { saveToDatabase, savePreferencesToDatabase } from './Database';
 import { XKRLogo } from './XKRLogo';
 import { updateCoinPrice } from './Currency';
 import { navigateWithDisabledBack } from './Utilities';
 import { BottomButton, SeedComponent } from './SharedComponents';
+import { getBestNode } from './HuginUtilities';
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
@@ -58,7 +59,7 @@ class WalletOptionScreenNoTranslation extends React.Component {
                     </Text>
                 </View>
 
-                <View style={[Styles.buttonContainer, {fontFamily: "Montserrat-Regular", bottom: 100, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
+                <View style={[Styles.buttonContainer, {fontFamily: "Montserrat-Regular", bottom: 160, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
                     <Button
                         title={t('createNewAccount')}
                         /* Request a pin for the new wallet */
@@ -67,7 +68,7 @@ class WalletOptionScreenNoTranslation extends React.Component {
                     />
                 </View>
 
-                <View style={[Styles.buttonContainer, {bottom: 40, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
+                <View style={[Styles.buttonContainer, {bottom: 100, position: 'absolute', alignItems: 'stretch', justifyContent: 'center', width: '100%'}]}>
                     <Button
                         title={t('restoreAccount')}
                         /* Get the import data */
@@ -75,7 +76,6 @@ class WalletOptionScreenNoTranslation extends React.Component {
                         color={this.props.screenProps.theme.buttonColour}
                     />
                 </View>
-
             </View>
         );
     }
@@ -101,6 +101,7 @@ class CreateWalletScreenNoTranslation extends React.Component {
         };
 
         async componentDidMount() {
+
         Globals.wallet = await WalletBackend.createWallet(Globals.getDaemon(), Config);
 
         const [ seed ] = await Globals.wallet.getMnemonicSeed();
@@ -113,6 +114,20 @@ class CreateWalletScreenNoTranslation extends React.Component {
 
         /* Save wallet in DB */
         saveToDatabase(Globals.wallet);
+
+        let node = undefined;
+        try {
+          node = await getBestNode();
+        } catch (e) {
+          console.log(e);
+        }
+        if (node != undefined) {
+
+          Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
+          savePreferencesToDatabase(Globals.preferences);
+
+        }
+
     }
 
     render() {
@@ -137,6 +152,12 @@ class CreateWalletScreenNoTranslation extends React.Component {
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: '#BB4433', marginBottom: 20 }}>
                         {t('walletCreatedSubtitleSubtitle')}
                     </Text>
+                </View>
+
+                <View>
+
+
+
                 </View>
 
                 <View style={{ alignItems: 'center', flex: 1, justifyContent: 'flex-start' }}>
