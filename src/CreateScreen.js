@@ -106,27 +106,12 @@ class CreateWalletScreenNoTranslation extends React.Component {
 
         const [ seed ] = await Globals.wallet.getMnemonicSeed();
 
-        // let [address, error] = await Globals.wallet.addSubWallet();
-
         this.setState({
             seed,
         });
 
         /* Save wallet in DB */
         saveToDatabase(Globals.wallet);
-
-        let node = undefined;
-        try {
-          node = await getBestNode();
-        } catch (e) {
-          console.log(e);
-        }
-        if (node != undefined) {
-
-          Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
-          savePreferencesToDatabase(Globals.preferences);
-
-        }
 
     }
 

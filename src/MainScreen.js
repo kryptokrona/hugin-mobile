@@ -41,6 +41,8 @@ import { CopyButton, OneLineText } from './SharedComponents';
 import { coinsToFiat, getCoinPriceFromAPI } from './Currency';
 import { withTranslation } from 'react-i18next';
 import './i18n.js';
+import i18next from './i18n'
+
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -94,7 +96,7 @@ async function init(navigation) {
     });
 
     Globals.wallet.on('deadnode', () => {
-        toastPopUp('Node may be offline, check the settings screen to swap nodes', false);
+        toastPopUp(i18next.t('nodeOfflineWarning'), false);
     });
 
     Globals.wallet.setLoggerCallback((prettyMessage, message) => {
