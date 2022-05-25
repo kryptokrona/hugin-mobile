@@ -725,7 +725,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                     textAlign: 'center',
                     marginBottom: 5
                 }}>
-                    {('customNodeFormat')}
+                    {t('customNodeFormat')}
                 </Text>
                 </View>
                 <Input

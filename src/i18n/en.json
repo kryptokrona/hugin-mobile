@@ -125,5 +125,6 @@
   pullToCheck: 'Pull down to check status of nodes',
   useCustomNode: 'Use a custom node',
   customNodeFormat: 'Format is url:port:ssl (ssl=true/false)',
-  or: 'or'
+  or: 'or',
+  nodeOfflineWarning: 'Node is offline. Please choose a new one in settings.'
 }
