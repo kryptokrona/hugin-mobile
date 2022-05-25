@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import {
@@ -915,6 +915,8 @@ export class ChatScreenNoTranslation extends React.Component {
 
            const submitMessage = async (text) => {
 
+             Keyboard.dismiss();
+
              let updated_messages = await getMessages();
              if (!updated_messages) {
                updated_messages = [];
@@ -994,7 +996,6 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 <ScrollView
                     showsVerticalScrollIndicator={false}
-
                     style={{
                         marginRight: 30,
                         marginBottom: 0,
