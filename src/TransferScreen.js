@@ -533,6 +533,12 @@ export class NewPayeeScreenNoTranslation extends React.Component {
     async validAddress(address) {
         let errorMessage = '';
 
+
+        if (Globals.payees.some((payee) => payee.address === address)) {
+            errorMessage = `A payee with the address ${address} already exists.`;
+            return [false, errorMessage];
+        }
+
         if (address === '' || address === undefined || address === null) {
             return [false, errorMessage];
         }
