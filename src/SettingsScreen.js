@@ -1512,15 +1512,15 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     }
                                 },
                             },
-                            // {
-                            //     title: Config.appName,
-                            //     description: Config.appVersion,
-                            //     icon: {
-                            //         iconName: 'info',
-                            //         IconType: SimpleLineIcons,
-                            //     },
-                            //     onClick: () => {},
-                            // },
+                            {
+                                title: Config.appName,
+                                description: Config.appVersion,
+                                icon: {
+                                    iconName: 'info',
+                                    IconType: SimpleLineIcons,
+                                },
+                                onClick: () => {},
+                            },
                         ]}
                         keyExtractor={item => item.title}
                         renderItem={({item}) => (
