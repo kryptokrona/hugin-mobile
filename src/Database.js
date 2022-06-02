@@ -194,6 +194,15 @@ async function createTables(DB) {
             );
         }
 
+        if (dbVersion === 2) {
+          tx.executeSql(
+              `ALTER TABLE
+                  message_db
+              ADD
+                  read BOOLEAN default 1`
+          );
+        }
+
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS payees (
                 nickname TEXT,
@@ -291,7 +300,7 @@ async function createTables(DB) {
         }
 
         tx.executeSql(
-            `PRAGMA user_version = 2`
+            `PRAGMA user_version = 3`
         );
     });
 }
@@ -389,14 +398,15 @@ export async function saveMessage(conversation, type, message, timestamp) {
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO message_db
-              (conversation, type, message, timestamp)
+              (conversation, type, message, timestamp, read)
           VALUES
-              (?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?)`,
           [
               conversation,
               type,
               message,
-              timestamp
+              timestamp,
+              'false'
           ]
       );
   });
@@ -429,17 +439,37 @@ export async function saveOutgoingMessage(message) {
   await database.transaction((tx) => {
       tx.executeSql(
           `INSERT INTO message_db
-              (conversation, type, message, timestamp)
+              (conversation, type, message, timestamp, read)
           VALUES
-              (?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?)`,
           [
               message.to,
               'sent',
               message.msg,
-              message.t
+              message.t,
+              true
           ]
       );
   });
+
+}
+
+export async function markConversationAsRead(conversation) {
+
+  await database.transaction((tx) => {
+     tx.executeSql(
+      `UPDATE
+          message_db
+      SET
+          read = 1
+      WHERE
+          conversation = ?`,
+      [
+        conversation
+      ],
+  );
+
+});
 
 }
 
@@ -523,7 +553,8 @@ export async function loadPayeeDataFromDatabase() {
                 address: item.address,
                 paymentID: item.paymentid,
                 lastMessage: latestMessage.length ? latestMessage[0].message : false,
-                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0
+                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
+                read: latestMessage.length ? latestMessage[0].read : true
             })
           }
 
@@ -544,7 +575,7 @@ export async function getLatestMessages() {
             timestamp
         ASC
         `);
-        console.log(data);
+
     if (data && data.rows && data.rows.length) {
         const res = [];
 
@@ -554,10 +585,11 @@ export async function getLatestMessages() {
                 conversation: item.conversation,
                 type: item.type,
                 message: item.message,
-                timestamp: item.timestamp
+                timestamp: item.timestamp,
+                read: item.read
             });
         }
-        console.log(res);
+
         return res;
     }
 

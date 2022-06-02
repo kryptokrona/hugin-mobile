@@ -40,7 +40,7 @@ import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
-import { saveToDatabase, getMessages, getLatestMessages, removeMessage } from './Database';
+import { saveToDatabase, getMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -115,6 +115,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
+                                chevron={item.read == '1' ? false : true }
                                 leftIcon={
                                     <Image
                                       style={{width: 50, height: 50}}
@@ -145,12 +146,17 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                     color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                     fontFamily: 'Montserrat-Regular'
                                 }}
-                                onPress={() => {
+                                onPress={async () => {
                                     this.props.navigation.navigate(
                                         'ChatScreen', {
                                             payee: item,
                                         }
                                     );
+                                    await markConversationAsRead(item.address);
+                                    Globals.payees = await loadPayeeDataFromDatabase();
+                                    this.setState({
+                                        payees: Globals.payees
+                                    });
                                 }}
                             />
                         )}
@@ -895,6 +901,8 @@ export class ChatScreenNoTranslation extends React.Component {
     }
 
     render() {
+
+      markConversationAsRead(this.state.address);
 
        const { t } = this.props;
 
