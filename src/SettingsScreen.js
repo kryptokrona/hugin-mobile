@@ -18,6 +18,7 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import { Input } from 'react-native-elements';
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
+import i18next from './i18n';
 import fetch from './fetchWithTimeout'
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
@@ -189,7 +190,7 @@ export class FaqScreen extends React.Component {
     }
 }
 
-export class DisableDozeScreen extends React.Component {
+export class DisableDozeScreenNoTranslation extends React.Component {
     static navigationOptions = {
         title: 'Disable Doze',
     };
@@ -222,6 +223,8 @@ export class DisableDozeScreen extends React.Component {
         /* Chop the '!' off the end */
         arrivalTime = arrivalTime.substr(0, arrivalTime.length - 1);
 
+        const { t } = this.props;
+
         return(
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
@@ -244,8 +247,8 @@ export class DisableDozeScreen extends React.Component {
                         }}
                     >
                         {this.state.dozeDisabled
-                            ? 'Great! Doze is already disabled. You don\'t need to do anything else!'
-                            : 'Doze is not yet disabled. Read on to find out how to disable it.'}
+                            ? t('dozeDisabled')
+                            : t('dozeEnabled') }
                     </Text>
 
                     <Text style={{
@@ -253,18 +256,8 @@ export class DisableDozeScreen extends React.Component {
                         marginBottom: 20,
                         fontSize: 16,
                     }}>
-                        Disabling Doze mode for {Config.appName} can help ensure your
-                        wallet is always synced or nearly synced. Doze mode prevents
-                        background syncing from firing consistently,
-                        especially if you are not using your phone, to save battery.{'\n\n'}
 
-                        To disable Doze mode, simply click the link below, then
-                        select 'All Apps' from the dropdown.{'\n\n'}
-
-                        Next, scroll down to find {Config.appName}, click it, then
-                        choose 'Don't optimize'.{'\n\n'}
-
-                        Click done, and you are finished!{'\n\n'}
+                        {t('disableDozeText').replace('{Config.appName}', Config.appName).replace('{\n\n}','\n\n')}
 
                         <Text
                             style={{
@@ -273,7 +266,7 @@ export class DisableDozeScreen extends React.Component {
                             }}
                             onPress={() => NativeModules.TurtleCoin.navigateToBatteryOptimizationScreen()}
                         >
-                            Click here to open the Battery optimization menu.
+                            {t('openBatteryMenu')}
                         </Text>
                     </Text>
                 </ScrollView>
@@ -281,6 +274,8 @@ export class DisableDozeScreen extends React.Component {
         );
     }
 }
+
+export const DisableDozeScreen = withTranslation()(DisableDozeScreenNoTranslation)
 
 
 export class LoggingScreen extends React.Component {
@@ -668,7 +663,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
     }
 
     async swapNode(node) {
-        toastPopUp('Swapping node...');
+        toastPopUp(i18next.t('swappingNode'));
 
 
         Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
@@ -682,7 +677,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
 
         await Globals.wallet.swapNode(Globals.getDaemon());
 
-        toastPopUp('Node swap complete.');
+        toastPopUp(i18next.t('nodeSwapped'));
     }
 
     render() {
@@ -703,7 +698,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                         <RefreshControl
                             refreshing={this.state.refreshing}
                             onRefresh={this.refresh}
-                            title='Updating node list...'
+                            title={t('updatingNodes')}
                         />
                     }
                 >
@@ -1278,7 +1273,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         Globals.wallet.enableAutoOptimization(false);
                                     }
 
-                                    toastPopUp(Globals.preferences.limitData ? 'Data limiting enabled' : 'Data limiting disabled');
+                                    toastPopUp(Globals.preferences.limitData ? t('dataLimitOn') : t('dataLimitOff'));
                                     savePreferencesToDatabase(Globals.preferences);
                                 },
                                 checkbox: true,
@@ -1346,7 +1341,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                             authConfirmation: Globals.preferences.authConfirmation,
                                         });
 
-                                        toastPopUp(Globals.preferences.authConfirmation ? 'Pin Confirmation Enabled' : 'Pin Confirmation Disabled');
+                                        toastPopUp(Globals.preferences.authConfirmation ? t('pinOn') : t('pinOff'));
                                         savePreferencesToDatabase(Globals.preferences);
                                     }
                                 },
@@ -1380,7 +1375,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         notifsEnabled: Globals.preferences.notificationsEnabled,
                                     });
 
-                                    toastPopUp(Globals.preferences.notificationsEnabled ? 'Notifications enabled' : 'Notifications disabled');
+                                    toastPopUp(Globals.preferences.notificationsEnabled ? t('notifsOn') : t('notifsOff'));
                                     savePreferencesToDatabase(Globals.preferences);
                                 },
                                 checkbox: true,
@@ -1401,7 +1396,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     });
 
                                     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
-                                    toastPopUp(Globals.preferences.scanCoinbaseTransactions ? 'Scanning Coinbase Transactions enabled' : 'Scanning Coinbase Transactions disabled');
+                                    toastPopUp(Globals.preferences.scanCoinbaseTransactions ? t('coinbaseOn') : t('coinbaseOff'));
                                     savePreferencesToDatabase(Globals.preferences);
                                 },
                                 checkbox: true,
@@ -1570,10 +1565,10 @@ export const SettingsScreen = withTranslation()(SettingsScreenNoTranslation)
  */
 function deleteWallet(navigation) {
     Alert.alert(
-        'Delete Wallet?',
-        'Are you sure you want to delete your wallet? If your seed is not backed up, your funds will be lost!',
+        i18next.t('deleteWarningPromptTitle'),
+        i18next.t('deleteWarningSubtitle'),
         [
-            {text: 'Delete', onPress: () => {
+            {text: i18next.t('delete'), onPress: () => {
                 (async () => {
                     /* Disabling saving */
                     clearInterval(Globals.backgroundSaveTimer);
@@ -1594,32 +1589,32 @@ function deleteWallet(navigation) {
                     navigation.navigate('Login');
                 })();
             }},
-            {text: 'Cancel', style: 'cancel'},
+            {text: i18next.t('cancel'), style: 'cancel'},
         ],
     );
 }
 
 function resetWallet(navigation) {
     Alert.alert(
-        'Resync Wallet?',
-        'Are you sure you want to resync your wallet? This may take a long time.',
+        i18next.t('resyncTitle'),
+        i18next.t('resyncSubtitle'),
         [
-            {text: 'Resync', onPress: () => {
+            {text: i18next.t('resync'), onPress: () => {
                 Globals.wallet.rescan();
-                toastPopUp('Wallet resync initiated');
+                toastPopUp(i18next.t('resyncNotif'));
                 navigation.navigate('Main', { reloadBalance: true } );
             }},
-            {text: 'Cancel', style: 'cancel'},
+            {text: i18next.t('cancel'), style: 'cancel'},
         ],
     );
 }
 
 function rewindWallet(navigation) {
     Alert.alert(
-        'Rewind Wallet?',
-        'Are you sure you want to rewind your wallet? This will take a little time.',
+        i18next.t('rewindTitle'),
+        i18next.t('rewindSubtitle'),
         [
-            {text: 'Rewind', onPress: () => {
+            {text: i18next.t('rewind'), onPress: () => {
                 const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
 
                 let rewindHeight = walletBlockCount;
@@ -1630,10 +1625,10 @@ function rewindWallet(navigation) {
 
                 Globals.wallet.rewind(rewindHeight);
 
-                toastPopUp('Wallet rewind initiated');
+                toastPopUp(i18next.t('rewindNotif'));
                 navigation.navigate('Main', { reloadBalance: true } );
             }},
-            {text: 'Cancel', style: 'cancel'},
+            {text: i18next.t('cancel'), style: 'cancel'},
         ],
     );
 }
