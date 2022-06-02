@@ -418,6 +418,14 @@ class AddressBook extends React.Component {
 
                 <ScrollView
                 showsVerticalScrollIndicator={false}
+                style={{
+                   width: '100%',
+                   height: '88%',
+                   marginBottom: 20,
+                   backgroundColor: this.props.screenProps.theme.backgroundColour,
+                   borderWidth: 0,
+                   borderColor: 'transparent'
+               }}
                 >
                     <FlatList
                         showsVerticalScrollIndicator={false}
@@ -482,9 +490,10 @@ class ExistingPayeesNoTranslation extends React.Component {
 
         return(
             <View style={{
-                width: '90%',
+                width: '95%',
                 borderWidth: 0,
-                marginBottom: 15
+                marginBottom: 15,
+                marginTop: 15
             }}>
                 <View style={{
                 }}>
