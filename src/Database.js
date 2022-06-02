@@ -217,6 +217,7 @@ async function createTables(DB) {
                 type TEXT,
                 message TEXT,
                 timestamp TEXT,
+                read BOOLEAN default 1,
                 UNIQUE (timestamp)
             )`
         );
