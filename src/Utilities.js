@@ -162,6 +162,7 @@ export async function handleURI(data, navigation) {
 
         /* Hop into the transfer stack */
         navigation.navigate('ChoosePayee');
+        // navigation.navigate('Recipients');
         /* Then navigate to the nested route, if needed */
         navigation.navigate(result.suggestedAction, {...result});
     }

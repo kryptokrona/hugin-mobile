@@ -68,6 +68,8 @@ export class RecipientsScreenNoTranslation extends React.Component {
         }
 
         Globals.updatePayeeFunctions.push(() => {
+          console.log('updatestate');
+          console.log(Globals.payees);
             this.setState(prevState => ({
                 payees: Globals.payees,
                 index: prevState.index + 1,
@@ -77,6 +79,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
 
     render() {
         const { t } = this.props;
+        const payees = this.state.payees;
         const noPayeesComponent =
             <View style={{
                 width: '100%',
@@ -106,7 +109,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                     <FlatList
                         extraData={this.state.index}
                         ItemSeparatorComponent={null}
-                        data={this.state.payees}
+                        data={payees}
                         keyExtractor={item => item.nickname}
                         renderItem={({item}) => (
                             <ListItem
@@ -758,7 +761,6 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                                     paymentID: this.state.newPaymentID,
                                     lastMessage: this.state.lastMessage,
                                 });
-                                console.log(Globals.payees);
                                 this.setState({
                                     payees: Globals.payees
                                 });

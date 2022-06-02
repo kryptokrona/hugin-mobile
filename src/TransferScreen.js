@@ -391,7 +391,7 @@ class AddressBook extends React.Component {
     }
 
     render() {
-
+                  const payees = this.state.payees;
                   function get_avatar(hash) {
                     // Displays a fixed identicon until user adds new contact address in the input field
                     if (hash.length < 15) {
@@ -423,7 +423,7 @@ class AddressBook extends React.Component {
                         showsVerticalScrollIndicator={false}
                         ItemSeparatorComponent={null}
                         extraData={this.state.index}
-                        data={this.state.payees}
+                        data={payees}
                         keyExtractor={item => item.nickname}
                         renderItem={({item}) => (
                             <ListItem
@@ -807,6 +807,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
 
                             if (finishFunction) {
                               Globals.fromChat = false;
+                              this.props.navigation.dispatch(StackActions.popToTop());
                               this.props.navigation.navigate(
                                   'ChatScreen', {
                                       payee: payee,
