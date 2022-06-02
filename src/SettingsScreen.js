@@ -257,7 +257,7 @@ export class DisableDozeScreenNoTranslation extends React.Component {
                         fontSize: 16,
                     }}>
 
-                        {t('disableDozeText').replace('{Config.appName}', Config.appName).replace('{\n\n}','\n\n')}
+                        {t('disableDozeText').replace(/{Config.appName}/g, Config.appName).replace(/{\n\n}/g,'\n\n')}
 
                         <Text
                             style={{
@@ -908,8 +908,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                                 fontSize: 20,
                                 color: this.props.screenProps.theme.primaryColour,
                             }}>
-                                Could not load nodes! Either the API is down, or you have no internet.
-                                Pull-to-refresh to try and load the nodes again.
+                                {t('noNodes')}
                             </Text>
                         </View>
                     }
