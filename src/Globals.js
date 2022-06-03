@@ -20,6 +20,8 @@ import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
 
+import offline_node_list from './nodes.json';
+
 import {
     removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
     loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase,
@@ -166,9 +168,13 @@ class globals {
 
             if (data.nodes) {
                 this.daemons = data.nodes;
+            } else {
+              this.daemons = offline_node_list.nodes;
             }
         } catch (error) {
+          console.log(offline_node_list);
             this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
+            this.daemons = offline_node_list.nodes;
         }
     }
 }
