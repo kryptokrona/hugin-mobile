@@ -16,7 +16,7 @@ import {
 
 import { Button as RNEButton, Alert } from 'react-native';
 
-import { Button, Input } from 'react-native-elements';
+import { Button, Input, Icon } from 'react-native-elements';
 
 import Config from './Config';
 import ListItem from './ListItem';
@@ -68,8 +68,6 @@ export class RecipientsScreenNoTranslation extends React.Component {
         }
 
         Globals.updatePayeeFunctions.push(() => {
-          console.log('updatestate');
-          console.log(Globals.payees);
             this.setState(prevState => ({
                 payees: Globals.payees,
                 index: prevState.index + 1,
@@ -94,6 +92,14 @@ export class RecipientsScreenNoTranslation extends React.Component {
                 </Text>
             </View>;
 
+        const newMessageIndicator =
+          <Icon
+            reverse
+            name='ios-american-football'
+            type='ionicon'
+            color='#006BA7'
+            size={0}
+          />;
 
         const addressBookComponent =
             <ScrollView
@@ -118,7 +124,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
-                                chevron={item.read == '1' ? false : true }
+                                chevron={item.read == '1' ? false : newMessageIndicator }
                                 leftIcon={
                                     <Image
                                       style={{width: 50, height: 50}}
@@ -791,9 +797,7 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
                                     t('removeWarning'),
                                     [
                                         { text: t('remove'), onPress: () => {
-                                            console.log('initialAddress', this.state.initialAddress);
                                             Globals.removePayee(this.state.initialNickname, true);
-                                            console.log(Globals.payees);
                                             this.setState({
                                                 payees: Globals.payees
                                             });
@@ -876,7 +880,6 @@ export class ChatScreenNoTranslation extends React.Component {
 
 
         Globals.updateChatFunctions.push(() => {
-          console.log('Updatemessages');
             this.setState({
                 messages: Globals.messages
             })
@@ -985,7 +988,6 @@ export class ChatScreenNoTranslation extends React.Component {
                           source={{uri: get_avatar(this.state.address)}}
                         />
                         <Text onPress={() => {
-                            Globals.logger.addLogMessage("pressed");
                             this.props.navigation.navigate(
                                 'ModifyPayee', {
                                     payee: this.props.navigation.state.params.payee,
@@ -1054,7 +1056,6 @@ export class ChatScreenNoTranslation extends React.Component {
                     placeholder={t('typeMessageHere')}
                     placeholderTextColor={'#ffffff'}
                     onSubmitEditing={async (e) => {
-                      console.log('wtf');
                       e.preventDefault();
                         // return;
                         // submitMessage(this.state.message);
