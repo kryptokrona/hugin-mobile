@@ -127,7 +127,7 @@
   customNodeFormat: 'Formatet är url:port:ssl (ssl=true/false)',
   or: 'eller',
   nodeOfflineWarning: 'Din nod är offline. Vänligen välj en ny i inställningar.',
-  disableDozeText: 'Att inaktivera “Doze mode” för {Config.appname} kan hjälpa din app att hålla sig uppdaterad mot nätverket bättre. Doze mode kan avbryta bakgrundssynkning för att spara batteri, speciellt när du inte använder din telefon.{\n\n}För att avaktivera Doze mode, klicka på länken nedan, välj sedan “Alla apps”.{\n\n}Skrolla sedan ned till {Config.appName}, klicka på den, välj sedan “Optimera inte”.{\n\n}Klicka sedan på färdig så är det klar!',
+  disableDozeText: 'Att inaktivera “Doze mode” för {Config.appName} kan hjälpa din app att hålla sig uppdaterad mot nätverket bättre. Doze mode kan avbryta bakgrundssynkning för att spara batteri, speciellt när du inte använder din telefon.{\n\n}För att avaktivera Doze mode, klicka på länken nedan, välj sedan “Alla apps”.{\n\n}Skrolla sedan ned till {Config.appName}, klicka på den, välj sedan “Optimera inte”.{\n\n}Klicka sedan på färdig så är det klart!{\n\n}',
   dozeDisabled: 'Doze är avaktiverat, allt är i sin ordning!',
   dozeEnabled: 'Du behöver avaktivera Doze',
   openBatteryMenu: 'Klicka här för att komma till batterioptimering',
