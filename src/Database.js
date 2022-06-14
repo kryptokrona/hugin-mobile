@@ -223,6 +223,20 @@ async function createTables(DB) {
         );
 
         tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS boards_message_db (
+                 address TEXT,
+                 message TEXT,
+                 signature TEXT,
+                 board TEXT,
+                 timestamp TEXT,
+                 nickname TEXT,
+                 reply TEXT,
+                 hash TEXT,
+                 sent BOOLEAN
+            )`
+        );
+
+        tx.executeSql(
             `CREATE TABLE IF NOT EXISTS transactiondetails (
                 hash TEXT,
                 memo TEXT,
@@ -413,6 +427,24 @@ export async function saveMessage(conversation, type, message, timestamp) {
   });
 
   Globals.updateMessages();
+
+}
+
+export async function saveBoardMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent) {
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `REPLACE INTO boards_message_db
+              (message, address, signature, board, timestamp, nickname, reply, hash, sent)
+          VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+              message, address, signature, board, timestamp, nickname, reply, hash, sent
+          ]
+      );
+  });
+
+  // Globals.updateBoardsMessages();
 
 }
 
@@ -644,6 +676,25 @@ export async function messageExists(timestamp) {
         WHERE
             timestamp = ${timestamp}
         `
+    );
+    if (data && data.rows && data.rows.length) {
+      return true;
+    } else {
+      return false;
+    }
+
+}
+
+
+export async function boardsMessageExists(hash) {
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            boards_message_db
+        WHERE
+            hash = ?
+        `, [hash]
     );
     if (data && data.rows && data.rows.length) {
       return true;

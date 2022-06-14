@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase, messageExists } from './Database';
+import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 
 import {
@@ -518,7 +518,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
         3, // mixin
-        {fixedFee: 4500, isFixedFee: true}, // fee
+        {fixedFee: 5000, isFixedFee: true}, // fee
         undefined, //paymentID
         undefined, // subWalletsToTakeFrom
         undefined, // changeAddress
@@ -658,7 +658,32 @@ export async function getExtra(hash){
   })
 }
 
-export async function getMessage(extra){
+async function getBoardMessage(json) {
+
+  let message = json.m;
+  let from = json.k;
+  let signature = json.s;
+  let board = json.brd;
+  let timestamp = json.t;
+  let nickname = json.n ? json.n : 'Anonymous';
+  let reply = json.r ? json.r : 0;
+  let hash = json.hash;
+  let sent = false;
+
+  saveBoardMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
+
+  PushNotification.localNotification({
+      title: nickname + ' in ' + board,//'Incoming transaction received!',
+      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+      message: message,
+      data: timestamp,
+      userInfo: board,
+      // largeIconUrl: get_avatar(payload_json.from, 64),
+  });
+
+}
+
+export async function getMessage(extra, hash){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -674,54 +699,14 @@ export async function getMessage(extra){
     Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
-
-    // if (tx.key && tx.t) {
-    //
-    //
-    //     let senderKey = tx.key;
-    //
-    //     let box = tx.box;
-    //
-    //     let timestamp = tx.t;
-    //
-	  //       let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
-    //
-    //     if (!decryptBox) {
-		// 			//console.log('Cant decrypt new conversation');
-    //       reject();
-    //     }
-    //
-    //     let message_dec = naclUtil.encodeUTF8(decryptBox);
-    //
-    //     let payload_json = JSON.parse(message_dec);
-    //
-    //     payload_json.t = timestamp;
-    //
-    //     let exists = false;
-    //
-    //     for (payee in payees) {
-    //
-    //       if (payees[payee].paymentID == senderKey) {
-    //         exists = true;
-    //       }
-    //
-    //     }
-    //
-    //     if (!exists) {
-    //
-    //       let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
-    //       savePayeeToDatabase(payee);
-    //
-    //     }
-    //
-    //     saveIncomingMessage(payload_json);
-    //
-    //     resolve(payload_json);
-    //
-    // } else {
-
         if (tx.m || tx.b || tx.brd) {
-          reject();
+          // reject();
+          tx.hash = hash;
+          if (await boardsMessageExists(hash)) {
+            reject();
+            return;
+          }
+          getBoardMessage(tx);
           return;
         }
 
