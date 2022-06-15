@@ -12,7 +12,7 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getMessages, getLatestMessages } from './Database';
+import { getMessages, getLatestMessages, getBoardsMessages } from './Database';
 
 import Config from './Config';
 
@@ -64,6 +64,7 @@ class globals {
         this.updatePayeeFunctions = [];
 
         this.updateChatFunctions = [];
+        this.updateBoardsFunctions = [];
 
         /* Mapping of tx hash to address sent, payee name, memo */
         this.transactionDetails = [];
@@ -71,6 +72,8 @@ class globals {
         this.daemons = [];
 
         this.messages = [];
+
+        this.boardsMessages = [];
 
         this.knownTXs = [];
 
@@ -126,6 +129,12 @@ class globals {
 
     }
 
+    async updateBoardsMessages() {
+      this.boardsMessages = await getBoardsMessages();
+      this.updateBoards();
+
+    }
+
     //
     // updateKnownTXs() {
     //
@@ -134,6 +143,13 @@ class globals {
     updateChat() {
       console.log('updateChat');
       Globals.updateChatFunctions.forEach((f) => {
+          f();
+      });
+    }
+
+    updateBoards() {
+      console.log('updateChat');
+      Globals.updateBoardsFunctions.forEach((f) => {
           f();
       });
     }

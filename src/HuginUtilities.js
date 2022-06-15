@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 
 import {
@@ -410,6 +410,43 @@ export async function optimizeMessages(nbrOfTxs) {
 
 }
 
+export async function sendBoardsMessage(message, board) {
+
+  const my_address = Globals.wallet.getPrimaryAddress();
+
+  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+
+  const signature = await xkrUtils.signMessage(message, privateSpendKey);
+
+  const message_json = {
+    "m":message,
+    "k": my_address,
+    "s": signature,
+    "brd": board,
+    "t": parseInt(Date.now() / 1000)
+    // "n":"knugen"
+  }
+
+  const payload_hex = toHex(JSON.stringify(message_json));
+
+  // toastPopUp(payload_hex);
+
+  const result = await Globals.wallet.sendTransactionAdvanced(
+      [[my_address, 1]], // destinations,
+      3, // mixin
+      {fixedFee: 5000, isFixedFee: true}, // fee
+      undefined, //paymentID
+      undefined, // subWalletsToTakeFrom
+      undefined, // changeAddress
+      true, // relayToNetwork
+      false, // sneedAll
+      Buffer.from(payload_hex, 'hex')
+  );
+  return result;
+  console.log(result);
+
+}
+
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
   // optimizeMessages(10000000);
@@ -658,7 +695,7 @@ export async function getExtra(hash){
   })
 }
 
-async function getBoardMessage(json) {
+async function getBoardsMessage(json) {
 
   let message = json.m;
   let from = json.k;
@@ -670,8 +707,8 @@ async function getBoardMessage(json) {
   let hash = json.hash;
   let sent = false;
 
-  saveBoardMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
-
+  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
+  if (from != Globals.wallet.getPrimaryAddress()) {
   PushNotification.localNotification({
       title: nickname + ' in ' + board,//'Incoming transaction received!',
       //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
@@ -680,7 +717,7 @@ async function getBoardMessage(json) {
       userInfo: board,
       // largeIconUrl: get_avatar(payload_json.from, 64),
   });
-
+}
 }
 
 export async function getMessage(extra, hash){
@@ -706,7 +743,7 @@ export async function getMessage(extra, hash){
             reject();
             return;
           }
-          getBoardMessage(tx);
+          getBoardsMessage(tx);
           return;
         }
 

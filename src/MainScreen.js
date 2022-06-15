@@ -936,7 +936,7 @@ async function backgroundSyncMessages() {
           if (thisExtra.length > 66) {
 
 
-            let message = await getMessage(thisExtra);
+            let message = await getMessage(thisExtra, thisHash);
 
             if (!message) {
               continue;
