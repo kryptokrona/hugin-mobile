@@ -30,7 +30,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
+import { cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -125,6 +125,8 @@ async function init(navigation) {
     }
 
     initGlobals();
+
+    cacheSync(true);
 
     PushNotification.configure({
         onNotification: handleNotification,
@@ -883,6 +885,7 @@ async function checkIfStuck() {
 }
 
 async function backgroundSyncMessages() {
+
 
   if (Globals.syncingMessagesCount > 3) {
     Globals.syncingMessages = false;

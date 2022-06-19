@@ -9,7 +9,7 @@ import { AppState, Platform, PushNotificationIOS } from 'react-native';
 import { WalletBackend, LogLevel } from 'kryptokrona-wallet-backend-js';
 
 import PushNotification from 'react-native-push-notification';
-import {getMessage} from './HuginUtilities';
+import {getMessage, cacheSync} from './HuginUtilities';
 import NetInfo from '@react-native-community/netinfo';
 
 import Config from './Config';
@@ -342,6 +342,8 @@ export async function backgroundSync() {
 
         /* Save the wallet */
         saveToDatabase(Globals.wallet);
+
+        cacheSync(false);
 
         /* Update our running time */
         secsRunning = (new Date() - startTime) / 1000;

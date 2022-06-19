@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { getLatestBoardMessage, getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 
 import {
@@ -407,6 +407,71 @@ export async function optimizeMessages(nbrOfTxs) {
       // return '';
 
 
+
+}
+
+export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=0) {
+
+    if(first) {
+      latest_board_message_timestamp = await getLatestBoardMessage();
+    }
+
+    console.log(latest_board_message_timestamp);
+
+    console.log(page);
+
+    let cacheURL = Config.defaultCache;
+    console.log('Fetching ' + cacheURL + "/api/v1/posts?size=50&page=" + page);
+      fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
+    .then((response) => response.json())
+    .then(async (json) => {
+      console.log(json);
+      const items = json.items;
+
+      for (item in items) {
+
+        console.log(items[item]);
+
+        if (items[item].time < latest_board_message_timestamp) {
+          console.log(items[item].time, latest_board_message_timestamp);
+          return;
+        }
+
+        const fromMyself = items[item].key == Globals.wallet.getPrimaryAddress() ? true : false;
+
+        const message = items[item].message;
+        const address = items[item].key;
+        const signature = items[item].signature;
+        const board = items[item].board;
+        const timestamp = items[item].time;
+        const nickname = items[item].nickname;
+        const reply = items[item].reply;
+        const hash = items[item].tx_hash;
+        const sent = fromMyself ? true : false;
+
+        if (await boardsMessageExists(hash)) {
+          continue;
+          return;
+        }
+
+        saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
+
+        if (latest_board_message_timestamp != 0 && !fromMyself) {
+          PushNotification.localNotification({
+              title: nickname + ' in ' + board,//'Incoming transaction received!',
+              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+              message: message,
+              data: timestamp,
+              userInfo: board,
+              // largeIconUrl: get_avatar(payload_json.from, 64),
+          });
+        }
+
+      }
+      if (json.currentPage != json.totalPages) {
+            cacheSync(silent, latest_board_message_timestamp, false, page+1);
+      }
+    })
 
 }
 

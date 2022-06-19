@@ -221,6 +221,11 @@ async function createTables(DB) {
                 UNIQUE (timestamp)
             )`
         );
+
+      //   tx.executeSql(
+      //     `DROP TABLE boards_message_db`
+      // );
+
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS boards_message_db (
                  address TEXT,
@@ -230,11 +235,13 @@ async function createTables(DB) {
                  timestamp TEXT,
                  nickname TEXT,
                  reply TEXT,
-                 hash TEXT,
+                 hash TEXT UNIQUE,
                  sent BOOLEAN,
                  read BOOLEAN default 1
             )`
         );
+
+
 
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS transactiondetails (
@@ -430,7 +437,7 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 }
 
-export async function saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent) {
+export async function saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent=false) {
 
   await database.transaction((tx) => {
       tx.executeSql(
@@ -444,8 +451,9 @@ export async function saveBoardsMessage(message, address, signature, board, time
       );
   });
 
-  Globals.updateBoardsMessages();
-
+  if (!silent) {
+    Globals.updateBoardsMessages();
+  }
 }
 
 
@@ -703,9 +711,7 @@ export async function getBoardsMessages(board='Home') {
             boards_message_db ${board == 'Home' ? '' : 'WHERE board = "' + board + '"'}
         ORDER BY
             timestamp
-        DESC
-        LIMIT
-            100`
+        DESC`
     );
     console.log('Got ' + data.rows.length + " board messages");
     if (data && data.rows && data.rows.length) {
@@ -732,6 +738,34 @@ export async function getBoardsMessages(board='Home') {
     }
 
     return [];
+}
+
+export async function getLatestBoardMessage() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            boards_message_db
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+            1`
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    let timestamp = 0;
+    if (data && data.rows && data.rows.length) {
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            timestamp = item.timestamp;
+            return timestamp;
+        }
+
+    }
+    return timestamp;
+
 }
 
 export async function messageExists(timestamp) {

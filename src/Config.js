@@ -191,6 +191,11 @@ const Config = new function() {
     this.defaultDaemon = new Daemon('gota.kryptokrona.se', 11898, false);
 
     /**
+     * Default Hugin Cache to use.
+     */
+    this.defaultCache = 'https://cache.hugin.chat';
+
+    /**
      * A link to where a bug can be reported for your wallet. Please update
      * this if you are forking, so we don't get reported bugs for your wallet...
      *
