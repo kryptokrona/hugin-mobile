@@ -711,7 +711,9 @@ export async function getBoardsMessages(board='Home') {
             boards_message_db ${board == 'Home' ? '' : 'WHERE board = "' + board + '"'}
         ORDER BY
             timestamp
-        DESC`
+        DESC
+        LIMIT
+        100`
     );
     console.log('Got ' + data.rows.length + " board messages");
     if (data && data.rows && data.rows.length) {

@@ -13,7 +13,6 @@ import { Alert } from 'react-native';
 import NetInfo from "@react-native-community/netinfo";
 
 import { getMessages, getLatestMessages, getBoardsMessages } from './Database';
-
 import Config from './Config';
 
 import { Logger } from './Logger';
@@ -53,7 +52,8 @@ class globals {
             autoOptimize: false,
             authenticationMethod: 'hardware-auth',
             node: Config.defaultDaemon.getConnectionString(),
-            language: 'en'
+            language: 'en',
+            cache: Config.defaultCache
         };
 
         /* People in our address book */

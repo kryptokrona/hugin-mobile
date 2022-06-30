@@ -59,6 +59,7 @@ String.prototype.hashCode = function() {
 }
 
 export class BoardsHomeScreenNoTranslation extends React.Component {
+
     constructor(props) {
         super(props);
 
@@ -88,17 +89,19 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         let i = 0;
 
+        console.log(this_messages);
+
         while (i < this_messages.length) {
 
-          console.log('wtf', this_messages, i);
-
+          i++;
           let this_msg = this_messages[i];
           console.log(this_msg);
           let this_hash = this_msg.hash;
           console.log(this_hash);
-          markBoardsMessageAsRead(this_hash);
+          if(!this_msg.read) {
+              markBoardsMessageAsRead(this_hash);
+          }
 
-          i++;
 
         }
 
