@@ -164,7 +164,8 @@ async function createTables(DB) {
                 limitdata BOOLEAN,
                 theme TEXT,
                 pinconfirmation BOOLEAN,
-                language TEXT
+                language TEXT,
+                nickname TEXT
             )`
         );
 
@@ -261,6 +262,15 @@ async function createTables(DB) {
                 (0, '')`
         );
 
+        if (dbVersion === 3) {
+            tx.executeSql(
+              `ALTER TABLE
+                  preferences
+              ADD
+                  nickname TEXT default 'Anonymous'`
+            );
+        }
+
         /* Setup default preference values */
         tx.executeSql(
             `INSERT OR IGNORE INTO preferences (
@@ -273,7 +283,8 @@ async function createTables(DB) {
                 pinconfirmation,
                 autooptimize,
                 authmethod,
-                node
+                node,
+                nickname
             )
             VALUES (
                 0,
@@ -285,7 +296,8 @@ async function createTables(DB) {
                 0,
                 1,
                 'hardware-auth',
-                ?
+                ?,
+                'Anonymous'
             )`,
             [
                 Config.defaultDaemon.getConnectionString(),
@@ -321,8 +333,10 @@ async function createTables(DB) {
             );
         }
 
+
+
         tx.executeSql(
-            `PRAGMA user_version = 3`
+            `PRAGMA user_version = 4`
         );
     });
 }
@@ -355,7 +369,8 @@ export async function savePreferencesToDatabase(preferences) {
                 autooptimize = ?,
                 authmethod = ?,
                 node = ?,
-                language = ?
+                language = ?,
+                nickname = ?
             WHERE
                 id = 0`,
             [
@@ -368,7 +383,8 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.autoOptimize ? 1 : 0,
                 preferences.authenticationMethod,
                 preferences.node,
-                preferences.language
+                preferences.language,
+                preferences.nickname
             ]
         );
     });
@@ -386,7 +402,8 @@ export async function loadPreferencesFromDatabase() {
             autooptimize,
             authmethod,
             node,
-            language
+            language,
+            nickname
         FROM
             preferences
         WHERE
@@ -406,7 +423,8 @@ export async function loadPreferencesFromDatabase() {
             autoOptimize: item.autooptimize === 1,
             authenticationMethod: item.authmethod,
             node: item.node,
-            language: item.language
+            language: item.language,
+            nickname: item.nickname
         }
     }
 
@@ -439,6 +457,8 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 export async function saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent=false) {
 
+let fromMyself = address == Globals.wallet.getPrimaryAddress();
+
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO boards_message_db
@@ -446,7 +466,7 @@ export async function saveBoardsMessage(message, address, signature, board, time
           VALUES
               (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
-              message, address, signature, board, timestamp, nickname, reply, hash, sent, '0'
+              message, address, signature, board, timestamp, nickname, reply, hash, sent, fromMyself ? 1 : 0
           ]
       );
   });

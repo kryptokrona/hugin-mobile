@@ -53,7 +53,8 @@ class globals {
             authenticationMethod: 'hardware-auth',
             node: Config.defaultDaemon.getConnectionString(),
             language: 'en',
-            cache: Config.defaultCache
+            cache: Config.defaultCache,
+            nickname: 'Anonymous'
         };
 
         /* People in our address book */

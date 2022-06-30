@@ -483,13 +483,16 @@ export async function sendBoardsMessage(message, board) {
 
   const signature = await xkrUtils.signMessage(message, privateSpendKey);
 
-  const message_json = {
+  let message_json = {
     "m":message,
     "k": my_address,
     "s": signature,
     "brd": board,
     "t": parseInt(Date.now() / 1000)
-    // "n":"knugen"
+  }
+
+  if (Globals.preferences.nickname != 'Anonymous') {
+    message_json.n = Globals.preferences.nickname;
   }
 
   const payload_hex = toHex(JSON.stringify(message_json));

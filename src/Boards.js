@@ -115,42 +115,45 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         Keyboard.dismiss();
 
-        let success = await sendBoardsMessage(checkText(text), this.state.board, this.state.paymentID);
-        console.log(success);
-
         let updated_messages = await getBoardsMessages(this.state.board);
         if (!updated_messages) {
           updated_messages = [];
         }
         let temp_timestamp = parseInt(Date.now() / 1000);
-        updated_messages.push({
+        updated_messages.unshift({
             board: this.state.board,
             address: Globals.wallet.getPrimaryAddress(),
             message: checkText(text),
             timestamp: temp_timestamp,
-            hash: success.transactionHash,
-            read: 1
+            hash: temp_timestamp.toString(),
+            read: 1,
+            nickname: Globals.preferences.nickname
         });
 
         this.setState({
           messages: updated_messages,
-          messageHasLength: false
+          messageHasLength: false,
+          message: ''
         });
 
-        this.state.input.current.clear();
-
-        this.setState({messageHasLength: this.state.message.length > 0});
+        let success = await sendBoardsMessage(checkText(text), this.state.board, this.state.paymentID);
 
 
         // await removeMessage(temp_timestamp);
-        if (success) {
-        let updated_messages = await getBoardMessages(this.state.board);
+        if (success.success) {
 
-          this.setState({
-            messages: updated_messages,
-            messageHasLength: false
-          })
+          this.input.clear();
+
+          this.setState({messageHasLength: this.state.message.length > 0});
           // this.state.input.current.clear();
+        } else {
+          updated_messages = await getBoardsMessages(this.state.board);
+
+            this.setState({
+              messages: updated_messages,
+              messageHasLength: true
+            })
+
         }
       }
 
@@ -298,7 +301,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             <TextInput
                 multiline={true}
                 textAlignVertical={'top'}
-                ref={this.state.input}
+                ref={input => { this.input = input }}
                 style={{
                     color: this.props.screenProps.theme.primaryColour,
                     fontFamily: 'Montserrat-Regular',
@@ -343,15 +346,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 }}>
                     <TouchableWithoutFeedback
                         onPress={() => {
-                            Globals.fromChat = true;
-                            this.props.navigation.navigate('NewPayee', {
-                                finishFunction: (item) => {
-                                    this.props.navigation.navigate(
-                                        'ChatScreen', {
-                                            payee: item,
-                                        });
-                                }
-                            })
+                            getBoard('Home');
                         }}
                     >
                         <View style={{
@@ -359,6 +354,18 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             justifyContent: 'space-between',
                             height: 40,
                         }}>
+
+                          {this.state.board != 'Home' &&
+                          <Text style={{
+                              marginLeft: 15,
+                              color: this.props.screenProps.theme.primaryColour,
+                              fontSize: 24,
+                              fontFamily: "Montserrat-SemiBold"
+                          }}>
+                              Go back
+                          </Text>
+                          }
+                          {this.state.board == 'Home' &&
                             <Text style={{
                                 marginLeft: 15,
                                 color: this.props.screenProps.theme.primaryColour,
@@ -367,6 +374,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             }}>
                                 {t('boardsTitle')}
                             </Text>
+                          }
+
 
                             <Text style={{
                                 marginLeft: 15,
@@ -389,7 +398,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         flexDirection: 'row'
                     }}>
 
-                        {this.state.board != 'Home' && messageInput}
+                        {this.state.board && messageInput}
 
                         {this.state.messageHasLength &&
 

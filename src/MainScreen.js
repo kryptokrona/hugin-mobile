@@ -15,7 +15,7 @@ import PushNotification from 'react-native-push-notification';
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
 import {
-    Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
+    TextInput, Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
     AppState, Platform, Linking, ScrollView, RefreshControl, Dimensions, Clipboard
 } from 'react-native';
 
@@ -32,7 +32,7 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
 import { cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
@@ -539,6 +539,60 @@ class AddressComponent extends React.PureComponent {
                     name='Address'
                     {...this.props}
                 />
+                <Text style={[Styles.centeredText, {
+                    color: this.props.screenProps.theme.primaryColour,
+                    textAlign: 'left',
+                    fontSize: 10,
+                    marginTop: 0,
+                    marginRight: 20,
+                    marginLeft: 20,
+                    fontFamily: 'Montserrat-Bold'
+                }]}>
+                Nickname
+                </Text>
+                <View
+                style={{
+                    // width: this.state.messageHasLength ? '80%' : '100%',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      borderWidth: 0,
+                      borderColor: 'transparent',
+                      borderRadius: 15,
+                      height: 50,
+                      margin: '5%',
+                      marginTop: 0
+                  }}
+                >
+                <TextInput
+                    multiline={false}
+                    textAlignVertical={'top'}
+                    ref={input => { this.input = input }}
+                    style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        fontFamily: 'Montserrat-Regular',
+                        fontSize: 15,
+                        width: '100%',
+                        height: '100%',
+                        padding: 15,
+
+                    }}
+                    maxLength={24}
+                    placeholder={Globals.preferences.nickname}
+                    placeholderTextColor={'#ffffff'}
+                    onSubmitEditing={async (e) => {
+                      savePreferencesToDatabase(Globals.preferences);
+                        // return;
+                        // submitMessage(this.state.message);
+                        // this.setState({message: '', messageHasLength: false});
+                    }}
+                    onChangeText={(text) => {
+                        if (this.props.onChange) {
+                            this.props.onChange(text);
+                        }
+                        Globals.preferences.nickname = text;
+                    }}
+                    errorMessage={this.props.error}
+                />
+                </View>
                 <Text style={[Styles.centeredText, {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'left',
