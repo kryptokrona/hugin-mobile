@@ -153,5 +153,8 @@
   notifsOn: '允许通知',
   notifsOff: '不允许通知',
   coinbaseOn: '已启用扫描Coinbase交易',
-  coinbaseOff: '已禁用扫描Coinbase交易'
+  coinbaseOff: '已禁用扫描Coinbase交易',
+  notSyncingTitle: '未同步',
+  notSyncingSubtitle: '您禁用了流量数据，并且未连接WIFI。未启动同步。',
+  ok: '确定'
 }

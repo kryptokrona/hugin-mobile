@@ -6,7 +6,7 @@
   noTxMessage: 'You don\'t have any transactions yet 😥',
   notSyncedMessage: '\n\n Your wallet is still syncing, please wait..',
   emptyAddressBook: 'Your address book is empty! Add a new recipient above to populate it.',
-  messagesTitle: 'Messages',
+  messagesTitle: 'Private Messages',
   sendToWho: 'Who would you like to send to?',
   addNewRecipient: 'Add contact',
   scanQR: 'Scan QR',
@@ -153,5 +153,9 @@
   notifsOn: 'Notifications enabled',
   notifsOff: 'Notifications disabled',
   coinbaseOn: 'Scanning Coinbase Transactions enabled',
-  coinbaseOff: 'Scanning Coinbase Transactions disabled'
+  coinbaseOff: 'Scanning Coinbase Transactions disabled',
+  notSyncingTitle: 'Not Syncing',
+  notSyncingSubtitle: 'You enabled data limits, and are on a limited connection. Not starting sync.',
+  ok: 'OK',
+  boardsTitle: 'Boards'
 }

@@ -153,5 +153,8 @@
   notifsOn: 'Notifikationer på',
   notifsOff: 'Notifikationer av',
   coinbaseOn: 'Skannar även solomining',
-  coinbaseOff: 'Skannar ej solomining'
+  coinbaseOff: 'Skannar ej solomining',
+  notSyncingTitle: 'Synkar inte',
+  notSyncingSubtitle: 'Du har aktiverat databegränsning och är inte på WiFi. Synkning är av.',
+  ok: 'OK'
 }

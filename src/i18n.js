@@ -6,7 +6,7 @@ import no from './i18n/no.json';
 import zh from './i18n/zh.json';
 import tr from './i18n/tr.json';
 import de from './i18n/de.json';
-import de from './i18n/ru.json';
+import ru from './i18n/ru.json';
 import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
