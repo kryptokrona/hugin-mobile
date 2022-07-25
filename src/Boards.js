@@ -14,7 +14,7 @@ import {
     validateAddresses, WalletErrorCode, validatePaymentID,
 } from 'kryptokrona-wallet-backend-js';
 
-import { Button as RNEButton, Alert } from 'react-native';
+import { Button as RNEButton, Alert, Modal, TouchableOpacity} from 'react-native';
 
 import { Button, Input, Icon } from 'react-native-elements';
 
@@ -40,7 +40,7 @@ import {intToRGB, hashCode, get_avatar, sendBoardsMessage} from './HuginUtilitie
 
 import {toastPopUp} from './Utilities';
 
-import { markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase } from './Database';
+import { getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase, removeBoard } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -66,7 +66,9 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         this.state = {
             messages: Globals.boardsMessages,
             index: 0,
-            board: 'Home'
+            board: 'Home',
+            modalVisible: false,
+            editingBoards: false
         }
 
         Globals.updateBoardsFunctions.push(() => {
@@ -78,10 +80,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
     async componentDidMount() {
 
-        let this_messages = await getBoardsMessages(this.state.board);
+        const this_messages = await getBoardsMessages(this.state.board);
+
+        const boardsSubscriptions = Globals.boardsSubscriptions;
 
         this.setState({
-          messages: this_messages
+          messages: this_messages,
+          boardssubscriptions: boardsSubscriptions
         });
 
         Globals.activeChat = this.state.address;
@@ -107,9 +112,17 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
     }
 
+    setModalVisible = (visible) => {
+      this.setState({ modalVisible: visible });
+    }
 
+    setEditingMode = (editing) => {
+      this.setState({ editingBoards: editing })
+    }
 
     render() {
+
+      const { modalVisible, editingBoards } = this.state;
 
       const submitMessage = async (text) => {
 
@@ -159,14 +172,22 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         const getBoard = async (board) => {
           const board_messages = await getBoardsMessages(board);
+          this.setModalVisible(false);
           this.setState({
               board: board,
               messages: board_messages
           });
         }
+        const deleteBoard = async (board) => {
+          removeBoard(board);
+          this.setState({
+              boardssubscriptions: await getBoardSubscriptions()
+          });
+        }
 
         const { t } = this.props;
         const messages = this.state.messages;
+        const boardsSubscriptionsItems = this.state.boardssubscriptions;
         const board = this.state.board;
         const noMessagesComponent =
             <View style={{
@@ -287,6 +308,93 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
             </ScrollView>;
 
+
+        const boardsSubscriptions =
+            <ScrollView
+            showsVerticalScrollIndicator={false}
+             style={{
+                width: '100%',
+                height: '100%',
+                marginBottom: 20,
+                borderWidth: 0,
+                borderColor: 'transparent',
+                backgroundColor: 'transparent'
+            }}>
+                    <FlatList
+                        extraData={this.state.index}
+                        ItemSeparatorComponent={null}
+                        data={boardsSubscriptionsItems}
+                        keyExtractor={item => item.board}
+                        style={{backgroundColor: 'transparent'}}
+                        renderItem={({item}) => (
+                            <ListItem
+                                title={item.board}
+                                titleStyle={{
+                                    color: '#ffffff',
+                                    fontFamily: 'Montserrat-SemiBold'
+                                }}
+                                leftIcon={!editingBoards ? <View style={{
+                                    width: 50,
+                                    height: 50,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: this.props.screenProps.theme.iconColour,
+                                    borderRadius: 45
+                                }}>
+                                    <Text style={[Styles.centeredText, {
+                                        fontSize: 30,
+                                        color: 'white',
+                                    }]}>
+                                        {item.board[0].toUpperCase()}
+                                    </Text>
+
+                                </View> :
+                                <View style={{
+                                    width: 50,
+                                    height: 50,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: 'red',
+                                    borderRadius: 45
+                                }}>
+                                    <Text style={[Styles.centeredText, {
+                                        fontSize: 30,
+                                        color: 'white',
+                                    }]}>
+                                      x
+                                    </Text>
+
+                                </View>
+                                }
+                                showsVerticalScrollIndicator={false}
+                                onPress={async () => {
+                                    !editingBoards ?
+                                    getBoard(item.board)
+                                    :
+                                    deleteBoard(item.board)
+
+                                }}
+                            />
+                        )}
+                    />
+            </ScrollView>;
+
+            const boardsSubscriptionsComponent =
+                <ScrollView
+                showsVerticalScrollIndicator={false}
+                 style={{
+                    width: '120%',
+                    height: '70%',
+                    marginBottom: 20,
+                    marginLeft: '-10%',
+                    borderWidth: 0,
+                    borderColor: 'transparent'
+                }}>
+
+                    {boardsSubscriptions}
+
+                </ScrollView>;
+
             const messageInput =
             <View
             style={{
@@ -346,7 +454,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 }}>
                     <TouchableWithoutFeedback
                         onPress={() => {
-                            getBoard('Home');
+                            this.setModalVisible(true)
                         }}
                     >
                         <View style={{
@@ -355,17 +463,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             height: 40,
                         }}>
 
-                          {this.state.board != 'Home' &&
-                          <Text style={{
-                              marginLeft: 15,
-                              color: this.props.screenProps.theme.primaryColour,
-                              fontSize: 24,
-                              fontFamily: "Montserrat-SemiBold"
-                          }}>
-                              Go back
-                          </Text>
-                          }
-                          {this.state.board == 'Home' &&
+
+
                             <Text style={{
                                 marginLeft: 15,
                                 color: this.props.screenProps.theme.primaryColour,
@@ -374,7 +473,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             }}>
                                 {t('boardsTitle')}
                             </Text>
-                          }
+
 
 
                             <Text style={{
@@ -417,6 +516,101 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         }
 
                     </KeyboardAvoidingView>
+
+                    <View>
+                      <Modal
+                        style={{}}
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                          this.setModalVisible(!modalVisible);
+                        }}
+                      >
+                        <View style={{
+                          margin: 20,
+                          backgroundColor: "#333",
+                          borderRadius: 20,
+                          padding: 25,
+                          alignItems: "center",
+                          shadowColor: "#000",
+                          shadowOffset: {
+                            width: 0,
+                            height: 2
+                          },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 4,
+                          elevation: 5
+                        }}>
+                          <View>
+                            <Text style={{
+                                marginLeft: 15,
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 24,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>My Boards
+                            </Text>
+                            <TextInput
+                                multiline={false}
+                                textAlignVertical={'top'}
+                                ref={boardinput => { this.boardinput = boardinput }}
+                                style={{
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    fontFamily: 'Montserrat-Regular',
+                                    fontSize: 15,
+                                    width: '100%',
+                                    padding: 15,
+                                    background: 'magenta'
+
+                                }}
+                                maxLength={20}
+                                placeholder={'Add new board..'}
+                                placeholderTextColor={'#ffffff'}
+                                onSubmitEditing={async (e) => {
+                                  e.preventDefault();
+
+                                  subscribeToBoard(this.state.boardinput, 0);
+
+                                  const subs = this.state.boardssubscriptions;
+                                  subs.push({board: this.state.boardinput,key: 0});
+
+                                  this.state.boardssubscriptions = subs;
+                                  this.setModalVisible(!modalVisible);
+
+                                    getBoard(this.state.boardinput);
+                                    // return;
+                                    // submitMessage(this.state.message);
+                                    // this.setState({message: '', messageHasLength: false});
+                                }}
+                                onChangeText={(text) => {
+                                    if (this.props.onChange) {
+                                        this.props.onChange(text);
+                                    }
+                                    this.state.boardinput = text;
+                                }}
+                                errorMessage={this.props.error}
+                            />
+                            <Button
+                              title="Close"
+                              onPress={() => this.setModalVisible(!modalVisible)}
+                            />
+                            <View style={{
+                                backgroundColor: 'transparent',
+                                flex: 1,
+                                alignItems: 'flex-start',
+                                justifyContent: 'flex-start',
+                            }}>
+                            { boardsSubscriptionsComponent }
+
+                            </View>
+                            <Button
+                              title="Edit boards"
+                              onPress={() => this.setEditingMode(!editingBoards)}
+                            />
+                          </View>
+                        </View>
+                      </Modal>
+                    </View>
 
 
                     <View style={{

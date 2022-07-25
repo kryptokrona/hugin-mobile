@@ -12,7 +12,7 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getMessages, getLatestMessages, getBoardsMessages } from './Database';
+import { getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions } from './Database';
 import Config from './Config';
 
 import { Logger } from './Logger';
@@ -215,6 +215,10 @@ export async function initGlobals() {
     if (payees !== undefined) {
         Globals.payees = payees;
     }
+
+    Globals.boardsSubscriptions = await getBoardSubscriptions();
+
+    console.log('wtf', Globals.boardsSubscriptions);
 
     const transactionDetails = await loadTransactionDetailsFromDatabase();
 

@@ -242,6 +242,20 @@ async function createTables(DB) {
             )`
         );
 
+        //
+        //   tx.executeSql(
+        //     `DROP TABLE boards_subscriptions`
+        // );
+
+          tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS boards_subscriptions (
+                 board TEXT,
+                 key TEXT
+            )`
+        );
+
+
+
 
 
         tx.executeSql(
@@ -760,6 +774,71 @@ export async function getBoardsMessages(board='Home') {
     }
 
     return [];
+}
+
+
+export async function getBoardSubscriptions() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            board,
+            key
+        FROM
+            boards_subscriptions
+        `
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                board: item.board,
+                key: item.key
+            });
+        }
+        console.log(res);
+        return res;
+
+    }
+
+    return [];
+}
+
+
+export async function subscribeToBoard(board, key) {
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `REPLACE INTO boards_subscriptions
+                (board, key)
+            VALUES
+                (?, ?)`,
+            [
+                board,
+                key
+            ]
+        );
+    });
+
+}
+
+
+export async function removeBoard(board) {
+
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `DELETE FROM
+              boards_subscriptions
+          WHERE
+              board = ?`,
+          [ board ]
+      );
+  });
+
 }
 
 export async function getLatestBoardMessage() {
