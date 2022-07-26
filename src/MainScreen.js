@@ -30,7 +30,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
+import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -125,6 +125,14 @@ async function init(navigation) {
     }
 
     initGlobals();
+    console.log('wtf');
+    const recommended_node = await getBestCache();
+
+    console.log('bruh', recommended_node);
+
+    Globals.preferences.cache = recommended_node.url;
+
+    console.log(Globals.preferences.cache);
 
     cacheSync(true);
 
@@ -420,7 +428,6 @@ export class MainScreen extends React.PureComponent {
 
       const { t, i18n } = this.props;
 
-
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
            want to display your balance. */
@@ -483,7 +490,7 @@ export class MainScreen extends React.PureComponent {
 
                           <QRCode
                               value={'xkr://' + this.state.address + '?paymentid=' + Buffer.from(getKeyPair().publicKey).toString('hex')}
-                              size={250}
+                              size={175}
                               backgroundColor={'transparent'}
                               color={this.props.screenProps.theme.qrCode.foregroundColour}
                           />
