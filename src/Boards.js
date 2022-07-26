@@ -82,7 +82,9 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         const this_messages = await getBoardsMessages(this.state.board);
 
-        const boardsSubscriptions = Globals.boardsSubscriptions;
+        const boardsSubscriptions = [{board: 'Home', key: 0}].concat(Globals.boardsSubscriptions);
+        // console.log(boardsSubscriptions);
+        // boardsSubscriptions.append({board: 'Home', key: '0'});
 
         this.setState({
           messages: this_messages,
@@ -93,8 +95,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
 
         let i = 0;
-
-        console.log(this_messages);
 
         while (i < this_messages.length) {
 
@@ -333,7 +333,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     color: '#ffffff',
                                     fontFamily: 'Montserrat-SemiBold'
                                 }}
-                                leftIcon={!editingBoards ? <View style={{
+                                leftIcon={!editingBoards || item.board == 'Home' ? <View style={{
                                     width: 50,
                                     height: 50,
                                     alignItems: 'center',
@@ -354,21 +354,22 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     height: 50,
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: 'red',
+                                    backgroundColor: '#FF5F57',
                                     borderRadius: 45
                                 }}>
                                     <Text style={[Styles.centeredText, {
                                         fontSize: 30,
                                         color: 'white',
+                                        lineHeight: 50
                                     }]}>
-                                      x
+                                      -
                                     </Text>
 
                                 </View>
                                 }
                                 showsVerticalScrollIndicator={false}
                                 onPress={async () => {
-                                    !editingBoards ?
+                                    !editingBoards || item.board == 'Home' ?
                                     getBoard(item.board)
                                     :
                                     deleteBoard(item.board)
@@ -383,10 +384,11 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 <ScrollView
                 showsVerticalScrollIndicator={false}
                  style={{
-                    width: '120%',
+                    width: '160%',
                     height: '70%',
                     marginBottom: 20,
-                    marginLeft: '-10%',
+                    marginTop: 20,
+                    marginLeft: '-30%',
                     borderWidth: 0,
                     borderColor: 'transparent'
                 }}>
@@ -558,9 +560,9 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     color: this.props.screenProps.theme.primaryColour,
                                     fontFamily: 'Montserrat-Regular',
                                     fontSize: 15,
-                                    width: '100%',
                                     padding: 15,
-                                    background: 'magenta'
+                                    background: 'magenta',
+                                    marginBottom: 15
 
                                 }}
                                 maxLength={20}
