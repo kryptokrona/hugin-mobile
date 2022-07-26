@@ -18,8 +18,10 @@ import Config from './Config';
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
-
+import { getBestCache } from './HuginUtilities';
 import offline_node_list from './nodes.json';
+
+import offline_cache_list from './apis.json';
 
 import {
     removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
@@ -71,6 +73,8 @@ class globals {
         this.transactionDetails = [];
 
         this.daemons = [];
+
+        this.caches = [];
 
         this.messages = [];
 
@@ -194,6 +198,28 @@ class globals {
             this.daemons = offline_node_list.nodes;
         }
     }
+
+    async updateCacheList() {
+        try {
+            const data = await request({
+                json: true,
+                method: 'GET',
+                timeout: Config.requestTimeout,
+                url: Config.cacheListURL,
+            });
+            console.log(data);
+            if (data.apis) {
+                this.caches = data.apis;
+            } else {
+              this.caches = offline_cache_list.apis;
+            }
+        } catch (error) {
+          console.log(offline_cache_list);
+            this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
+            this.daemons = offline_cache_list.nodes;
+        }
+    }
+
 }
 
 export let Globals = new globals();
@@ -210,6 +236,7 @@ function updateConnection(connection) {
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
 export async function initGlobals() {
+  console.log('wazzaaa');
     const payees = await loadPayeeDataFromDatabase();
 
     if (payees !== undefined) {

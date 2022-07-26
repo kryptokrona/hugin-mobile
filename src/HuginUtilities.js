@@ -103,6 +103,38 @@ if (recommended_node == undefined) {
 
 }
 
+
+export async function getBestCache() {
+
+  let recommended_cache = undefined;
+
+  await Globals.updateCacheList();
+
+  let cache_requests = [];
+
+  let caches = Globals.caches.sort((a, b) => 0.5 - Math.random());
+
+  for (cache in caches) {
+    let this_cache = caches[cache];
+    console.log(this_cache);
+
+    let cacheURL = `${this_cache.url}/api/v1/posts/latest`;
+    try {
+      const resp = await fetch(cacheURL, {
+         method: 'GET'
+      }, 1000);
+      console.log(resp);
+     if (resp.ok) {
+       recommended_cache = this_cache;
+       return(this_cache);
+     }
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+}
+
 function trimExtra (extra) {
 
   try {
@@ -420,7 +452,9 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
     console.log(page);
 
-    let cacheURL = Config.defaultCache;
+    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+    console.log(Globals.preferences.cache);
+    console.log(cacheURL);
     console.log('Fetching ' + cacheURL + "/api/v1/posts?size=50&page=" + page);
       fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
     .then((response) => response.json())

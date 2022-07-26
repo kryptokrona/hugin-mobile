@@ -215,7 +215,7 @@ const Config = new function() {
     /**
      * Displayed in the settings screen
      */
-    this.appVersion = 'v0.0.4';
+    this.appVersion = 'v1.1.0';
 
     /**
      * Base URL for us to chuck a hash on the end, and find a transaction
@@ -238,6 +238,11 @@ const Config = new function() {
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
     this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-nodes-list/master/nodes.json';
+
+    /**
+    * A Url to fetch Hugin Caches from.
+    */
+    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/hugin-cache-list/main/apis.json';
 };
 
 module.exports = Config;
