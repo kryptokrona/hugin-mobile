@@ -23,7 +23,7 @@
   rewindWallet: 'Spola tillbaka',
   rewindWalletDescr: 'Skanna om de senaste 5000 blocken för att hitta missade transaktioner',
   resetWallet: 'Laga konto',
-  resetWalletDescr: 'Gör att du kan skicka fler meddelanden med mindre XKR',
+  resetWalletDescr: 'Glöm bort alla transaktioner (hjälper om du har problem med att skicka meddelanden. Du kan alltid återställa dina XKR med din seed).',
   backgroundSyncing: 'Snabba upp bakgrundssynk',
   backgroundSyncingDescr: 'Avaktivera batterioptimering för bättre bakgrundsynk',
   swapNode: 'Byt nod',
