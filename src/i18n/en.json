@@ -159,4 +159,7 @@
   ok: 'OK',
   boardsTitle: 'Boards',
   subscribe: 'Subscribe!',
+  myBoards: 'My Boards',
+  close: 'Close',
+  edit: 'Edit'
 }

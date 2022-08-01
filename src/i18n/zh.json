@@ -156,5 +156,10 @@
   coinbaseOff: '已禁用扫描Coinbase交易',
   notSyncingTitle: '未同步',
   notSyncingSubtitle: '您禁用了流量数据，并且未连接WIFI。未启动同步。',
-  ok: '确定'
+  ok: '确定',
+  boardsTitle: '公告板',
+  subscribe: '订阅!',
+  myBoards: '我的公告板',
+  close: '关',
+  edit: '编辑'
 }

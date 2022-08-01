@@ -601,7 +601,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 color: '#ffffff',
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
-                            }}>My Boards
+                            }}>{t('myBoards')}
                             </Text>
                             <View
                             style={{
@@ -656,7 +656,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             />
                             </View>
                             <Button
-                              title="Close"
+                              title={t('close')}
                               onPress={() => this.setModalVisible(!modalVisible)}
                             />
                             <View style={{
@@ -669,7 +669,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                             </View>
                             <Button
-                              title="Edit boards"
+                              title={t('edit')}
                               onPress={() => this.setEditingMode(!editingBoards)}
                             />
                           </View>
