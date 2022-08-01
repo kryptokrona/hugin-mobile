@@ -313,12 +313,16 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs) {
+export async function optimizeMessages(nbrOfTxs, background=true) {
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+
   if (inputs.length > 8) {
-    // toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+
+    if (!background) {
+      toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+    }
     return;
   }
 
@@ -327,7 +331,9 @@ export async function optimizeMessages(nbrOfTxs) {
     let txs = value.unconfirmedIncomingAmounts.length;
 
     if (txs > 0) {
-      console.log('Already have incoming inputs, aborting..');
+      if (!background) {
+        // toastPopUp('There are already new inputs on the way!');
+      }
       return;
     }
   })
@@ -362,10 +368,9 @@ export async function optimizeMessages(nbrOfTxs) {
 
   if (result.success) {
     // toastPopUp('Optimizing wallet!');
-  } else {
-    // toastPopUp('Failed to optimize wallet');
-    // console.log('Removing subwallet:', new_address);
-    Globals.wallet.deleteSubWallet(new_address);
+    if (!background) {
+      toastPopUp('Optimization complete!');
+    }
   }
 
   return result;
@@ -489,6 +494,10 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
         }
 
         saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
+
+        if (nickname == 'null') {
+          nickname = 'Anonymous';
+        }
 
         if (latest_board_message_timestamp != 0 && !fromMyself) {
           PushNotification.localNotification({
