@@ -36,7 +36,7 @@ import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
 
-import {intToRGB, hashCode, get_avatar, sendBoardsMessage} from './HuginUtilities';
+import {intToRGB, hashCode, get_avatar, sendBoardsMessage, getBoardColors} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
@@ -362,11 +362,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     height: 50,
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: this.props.screenProps.theme.iconColour,
+                                    backgroundColor: getBoardColors(item.board)[0],
                                     borderRadius: 45
                                 }}>
                                     <Text style={[Styles.centeredText, {
                                         fontSize: 30,
+                                        lineHeight: 40,
+                                        fontFamily: 'Montserrat-Black',
                                         color: 'white',
                                     }]}>
                                         {item.board[0].toUpperCase()}
@@ -382,11 +384,12 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     borderRadius: 45
                                 }}>
                                     <Text style={[Styles.centeredText, {
-                                        fontSize: 30,
-                                        color: 'white',
-                                        lineHeight: 50
+                                      fontSize: 30,
+                                      lineHeight: 40,
+                                      color: 'white',
+                                      fontFamily: 'Montserrat-Black',
                                     }]}>
-                                      -
+                                      X
                                     </Text>
 
                                 </View>
@@ -408,11 +411,11 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 <ScrollView
                 showsVerticalScrollIndicator={false}
                  style={{
-                    width: '160%',
+                    width: '120%',
                     height: '70%',
                     marginBottom: 20,
                     marginTop: 20,
-                    marginLeft: '-30%',
+                    marginLeft: '-10%',
                     borderWidth: 0,
                     borderColor: 'transparent'
                 }}>
@@ -579,7 +582,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                       >
                         <View style={{
                           margin: 20,
-                          backgroundColor: "#333",
+                          backgroundColor: this.props.screenProps.theme.backgroundColour,
                           borderRadius: 20,
                           padding: 25,
                           alignItems: "center",
@@ -594,22 +597,33 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         }}>
                           <View>
                             <Text style={{
-                                marginLeft: 15,
-                                color: this.props.screenProps.theme.primaryColour,
+                                marginLeft: 35,
+                                color: '#ffffff',
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
                             }}>My Boards
                             </Text>
+                            <View
+                            style={{
+                                // width: this.state.messageHasLength ? '80%' : '100%',
+                                  width: 175,
+                                  backgroundColor: 'rgba(0,0,0,0.2)',
+                                  borderWidth: 0,
+                                  borderColor: 'transparent',
+                                  borderRadius: 15,
+                                  height: 50,
+                                  margin: 15,
+                              }}
+                            >
                             <TextInput
                                 multiline={false}
-                                textAlignVertical={'top'}
+                                textAlignVertical={'bottom'}
                                 ref={boardinput => { this.boardinput = boardinput }}
                                 style={{
                                     color: this.props.screenProps.theme.primaryColour,
                                     fontFamily: 'Montserrat-Regular',
                                     fontSize: 15,
-                                    padding: 15,
-                                    background: 'magenta',
+                                    padding: 5,
                                     marginBottom: 15
 
                                 }}
@@ -640,6 +654,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 }}
                                 errorMessage={this.props.error}
                             />
+                            </View>
                             <Button
                               title="Close"
                               onPress={() => this.setModalVisible(!modalVisible)}

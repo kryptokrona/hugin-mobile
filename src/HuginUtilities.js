@@ -278,6 +278,24 @@ if (links_in_message) {
 
 }
 
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+export function getBoardColors(board) {
+  let board_color = intToRGB(hashCode(board));
+
+  board_color = `rgb(${board_color.red},${board_color.green},${board_color.blue})`;
+
+  let comp_color = `rgb(${board_color.red + 50},${board_color.green + 50},${board_color.blue + 50})`
+  return [board_color, comp_color];
+}
+
 export function nonceFromTimestamp(tmstmp) {
 
   let nonce = hexToUint(String(tmstmp));
