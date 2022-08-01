@@ -1410,7 +1410,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                                 onClick: () => {
                                     // optimizeWallet(this.props.navigation);
-                                    optimizeMessages(10);
+                                    optimizeMessages(10, false);
                                 },
 
                             },
