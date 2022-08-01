@@ -385,7 +385,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 }}>
                                     <Text style={[Styles.centeredText, {
                                       fontSize: 30,
-                                      lineHeight: 40,
+                                      lineHeight: 38,
                                       color: 'white',
                                       fontFamily: 'Montserrat-Black',
                                     }]}>
@@ -428,11 +428,11 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             <View
             style={{
                 width: this.state.messageHasLength ? '80%' : '100%',
-                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
                   borderWidth: 0,
                   borderColor: 'transparent',
                   borderRadius: 15,
-                  height: 50
+                  height: 70
               }}
             >
             <TextInput
@@ -449,7 +449,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                 }}
                 maxLength={Config.integratedAddressLength}
-                placeholder={t('typeMessageHere')}
+                placeholder={"✏️ " + t('typeMessageHere')}
                 placeholderTextColor={'#ffffff'}
                 onSubmitEditing={async (e) => {
                   e.preventDefault();
@@ -564,8 +564,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     <KeyboardAvoidingView
                      behavior={Platform.OS == "ios" ? "padding" : "height"}
                      style={{
-                        marginHorizontal: 10,
-                        marginBottom: 5,
+                        marginBottom: 10,
+                        marginRight: 12,
                         flexDirection: 'row'
                     }}>
 
@@ -573,17 +573,33 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                         {this.state.messageHasLength &&
 
-                            <Button
-                                title={t('send')}
+                            <TouchableOpacity
                                 onPress={() => {
                                   submitMessage(this.state.message);
                                   this.setState({message: '', messageHasLength: false});
                                 }}
-                                titleStyle={{
-
-                                }}
-                                type="clear"
-                            />
+                            >
+                              <View style={{
+                                backgroundColor: '#63D880',
+                                padding: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 28,
+                                marginTop: 20,
+                                marginLeft: 10
+                              }}>
+                              <Text style={{
+                                  marginLeft: 5,
+                                  marginRight: 5,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 16,
+                                  fontFamily: "Montserrat-SemiBold",
+                                  marginTop: -5
+                              }}>
+                            {t('send')}
+                            </Text>
+                            </View>
+                            </TouchableOpacity>
 
                         }
 
@@ -626,12 +642,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             style={{
                                 // width: this.state.messageHasLength ? '80%' : '100%',
                                   width: 175,
-                                  backgroundColor: 'rgba(0,0,0,0.2)',
+                                  backgroundColor: 'rgba(255,255,255,0.1)',
                                   borderWidth: 0,
                                   borderColor: 'transparent',
                                   borderRadius: 15,
                                   height: 50,
                                   margin: 15,
+                                  padding: 7
                               }}
                             >
                             <TextInput
@@ -642,12 +659,12 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     color: this.props.screenProps.theme.primaryColour,
                                     fontFamily: 'Montserrat-Regular',
                                     fontSize: 15,
-                                    padding: 5,
-                                    marginBottom: 15
+                                    paddingTop: 2,
+                                    paddingBottom: 6
 
                                 }}
                                 maxLength={20}
-                                placeholder={'Add new board..'}
+                                placeholder={  "➕ " + t('subscribe')}
                                 placeholderTextColor={'#ffffff'}
                                 onSubmitEditing={async (e) => {
                                   e.preventDefault();
