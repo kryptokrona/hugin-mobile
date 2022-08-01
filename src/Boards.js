@@ -479,7 +479,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     flex: 1,
                     marginLeft: 30,
                     marginTop: 15,
-                    width: '85%'
+                    width: '85%',
                 }}>
                     <TouchableWithoutFeedback
                         onPress={() => {
@@ -490,6 +490,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             flexDirection: 'row',
                             justifyContent: 'space-between',
                             height: 40,
+                            marginBottom: 15
                         }}>
 
 
@@ -501,17 +502,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 fontFamily: "Montserrat-SemiBold"
                             }}>
                                 {t('boardsTitle')}
-                            </Text>
-
-
-
-                            <Text style={{
-                                marginLeft: 15,
-                                color: this.props.screenProps.theme.primaryColour,
-                                fontSize: 16,
-                                fontFamily: "Montserrat-SemiBold"
-                            }}>
-                                {board}
                             </Text>
 
                             {!this.state.isSubscribedToBoard &&
@@ -527,16 +517,45 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                       this.state.boardssubscriptions = subs;
                                   }}
                               >
+                              <View style={{
+                                backgroundColor: this.props.screenProps.theme.buttonColour,
+                                padding: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 28
+                              }}>
                               <Text style={{
-                                  marginLeft: 15,
+                                  marginLeft: 5,
+                                  marginRight: 5,
                                   color: this.props.screenProps.theme.primaryColour,
                                   fontSize: 16,
-                                  fontFamily: "Montserrat-SemiBold"
+                                  fontFamily: "Montserrat-SemiBold",
+                                  marginTop: -5
                               }}>
-                                  {t('subscribe')}
+                                  ➕ {t('subscribe')}
                               </Text>
+                              </View>
                               </TouchableWithoutFeedback>
                             }
+
+                            <View style={{
+                              backgroundColor: getBoardColors(board)[0],
+                              padding: 5,
+                              paddingTop: 8,
+                              borderRadius: 5,
+                              height: 28
+                            }}>
+                            <Text style={{
+                                marginLeft: 5,
+                                marginRight: 5,
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 16,
+                                fontFamily: "Montserrat-SemiBold",
+                                marginTop: -5
+                            }}>
+                                {board}
+                            </Text>
+                            </View>
 
 
                         </View>
