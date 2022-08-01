@@ -68,7 +68,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             index: 0,
             board: 'Home',
             modalVisible: false,
-            editingBoards: false
+            editingBoards: false,
+            isSubscribedToBoard: false
         }
 
         Globals.updateBoardsFunctions.push(() => {
@@ -88,7 +89,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         this.setState({
           messages: this_messages,
-          boardssubscriptions: boardsSubscriptions
+          boardssubscriptions: boardsSubscriptions,
+          isSubscribedToBoard: true
         });
 
         Globals.activeChat = this.state.address;
@@ -123,6 +125,20 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
     render() {
 
       const { modalVisible, editingBoards } = this.state;
+
+      const isSubscribedTo = (board) => {
+
+        if (!boardsSubscriptionsItems) {
+          return;
+        }
+
+        let sub = boardsSubscriptionsItems.filter(item => {return item.board == board});
+
+        const result = sub.length > 0 ? true : false;
+
+        return result;
+
+      }
 
       const submitMessage = async (text) => {
 
@@ -178,17 +194,23 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
               messages: board_messages
           });
         }
+
         const deleteBoard = async (board) => {
+          let newBoardsSubscriptions = this.state.boardssubscriptions;
+          newBoardsSubscriptions = newBoardsSubscriptions.filter(item => { return item.board != board});
           removeBoard(board);
           this.setState({
-              boardssubscriptions: await getBoardSubscriptions()
+              boardssubscriptions: newBoardsSubscriptions
           });
         }
+
 
         const { t } = this.props;
         const messages = this.state.messages;
         const boardsSubscriptionsItems = this.state.boardssubscriptions;
+
         const board = this.state.board;
+        this.state.isSubscribedToBoard = isSubscribedTo(this.state.board);
         const noMessagesComponent =
             <View style={{
                 width: '100%',
@@ -486,6 +508,30 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             }}>
                                 {board}
                             </Text>
+
+                            {!this.state.isSubscribedToBoard &&
+                              <TouchableWithoutFeedback
+                                  onPress={() => {
+                                      if ( isSubscribedTo(board) ) {
+                                        return;
+                                      }
+                                      this.setState({isSubscribedToBoard: true});
+                                      subscribeToBoard(board, 0);
+                                      const subs = this.state.boardssubscriptions;
+                                      subs.push({board: board,key: 0});
+                                      this.state.boardssubscriptions = subs;
+                                  }}
+                              >
+                              <Text style={{
+                                  marginLeft: 15,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 16,
+                                  fontFamily: "Montserrat-SemiBold"
+                              }}>
+                                  {t('subscribe')}
+                              </Text>
+                              </TouchableWithoutFeedback>
+                            }
 
 
                         </View>

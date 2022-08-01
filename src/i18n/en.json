@@ -157,5 +157,6 @@
   notSyncingTitle: 'Not Syncing',
   notSyncingSubtitle: 'You enabled data limits, and are on a limited connection. Not starting sync.',
   ok: 'OK',
-  boardsTitle: 'Boards'
+  boardsTitle: 'Boards',
+  subscribe: 'Subscribe!',
 }
