@@ -246,6 +246,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                   borderColor: 'transparent'
               }}>
                       <FlatList
+                          removeClippedSubviews={false}
                           extraData={this.state.index}
                           ItemSeparatorComponent={null}
                           data={messages}
@@ -253,9 +254,10 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           renderItem={({item}) => (
                               <ListItem
                                   title={item.nickname ? item.nickname + " in " + item.board : 'Anonymous in ' + item.board}
-                                  subtitle={<Text><Text>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>}
+                                  subtitle={<Text selectable><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>}
                                   subtitleStyle={{
-                                      fontFamily: "Montserrat-Regular"
+                                      fontFamily: "Montserrat-Regular",
+                                      overflow: 'hidden'
                                   }}
                                   chevron={item.read == '1' ? false : newMessageIndicator }
                                   leftIcon={
