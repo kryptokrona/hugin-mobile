@@ -64,10 +64,20 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
 
+        let board = this.props.navigation.state.params;
+        console.log(board);
+
+        if (board  == undefined) {
+          board = 'Home';
+        } else {
+          board = board.board;
+        }
+        console.log(board);
+
         this.state = {
             messages: Globals.boardsMessages,
             index: 0,
-            board: 'Home',
+            board: board,
             modalVisible: false,
             editingBoards: false,
             isSubscribedToBoard: false
