@@ -185,13 +185,22 @@ function handleNotification(notification) {
 
     let payee = notification.userInfo;
 
-    payee = new URLSearchParams(payee).toString();
+    if (payee.address) {
 
-    let url = 'xkr://' + payee;
+      payee = new URLSearchParams(payee).toString();
+
+      let url = 'xkr://' + payee;
+
+      Linking.openURL(url);
+
+    } else {
+
+        let url = 'xkr://?board=' + payee;
+
+        Linking.openURL(url);
 
 
-
-    Linking.openURL(url);
+    }
 
     // notification.finish(PushNotificationIOS.FetchResult.NoData);
 }
