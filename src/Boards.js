@@ -9,6 +9,7 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import {
     Linking, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
+import Hyperlink from 'react-native-hyperlink'
 
 import {
     validateAddresses, WalletErrorCode, validatePaymentID,
@@ -254,7 +255,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           renderItem={({item}) => (
                               <ListItem
                                   title={item.nickname ? item.nickname + " in " + item.board : 'Anonymous in ' + item.board}
-                                  subtitle={<Text selectable><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>}
+                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
                                   subtitleStyle={{
                                       fontFamily: "Montserrat-Regular",
                                       overflow: 'hidden'

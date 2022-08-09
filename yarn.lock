@@ -3451,6 +3451,13 @@ fast-plist@^0.1.2:
   resolved "https://registry.npmjs.org/fast-plist/-/fast-plist-0.1.2.tgz"
   integrity sha1-pFr/NFGWAG1AbKbNzQX2kFHvNbg=
 
+fastest-server@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/fastest-server/-/fastest-server-1.0.1.tgz#033c6c16709aafcb58a10575a8216ae8c34b3e2a"
+  integrity sha512-Xyu1U+xs3aQET8XjGoI252OMbsywRu4ESPkmdr/Tg6md3aK7J/KJeqmnIyOieFTr8FZPl+xmsE3MMHqYHnRGFQ==
+  dependencies:
+    raw-socket "^1.7.0"
+
 fb-watchman@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/fb-watchman/-/fb-watchman-2.0.0.tgz"
@@ -3732,6 +3739,13 @@ get-caller-file@^2.0.1:
   version "2.0.5"
   resolved "https://registry.npmjs.org/get-caller-file/-/get-caller-file-2.0.5.tgz"
   integrity sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==
+
+get-fastest-url@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/get-fastest-url/-/get-fastest-url-1.0.4.tgz#a556a484d06f22c13a0786f5d9a8908a4c6a9fde"
+  integrity sha512-kOJPGqOPNdo0sMpyTQHKc5Aq730h5Hcti831GgPbLgTX1pOpVati7uKICkiLpYtHJ3mfR4NWLzmj2X42jwtLAA==
+  dependencies:
+    node-fetch "^2.6.0"
 
 get-random-values@^1.2.0, get-random-values@^1.2.2:
   version "1.2.2"
@@ -5279,6 +5293,13 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
+linkify-it@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/linkify-it/-/linkify-it-2.2.0.tgz#e3b54697e78bf915c70a38acd78fd09e0058b1cf"
+  integrity sha512-GnAl/knGn+i1U/wjBz3akz2stz+HrHLsxMwHQGofCDfPvlf+gDKN58UtfmUquTY4/MXeE2x7k19KQmeoZi94Iw==
+  dependencies:
+    uc.micro "^1.0.1"
+
 load-json-file@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/load-json-file/-/load-json-file-2.0.0.tgz"
@@ -5435,6 +5456,11 @@ md5.js@^1.3.4:
     hash-base "^3.0.0"
     inherits "^2.0.1"
     safe-buffer "^5.1.2"
+
+mdurl@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/mdurl/-/mdurl-1.0.1.tgz#fe85b2ec75a59037f2adfec100fd6c601761152e"
+  integrity sha512-/sKlQJCBYVY9Ers9hqzKou4H6V5UWc/M59TH2dvkt+84itfnq7uFOMLpOiOS4ujvHP4etln18fmIxA5R5fll0g==
 
 mem@^1.1.0:
   version "1.1.0"
@@ -5952,6 +5978,11 @@ mute-stream@0.0.7:
   resolved "https://registry.npmjs.org/mute-stream/-/mute-stream-0.0.7.tgz"
   integrity sha1-MHXOk7whuPq0PhvE2n6BFe0ee6s=
 
+nan@2.14.*:
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/nan/-/nan-2.14.2.tgz#f5376400695168f4cc694ac9393d0c9585eeea19"
+  integrity sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==
+
 nan@^2.12.1:
   version "2.14.0"
   resolved "https://registry.npmjs.org/nan/-/nan-2.14.0.tgz"
@@ -6047,6 +6078,13 @@ node-fetch@^2.5.0:
   version "2.6.6"
   resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.6.tgz"
   integrity sha512-Z8/6vRlTUChSdIgMa51jxQ4lrw/Jy5SOW10ObaA47/RElsAN2c5Pn8bTgFGWn/ibwzXTE8qwr1Yzx28vsecXEA==
+  dependencies:
+    whatwg-url "^5.0.0"
+
+node-fetch@^2.6.0:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
+  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
   dependencies:
     whatwg-url "^5.0.0"
 
@@ -6916,6 +6954,13 @@ range-parser@~1.2.1:
   resolved "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
+raw-socket@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/raw-socket/-/raw-socket-1.7.0.tgz#cd0bcc3da52450dcb6b9efe7a6d0890bf1aaf9db"
+  integrity sha512-mXqWihgwaFNmV5le0dWk5o+03M3A2zBIkC9BNaE6R0CJN9eYot++j2FIqgNSDq6/Vmu32PPI155SiiWNV2yyFQ==
+  dependencies:
+    nan "2.14.*"
+
 rc@^1.2.7:
   version "1.2.8"
   resolved "https://registry.npmjs.org/rc/-/rc-1.2.8.tgz"
@@ -7042,10 +7087,9 @@ react-native-exit-app@^1.0.0:
   resolved "https://registry.npmjs.org/react-native-exit-app/-/react-native-exit-app-1.0.0.tgz"
   integrity sha512-2d8RlzfjA4fTJaXD3xObTt0hv+7i41bDyWDB9+zOI0zS1nGvY4mtENKhte8ceRih/3eZWQLpwkkHFP1Y8AG/5w==
 
-react-native-fingerprint-scanner@^3.0.2:
-  version "3.0.2"
-  resolved "https://registry.npmjs.org/react-native-fingerprint-scanner/-/react-native-fingerprint-scanner-3.0.2.tgz"
-  integrity sha512-e6EkSgThwHAI9y5y2G3HdEbuKBka2lu3gRzpWzQs8FQF3t2DIB7fRHdA3/fnd33T39P0vU6hSCc9xwSpDbSdyg==
+"react-native-fingerprint-scanner@https://github.com/hieuvp/react-native-fingerprint-scanner.git#54b06e1f354628ea472c3f6527f7652a85081f22":
+  version "6.0.0"
+  resolved "https://github.com/hieuvp/react-native-fingerprint-scanner.git#54b06e1f354628ea472c3f6527f7652a85081f22"
 
 react-native-gesture-handler@^1.3.0:
   version "1.3.0"
@@ -7055,6 +7099,14 @@ react-native-gesture-handler@^1.3.0:
     hoist-non-react-statics "^2.3.1"
     invariant "^2.2.2"
     prop-types "^15.5.10"
+
+react-native-hyperlink@^0.0.19:
+  version "0.0.19"
+  resolved "https://registry.yarnpkg.com/react-native-hyperlink/-/react-native-hyperlink-0.0.19.tgz#ca375cde1d244bb94c551736852ee0d688c8bb1f"
+  integrity sha512-x4wuRGDMnnpWcRr5MCK1D2UcEuzD9IHK8lfjEhO/+QqXNaX31HdeD3ss3BXXZgHxpRYtLbTB0TuFcl1HHANp3w==
+  dependencies:
+    linkify-it "^2.2.0"
+    mdurl "^1.0.0"
 
 react-native-keychain@3.1.3, react-native-keychain@^3.1.3:
   version "3.1.3"
@@ -8615,6 +8667,11 @@ ua-parser-js@^0.7.18:
   version "0.7.20"
   resolved "https://registry.npmjs.org/ua-parser-js/-/ua-parser-js-0.7.20.tgz"
   integrity sha512-8OaIKfzL5cpx8eCMAhhvTlft8GYF8b2eQr6JkCyVdrgjcytyOmPCXrqXFcUnhonRpLlh5yxEZVohm6mzaowUOw==
+
+uc.micro@^1.0.1:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/uc.micro/-/uc.micro-1.0.6.tgz#9c411a802a409a91fc6cf74081baba34b24499ac"
+  integrity sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==
 
 uglify-es@^3.1.9:
   version "3.3.9"
