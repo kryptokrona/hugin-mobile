@@ -64,7 +64,7 @@
   address: "Адрес",
   notes: "записка",
   viewOnExplorer: "Посмотреть в проводнике",
-  transferTitle: "Отправить XKR",
+  transferTitle: "Отправить XKR в {name}",
   sendAmountLabel: "Сумма для отправки",
   sendMaxButton: "Отправить все",
   shouldArriveIn: "Должен прибыть через ",

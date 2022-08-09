@@ -64,7 +64,7 @@
   address: "Adresse",
   notes: "Notater",
   viewOnExplorer: "Vis i utforsker",
-  transferTitle: "Send XKR",
+  transferTitle: "Send XKR til {name}",
   sendAmountLabel: "Beløp som skal sendes",
   sendMaxButton: "Send alt",
   shouldArriveIn: "Burde komme iløpet av ",

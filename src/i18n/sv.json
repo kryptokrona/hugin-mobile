@@ -64,7 +64,7 @@
   address: "Adress",
   notes: "Anteckningar",
   viewOnExplorer: "Visa i blockutforskaren",
-  transferTitle: "Skicka kryptokronor",
+  transferTitle: "Skicka kryptokronor till {name}",
   sendAmountLabel: "Antal kryptokronor att skicka",
   sendMaxButton: "Skicka allt",
   shouldArriveIn: "Kommer om ",

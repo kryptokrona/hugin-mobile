@@ -64,7 +64,7 @@
   address: "Adres",
   notes: "Notlar",
   viewOnExplorer: "Gezginde görüntüle",
-  transferTitle: "XKR gönder",
+  transferTitle: "{name}'ye XKR gönder",
   sendAmountLabel: "Gönderilecek miktar",
   sendMaxButton: "Hepsini gönder",
   shouldArriveIn: "Gelmeli ",

@@ -64,7 +64,7 @@
   address: "Address",
   notes: "Notes",
   viewOnExplorer: "View in explorer",
-  transferTitle: "Send XKR",
+  transferTitle: "Send XKR to {name}",
   sendAmountLabel: "Amount to be sent",
   sendMaxButton: "Send all",
   shouldArriveIn: "Should arrive in ",

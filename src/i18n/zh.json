@@ -64,7 +64,7 @@
   address: "地址",
   notes: "笔记",
   viewOnExplorer: "在资源管理器中查看",
-  transferTitle: "发送XKR",
+  transferTitle: "发送XKR给{name}",
   sendAmountLabel: "发送数量",
   sendMaxButton: "全部发送",
   shouldArriveIn: "应收到",
