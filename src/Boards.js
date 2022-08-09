@@ -166,15 +166,17 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
           message: ''
         });
 
+        this.input.clear();
+
+        this.setState({messageHasLength: this.state.message.length > 0});
+
         let success = await sendBoardsMessage(checkText(text), this.state.board, this.state.paymentID);
 
 
         // await removeMessage(temp_timestamp);
         if (success.success) {
 
-          this.input.clear();
 
-          this.setState({messageHasLength: this.state.message.length > 0});
           // this.state.input.current.clear();
         } else {
           updated_messages = await getBoardsMessages(this.state.board);
