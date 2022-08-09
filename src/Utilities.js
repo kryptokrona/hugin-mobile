@@ -128,8 +128,6 @@ export async function handleURI(data, navigation) {
 
       const params = Qs.parse(data.url.replace('xkr://', ''));
 
-      console.log(params.board);
-
       if(params.board != undefined) {
 
               navigation.navigate(
@@ -140,8 +138,6 @@ export async function handleURI(data, navigation) {
 
               return;
       }
-
-      console.log('roflcopter');
 
       const address = params.address;
       const name = params.name;
