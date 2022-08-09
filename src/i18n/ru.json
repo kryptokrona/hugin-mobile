@@ -163,5 +163,6 @@
     close: "Закрыть",
     edit: "Редактировать",
     cancelOptimize: "Вам не нужно оптимизировать свой кошелек. Вы уже можете отправлять сообщения {inputs.length}.",
-    optimizationComplete: "Оптимизация завершена!"
+    optimizationComplete: "Оптимизация завершена!",
+    nickname: "прозвище"
 }

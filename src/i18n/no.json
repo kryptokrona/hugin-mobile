@@ -163,5 +163,6 @@
   close: "Close",
   edit: "Rediger",
   cancelOptimize: "Du trenger ikke å optimalisere lommeboken din. Du kan allerede sende {inputs.length} meldinger.",
-  optimizationComplete: "Optimalisering fullført!"
+  optimizationComplete: "Optimalisering fullført!",
+  nickname: "Kallenavn"
 }

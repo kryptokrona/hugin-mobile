@@ -163,5 +163,6 @@
     close: "Schließen",
     edit: "bearbeiten",
     cancelOptimize: "Sie müssen Ihr Wallet nicht optimieren. Sie können bereits {inputs.length} Nachrichten senden.",
-    optimizationComplete: "Optimierung abgeschlossen!"
+    optimizationComplete: "Optimierung abgeschlossen!",
+    nickname: "Betiteln"
   }

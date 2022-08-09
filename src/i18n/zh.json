@@ -160,7 +160,7 @@
   boardsTitle: "公告板",
   subscribe: "订阅!",
   myBoards: "我的公告板",
-  close: "关",
+  close: "关闭",
   edit: "编辑",
   cancelOptimize: "无需优化!您还可以发送{inputs.length}条消息",
   optimizationComplete: "优化完成"

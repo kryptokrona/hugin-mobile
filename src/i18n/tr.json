@@ -163,5 +163,6 @@
   close: "Kapat",
   edit: "Düzenle",
   cancelOptimize: "Cüzdanınızı optimize etmenize gerek yok. Zaten {inputs.length} mesaj gönderebilirsiniz.",
-  optimizationComplete: "Optimizasyon tamamlandı!"
+  optimizationComplete: "Optimizasyon tamamlandı!",
+  nickname: "Takma ad"
 }

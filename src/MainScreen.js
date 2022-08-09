@@ -564,7 +564,7 @@ class AddressComponent extends React.PureComponent {
                     marginLeft: 20,
                     fontFamily: 'Montserrat-Bold'
                 }]}>
-                Nickname
+                {t('nickname')}
                 </Text>
                 <View
                 style={{

@@ -163,5 +163,6 @@
   close: "Stäng",
   edit: "Redigera",
   cancelOptimize: "Du behöver inte optimera din plånbok. Du kan redan skicka {inputs.length} meddelanden.",
-  optimizationComplete: "Optimering klar!"
+  optimizationComplete: "Optimering klar!",
+  nickname: "Visningsnamn"
 }
