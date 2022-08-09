@@ -162,4 +162,6 @@
   myBoards: "My Boards",
   close: "Close",
   edit: "Edit",
+  cancelOptimize: "No need to optimize! You can already send {inputs.length} messages.",
+  optimizationComplete: "Optimization complete!"
 }

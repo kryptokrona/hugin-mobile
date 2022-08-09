@@ -161,5 +161,7 @@
   subscribe: "Spara grupp",
   myBoards: "Mina grupper",
   close: "Stäng",
-  edit: "Redigera"
+  edit: "Redigera",
+  cancelOptimize: "Du behöver inte optimera din plånbok. Du kan redan skicka {inputs.length} meddelanden.",
+  optimizationComplete: "Optimering klar!"
 }

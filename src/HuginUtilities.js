@@ -339,7 +339,7 @@ export async function optimizeMessages(nbrOfTxs, background=true) {
   if (inputs.length > 8) {
 
     if (!background) {
-      toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+      toastPopUp(i18next.t('cancelOptimize').replace(/{Config.appName}/g, inputs.length));
     }
     return;
   }
@@ -387,7 +387,7 @@ export async function optimizeMessages(nbrOfTxs, background=true) {
   if (result.success) {
     // toastPopUp('Optimizing wallet!');
     if (!background) {
-      toastPopUp('Optimization complete!');
+      toastPopUp(i18next.t('optimizationComplete'));
     }
   }
 

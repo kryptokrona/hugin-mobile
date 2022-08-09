@@ -161,5 +161,7 @@
   subscribe: "Pano ekle",
   myBoards: "Panolarım",
   close: "Kapat",
-  edit: "Düzenle"
+  edit: "Düzenle",
+  cancelOptimize: "Cüzdanınızı optimize etmenize gerek yok. Zaten {inputs.length} mesaj gönderebilirsiniz.",
+  optimizationComplete: "Optimizasyon tamamlandı!"
 }

@@ -161,5 +161,7 @@
     abonnieren: "Board hinzufügen",
     myBoards: "Meine Boards",
     close: "Schließen",
-    edit: "bearbeiten"
+    edit: "bearbeiten",
+    cancelOptimize: "Sie müssen Ihr Wallet nicht optimieren. Sie können bereits {inputs.length} Nachrichten senden.",
+    optimizationComplete: "Optimierung abgeschlossen!"
   }
