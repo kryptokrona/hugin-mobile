@@ -780,7 +780,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
               // Opening the link with some app, if the URL scheme is "http" the web link should be opened
               // by some browser in the mobile
-              await Linking.openURL('https://kryptokrona.org/en/faucet?address' + this.props.address);
+              await Linking.openURL('https://kryptokrona.org/en/faucet?address=' + this.props.address);
 
           });
           if (!hasBalance) {
