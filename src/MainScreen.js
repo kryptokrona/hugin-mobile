@@ -15,7 +15,7 @@ import PushNotification from 'react-native-push-notification';
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
 import {
-    Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
+    TextInput, Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
     AppState, Platform, Linking, ScrollView, RefreshControl, Dimensions, Clipboard
 } from 'react-native';
 
@@ -30,9 +30,9 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
-import { getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
+import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
@@ -125,6 +125,16 @@ async function init(navigation) {
     }
 
     initGlobals();
+    console.log('wtf');
+    const recommended_node = await getBestCache();
+
+    console.log('bruh', recommended_node);
+
+    Globals.preferences.cache = recommended_node.url;
+
+    console.log(Globals.preferences.cache);
+
+    cacheSync(true);
 
     PushNotification.configure({
         onNotification: handleNotification,
@@ -175,13 +185,22 @@ function handleNotification(notification) {
 
     let payee = notification.userInfo;
 
-    payee = new URLSearchParams(payee).toString();
+    if (payee.address) {
 
-    let url = 'xkr://' + payee;
+      payee = new URLSearchParams(payee).toString();
+
+      let url = 'xkr://' + payee;
+
+      Linking.openURL(url);
+
+    } else {
+
+        let url = 'xkr://?board=' + payee;
+
+        Linking.openURL(url);
 
 
-
-    Linking.openURL(url);
+    }
 
     // notification.finish(PushNotificationIOS.FetchResult.NoData);
 }
@@ -418,7 +437,6 @@ export class MainScreen extends React.PureComponent {
 
       const { t, i18n } = this.props;
 
-
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
            want to display your balance. */
@@ -481,7 +499,7 @@ export class MainScreen extends React.PureComponent {
 
                           <QRCode
                               value={'xkr://' + this.state.address + '?paymentid=' + Buffer.from(getKeyPair().publicKey).toString('hex')}
-                              size={250}
+                              size={175}
                               backgroundColor={'transparent'}
                               color={this.props.screenProps.theme.qrCode.foregroundColour}
                           />
@@ -537,6 +555,60 @@ class AddressComponent extends React.PureComponent {
                     name='Address'
                     {...this.props}
                 />
+                <Text style={[Styles.centeredText, {
+                    color: this.props.screenProps.theme.primaryColour,
+                    textAlign: 'left',
+                    fontSize: 10,
+                    marginTop: 0,
+                    marginRight: 20,
+                    marginLeft: 20,
+                    fontFamily: 'Montserrat-Bold'
+                }]}>
+                {t('nickname')}
+                </Text>
+                <View
+                style={{
+                    // width: this.state.messageHasLength ? '80%' : '100%',
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      borderWidth: 0,
+                      borderColor: 'transparent',
+                      borderRadius: 15,
+                      height: 50,
+                      margin: '5%',
+                      marginTop: 0
+                  }}
+                >
+                <TextInput
+                    multiline={false}
+                    textAlignVertical={'top'}
+                    ref={input => { this.input = input }}
+                    style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        fontFamily: 'Montserrat-Regular',
+                        fontSize: 15,
+                        width: '100%',
+                        height: '100%',
+                        padding: 15,
+
+                    }}
+                    maxLength={24}
+                    placeholder={Globals.preferences.nickname}
+                    placeholderTextColor={'#ffffff'}
+                    onSubmitEditing={async (e) => {
+                      savePreferencesToDatabase(Globals.preferences);
+                        // return;
+                        // submitMessage(this.state.message);
+                        // this.setState({message: '', messageHasLength: false});
+                    }}
+                    onChangeText={(text) => {
+                        if (this.props.onChange) {
+                            this.props.onChange(text);
+                        }
+                        Globals.preferences.nickname = text;
+                    }}
+                    errorMessage={this.props.error}
+                />
+                </View>
                 <Text style={[Styles.centeredText, {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'left',
@@ -708,7 +780,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
               // Opening the link with some app, if the URL scheme is "http" the web link should be opened
               // by some browser in the mobile
-              await Linking.openURL('https://kryptokrona.org/faucet?address=' + this.props.address);
+              await Linking.openURL('https://kryptokrona.org/en/faucet?address=' + this.props.address);
 
           });
           if (!hasBalance) {
@@ -884,6 +956,7 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages() {
 
+
   if (Globals.syncingMessagesCount > 3) {
     Globals.syncingMessages = false;
     Globals.syncingMessagesCount = 0;
@@ -936,7 +1009,7 @@ async function backgroundSyncMessages() {
           if (thisExtra.length > 66) {
 
 
-            let message = await getMessage(thisExtra);
+            let message = await getMessage(thisExtra, thisHash);
 
             if (!message) {
               continue;

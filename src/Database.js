@@ -164,7 +164,8 @@ async function createTables(DB) {
                 limitdata BOOLEAN,
                 theme TEXT,
                 pinconfirmation BOOLEAN,
-                language TEXT
+                language TEXT,
+                nickname TEXT
             )`
         );
 
@@ -222,6 +223,41 @@ async function createTables(DB) {
             )`
         );
 
+      //   tx.executeSql(
+      //     `DROP TABLE boards_message_db`
+      // );
+
+          tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS boards_message_db (
+                 address TEXT,
+                 message TEXT,
+                 signature TEXT,
+                 board TEXT,
+                 timestamp TEXT,
+                 nickname TEXT,
+                 reply TEXT,
+                 hash TEXT UNIQUE,
+                 sent BOOLEAN,
+                 read BOOLEAN default 1
+            )`
+        );
+
+        //
+        //   tx.executeSql(
+        //     `DROP TABLE boards_subscriptions`
+        // );
+
+          tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS boards_subscriptions (
+                 board TEXT,
+                 key TEXT
+            )`
+        );
+
+
+
+
+
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS transactiondetails (
                 hash TEXT,
@@ -240,6 +276,15 @@ async function createTables(DB) {
                 (0, '')`
         );
 
+        if (dbVersion === 3) {
+            tx.executeSql(
+              `ALTER TABLE
+                  preferences
+              ADD
+                  nickname TEXT default 'Anonymous'`
+            );
+        }
+
         /* Setup default preference values */
         tx.executeSql(
             `INSERT OR IGNORE INTO preferences (
@@ -252,7 +297,8 @@ async function createTables(DB) {
                 pinconfirmation,
                 autooptimize,
                 authmethod,
-                node
+                node,
+                nickname
             )
             VALUES (
                 0,
@@ -264,7 +310,8 @@ async function createTables(DB) {
                 0,
                 1,
                 'hardware-auth',
-                ?
+                ?,
+                'Anonymous'
             )`,
             [
                 Config.defaultDaemon.getConnectionString(),
@@ -300,8 +347,10 @@ async function createTables(DB) {
             );
         }
 
+
+
         tx.executeSql(
-            `PRAGMA user_version = 3`
+            `PRAGMA user_version = 4`
         );
     });
 }
@@ -334,7 +383,8 @@ export async function savePreferencesToDatabase(preferences) {
                 autooptimize = ?,
                 authmethod = ?,
                 node = ?,
-                language = ?
+                language = ?,
+                nickname = ?
             WHERE
                 id = 0`,
             [
@@ -347,7 +397,8 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.autoOptimize ? 1 : 0,
                 preferences.authenticationMethod,
                 preferences.node,
-                preferences.language
+                preferences.language,
+                preferences.nickname
             ]
         );
     });
@@ -365,7 +416,8 @@ export async function loadPreferencesFromDatabase() {
             autooptimize,
             authmethod,
             node,
-            language
+            language,
+            nickname
         FROM
             preferences
         WHERE
@@ -385,7 +437,8 @@ export async function loadPreferencesFromDatabase() {
             autoOptimize: item.autooptimize === 1,
             authenticationMethod: item.authmethod,
             node: item.node,
-            language: item.language
+            language: item.language,
+            nickname: item.nickname
         }
     }
 
@@ -414,6 +467,27 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
   Globals.updateMessages();
 
+}
+
+export async function saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent=false) {
+
+let fromMyself = address == Globals.wallet.getPrimaryAddress();
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `REPLACE INTO boards_message_db
+              (message, address, signature, board, timestamp, nickname, reply, hash, sent, read)
+          VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+              message, address, signature, board, timestamp, nickname, reply, hash, sent, fromMyself ? 1 : 0
+          ]
+      );
+  });
+
+  if (!silent) {
+    Globals.updateBoardsMessages();
+  }
 }
 
 
@@ -467,6 +541,27 @@ export async function markConversationAsRead(conversation) {
           conversation = ?`,
       [
         conversation
+      ],
+  );
+
+});
+
+}
+
+export async function markBoardsMessageAsRead(hash) {
+
+  console.log('Marking ' + hash + ' as read.');
+
+  await database.transaction((tx) => {
+     tx.executeSql(
+      `UPDATE
+          boards_message_db
+      SET
+          read = 1
+      WHERE
+          hash = ?`,
+      [
+        hash
       ],
   );
 
@@ -632,6 +727,148 @@ export async function getMessages(conversation=false) {
     return undefined;
 }
 
+export async function getBoardsMessages(board='Home') {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            message,
+            address,
+            signature,
+            board,
+            timestamp,
+            nickname,
+            reply,
+            hash,
+            sent,
+            read
+        FROM
+            boards_message_db ${board == 'Home' ? '' : 'WHERE board = "' + board + '"'}
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+        100`
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                message: item.message,
+                address: item.address,
+                signature: item.signature,
+                board: item.board,
+                timestamp: item.timestamp,
+                nickname: item.nickname,
+                reply: item.reply,
+                hash: item.hash,
+                sent: item.sent,
+                read: item.read
+            });
+        }
+
+        return res;
+    }
+
+    return [];
+}
+
+
+export async function getBoardSubscriptions() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            board,
+            key
+        FROM
+            boards_subscriptions
+        `
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                board: item.board,
+                key: item.key
+            });
+        }
+        console.log(res);
+        return res;
+
+    }
+
+    return [];
+}
+
+
+export async function subscribeToBoard(board, key) {
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `REPLACE INTO boards_subscriptions
+                (board, key)
+            VALUES
+                (?, ?)`,
+            [
+                board,
+                key
+            ]
+        );
+    });
+
+}
+
+
+export async function removeBoard(board) {
+
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `DELETE FROM
+              boards_subscriptions
+          WHERE
+              board = ?`,
+          [ board ]
+      );
+  });
+
+}
+
+export async function getLatestBoardMessage() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            boards_message_db
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+            1`
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    let timestamp = 0;
+    if (data && data.rows && data.rows.length) {
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            timestamp = item.timestamp;
+            return timestamp;
+        }
+
+    }
+    return timestamp;
+
+}
+
 export async function messageExists(timestamp) {
     const [data] = await database.executeSql(
         `SELECT
@@ -644,6 +881,25 @@ export async function messageExists(timestamp) {
         WHERE
             timestamp = ${timestamp}
         `
+    );
+    if (data && data.rows && data.rows.length) {
+      return true;
+    } else {
+      return false;
+    }
+
+}
+
+
+export async function boardsMessageExists(hash) {
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            boards_message_db
+        WHERE
+            hash = ?
+        `, [hash]
     );
     if (data && data.rows && data.rows.length) {
       return true;

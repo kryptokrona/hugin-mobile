@@ -12,15 +12,16 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getMessages, getLatestMessages } from './Database';
-
+import { getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions } from './Database';
 import Config from './Config';
 
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
-
+import { getBestCache } from './HuginUtilities';
 import offline_node_list from './nodes.json';
+
+import offline_cache_list from './apis.json';
 
 import {
     removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
@@ -53,7 +54,9 @@ class globals {
             autoOptimize: false,
             authenticationMethod: 'hardware-auth',
             node: Config.defaultDaemon.getConnectionString(),
-            language: 'en'
+            language: 'en',
+            cache: Config.defaultCache,
+            nickname: 'Anonymous'
         };
 
         /* People in our address book */
@@ -64,13 +67,18 @@ class globals {
         this.updatePayeeFunctions = [];
 
         this.updateChatFunctions = [];
+        this.updateBoardsFunctions = [];
 
         /* Mapping of tx hash to address sent, payee name, memo */
         this.transactionDetails = [];
 
         this.daemons = [];
 
+        this.caches = [];
+
         this.messages = [];
+
+        this.boardsMessages = [];
 
         this.knownTXs = [];
 
@@ -126,6 +134,12 @@ class globals {
 
     }
 
+    async updateBoardsMessages() {
+      this.boardsMessages = await getBoardsMessages();
+      this.updateBoards();
+
+    }
+
     //
     // updateKnownTXs() {
     //
@@ -134,6 +148,13 @@ class globals {
     updateChat() {
       console.log('updateChat');
       Globals.updateChatFunctions.forEach((f) => {
+          f();
+      });
+    }
+
+    updateBoards() {
+      console.log('updateChat');
+      Globals.updateBoardsFunctions.forEach((f) => {
           f();
       });
     }
@@ -177,6 +198,28 @@ class globals {
             this.daemons = offline_node_list.nodes;
         }
     }
+
+    async updateCacheList() {
+        try {
+            const data = await request({
+                json: true,
+                method: 'GET',
+                timeout: Config.requestTimeout,
+                url: Config.cacheListURL,
+            });
+            console.log(data);
+            if (data.apis) {
+                this.caches = data.apis;
+            } else {
+              this.caches = offline_cache_list.apis;
+            }
+        } catch (error) {
+          console.log(offline_cache_list);
+            this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
+            this.daemons = offline_cache_list.nodes;
+        }
+    }
+
 }
 
 export let Globals = new globals();
@@ -193,11 +236,16 @@ function updateConnection(connection) {
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
 export async function initGlobals() {
+  console.log('wazzaaa');
     const payees = await loadPayeeDataFromDatabase();
 
     if (payees !== undefined) {
         Globals.payees = payees;
     }
+
+    Globals.boardsSubscriptions = await getBoardSubscriptions();
+
+    console.log('wtf', Globals.boardsSubscriptions);
 
     const transactionDetails = await loadTransactionDetailsFromDatabase();
 

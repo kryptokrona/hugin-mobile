@@ -289,7 +289,7 @@ export class TransferScreenNoTranslation extends React.Component {
                         marginLeft: 30,
                         fontFamily: 'Montserrat-SemiBold'
                     }}>
-                        {t('transferTitle')}
+                        {t('transferTitle').replace('{name}', this.props.navigation.state.params.payee.nickname)}
                     </Text>
 
                     <AmountInput

@@ -126,10 +126,18 @@ export async function handleURI(data, navigation) {
 
     if (data.url ) {
 
-
-
       const params = Qs.parse(data.url.replace('xkr://', ''));
 
+      if(params.board != undefined) {
+
+              navigation.navigate(
+                  'BoardsHome', {
+                      board: data.url.replace('xkr://', '')
+                  });
+
+
+              return;
+      }
 
       const address = params.address;
       const name = params.name;

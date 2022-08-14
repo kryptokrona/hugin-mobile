@@ -24,6 +24,7 @@ import { SplashScreen } from './SplashScreen';
 import { DisclaimerScreen } from './DisclaimerScreen';
 import { loadPreferencesFromDatabase, openDB } from './Database';
 import { ChatScreen, ModifyPayeeScreen, RecipientsScreen } from './Recipients';
+import { BoardsHomeScreen } from './Boards';
 import { WalletOptionScreen, CreateWalletScreen } from './CreateScreen';
 import { TransactionsScreen, TransactionDetailsScreen } from './TransactionsScreen';
 
@@ -219,12 +220,50 @@ RecipientNavigator.navigationOptions = ({ navigation, screenProps }) => ({
     }
 });
 
+
+const BoardsNavigator = createStackNavigator(
+    {
+        BoardsHome: BoardsHomeScreen
+    },
+    {
+        initialRouteName: '',
+        headerLayoutPreset: 'center',
+        defaultNavigationOptions: {
+            headerTitleStyle: {
+                fontWeight: 'bold',
+                color: Themes.darkMode.primaryColour,
+            },
+            headerTransparent: true,
+            headerTintColor: Themes.darkMode.primaryColour,
+        },
+    }
+);
+
+BoardsNavigator.navigationOptions = ({ navigation, screenProps }) => ({
+    tabBarOptions: {
+        activeBackgroundColor: screenProps.theme.backgroundColour,
+        inactiveBackgroundColor: screenProps.theme.backgroundColour,
+        activeTintColor: screenProps.theme.primaryColour,
+        inactiveTintColor: screenProps.theme.slightlyMoreVisibleColour,
+        showLabel: false,
+        style: {
+          borderTopWidth: 0,
+          height: 46,
+          textAlignVertical: "bottom",
+          backgroundColor: "#FF00FF",
+          marginBottom: 5
+        }
+    }
+});
+
+
 /* Main screen for a logged in wallet */
 const HomeNavigator = createBottomTabNavigator(
     {
         Main: MainScreen,
         Transactions: TransactionNavigator,
         Transfer: TransferNavigator,
+        Boards: BoardsNavigator,
         Recipients: RecipientNavigator,
         Settings: SettingsNavigator,
     },
@@ -260,10 +299,13 @@ const HomeNavigator = createBottomTabNavigator(
                     iconName = 'wallet';
                 } else if (routeName === 'Recipients') {
                     IconComponent = Entypo;
-                    iconName = 'chat';
+                    iconName = 'message';
                 } else if (routeName === 'Settings') {
                     IconComponent = Ionicons;
                     iconName = 'ios-settings';
+                  } else if (routeName === 'Boards') {
+                      IconComponent = Entypo;
+                      iconName = 'chat';
                 }
 
                 return <IconComponent name={iconName} size={32} color={tintColor}/>;
@@ -398,7 +440,7 @@ export default class App extends React.Component {
 
         return(
             <View style={{ flex: 1, backgroundColor: this.state.screenProps.theme.backgroundColour}}>
-            <StatusBar hidden />
+            <StatusBar />
                 {this.state.loaded ? loadedComponent : notLoadedComponent}
             </View>
         );

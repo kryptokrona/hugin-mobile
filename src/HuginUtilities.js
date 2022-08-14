@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, savePayeeToDatabase, messageExists } from './Database';
+import { getLatestBoardMessage, getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 
 import {
@@ -99,6 +99,38 @@ export async function getBestNode(ssl=true) {
 if (recommended_node == undefined) {
   const recommended_non_ssl_node = await getBestNode(false);
   return recommended_non_ssl_node;
+}
+
+}
+
+
+export async function getBestCache() {
+
+  let recommended_cache = undefined;
+
+  await Globals.updateCacheList();
+
+  let cache_requests = [];
+
+  let caches = Globals.caches.sort((a, b) => 0.5 - Math.random());
+
+  for (cache in caches) {
+    let this_cache = caches[cache];
+    console.log(this_cache);
+
+    let cacheURL = `${this_cache.url}/api/v1/posts/latest`;
+    try {
+      const resp = await fetch(cacheURL, {
+         method: 'GET'
+      }, 1000);
+      console.log(resp);
+     if (resp.ok) {
+       recommended_cache = this_cache;
+       return(this_cache);
+     }
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 }
@@ -246,6 +278,24 @@ if (links_in_message) {
 
 }
 
+function componentToHex(c) {
+  var hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+export function getBoardColors(board) {
+  let board_color = intToRGB(hashCode(board));
+
+  board_color = `rgb(${board_color.red},${board_color.green},${board_color.blue})`;
+
+  let comp_color = `rgb(${board_color.red + 50},${board_color.green + 50},${board_color.blue + 50})`
+  return [board_color, comp_color];
+}
+
 export function nonceFromTimestamp(tmstmp) {
 
   let nonce = hexToUint(String(tmstmp));
@@ -281,12 +331,16 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs) {
+export async function optimizeMessages(nbrOfTxs, background=true) {
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+
   if (inputs.length > 8) {
-    // toastPopUp('No need to optimize! You can already send ' + inputs.length + ' messages.');
+
+    if (!background) {
+      toastPopUp(i18next.t('cancelOptimize').replace(/{Config.appName}/g, inputs.length));
+    }
     return;
   }
 
@@ -295,7 +349,9 @@ export async function optimizeMessages(nbrOfTxs) {
     let txs = value.unconfirmedIncomingAmounts.length;
 
     if (txs > 0) {
-      console.log('Already have incoming inputs, aborting..');
+      if (!background) {
+        // toastPopUp('There are already new inputs on the way!');
+      }
       return;
     }
   })
@@ -330,10 +386,9 @@ export async function optimizeMessages(nbrOfTxs) {
 
   if (result.success) {
     // toastPopUp('Optimizing wallet!');
-  } else {
-    // toastPopUp('Failed to optimize wallet');
-    // console.log('Removing subwallet:', new_address);
-    Globals.wallet.deleteSubWallet(new_address);
+    if (!background) {
+      toastPopUp(i18next.t('optimizationComplete'));
+    }
   }
 
   return result;
@@ -407,6 +462,117 @@ export async function optimizeMessages(nbrOfTxs) {
       // return '';
 
 
+
+}
+
+export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=0) {
+
+    if(first) {
+      latest_board_message_timestamp = await getLatestBoardMessage();
+    }
+
+    console.log(latest_board_message_timestamp);
+
+    console.log(page);
+
+    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+    console.log(Globals.preferences.cache);
+    console.log(cacheURL);
+    console.log('Fetching ' + cacheURL + "/api/v1/posts?size=50&page=" + page);
+      fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
+    .then((response) => response.json())
+    .then(async (json) => {
+      console.log(json);
+      const items = json.items;
+
+      for (item in items) {
+
+        console.log(items[item]);
+
+        if (items[item].time < latest_board_message_timestamp) {
+          console.log(items[item].time, latest_board_message_timestamp);
+          return;
+        }
+
+        const fromMyself = items[item].key == Globals.wallet.getPrimaryAddress() ? true : false;
+
+        const message = items[item].message;
+        const address = items[item].key;
+        const signature = items[item].signature;
+        const board = items[item].board;
+        const timestamp = items[item].time;
+        const nickname = items[item].nickname;
+        const reply = items[item].reply;
+        const hash = items[item].tx_hash;
+        const sent = fromMyself ? true : false;
+
+        if (await boardsMessageExists(hash)) {
+          continue;
+          return;
+        }
+
+        saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
+
+        if (nickname == 'null') {
+          nickname = 'Anonymous';
+        }
+
+        if (latest_board_message_timestamp != 0 && !fromMyself) {
+          PushNotification.localNotification({
+              title: nickname + ' in ' + board,//'Incoming transaction received!',
+              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+              message: message,
+              data: timestamp,
+              userInfo: board,
+              // largeIconUrl: get_avatar(payload_json.from, 64),
+          });
+        }
+
+      }
+      if (json.currentPage != json.totalPages) {
+            cacheSync(silent, latest_board_message_timestamp, false, page+1);
+      }
+    })
+
+}
+
+export async function sendBoardsMessage(message, board) {
+
+  const my_address = Globals.wallet.getPrimaryAddress();
+
+  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+
+  const signature = await xkrUtils.signMessage(message, privateSpendKey);
+
+  let message_json = {
+    "m":message,
+    "k": my_address,
+    "s": signature,
+    "brd": board,
+    "t": parseInt(Date.now() / 1000)
+  }
+
+  if (Globals.preferences.nickname != 'Anonymous') {
+    message_json.n = Globals.preferences.nickname;
+  }
+
+  const payload_hex = toHex(JSON.stringify(message_json));
+
+  // toastPopUp(payload_hex);
+
+  const result = await Globals.wallet.sendTransactionAdvanced(
+      [[my_address, 1]], // destinations,
+      3, // mixin
+      {fixedFee: 5000, isFixedFee: true}, // fee
+      undefined, //paymentID
+      undefined, // subWalletsToTakeFrom
+      undefined, // changeAddress
+      true, // relayToNetwork
+      false, // sneedAll
+      Buffer.from(payload_hex, 'hex')
+  );
+  return result;
+  console.log(result);
 
 }
 
@@ -518,7 +684,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
         3, // mixin
-        {fixedFee: 4500, isFixedFee: true}, // fee
+        {fixedFee: 5000, isFixedFee: true}, // fee
         undefined, //paymentID
         undefined, // subWalletsToTakeFrom
         undefined, // changeAddress
@@ -658,7 +824,32 @@ export async function getExtra(hash){
   })
 }
 
-export async function getMessage(extra){
+async function getBoardsMessage(json) {
+
+  let message = json.m;
+  let from = json.k;
+  let signature = json.s;
+  let board = json.brd;
+  let timestamp = json.t;
+  let nickname = json.n ? json.n : 'Anonymous';
+  let reply = json.r ? json.r : 0;
+  let hash = json.hash;
+  let sent = false;
+
+  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
+  if (from != Globals.wallet.getPrimaryAddress()) {
+  PushNotification.localNotification({
+      title: nickname + ' in ' + board,//'Incoming transaction received!',
+      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+      message: message,
+      data: timestamp,
+      userInfo: board,
+      // largeIconUrl: get_avatar(payload_json.from, 64),
+  });
+}
+}
+
+export async function getMessage(extra, hash){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -674,54 +865,14 @@ export async function getMessage(extra){
     Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
-
-    // if (tx.key && tx.t) {
-    //
-    //
-    //     let senderKey = tx.key;
-    //
-    //     let box = tx.box;
-    //
-    //     let timestamp = tx.t;
-    //
-	  //       let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
-    //
-    //     if (!decryptBox) {
-		// 			//console.log('Cant decrypt new conversation');
-    //       reject();
-    //     }
-    //
-    //     let message_dec = naclUtil.encodeUTF8(decryptBox);
-    //
-    //     let payload_json = JSON.parse(message_dec);
-    //
-    //     payload_json.t = timestamp;
-    //
-    //     let exists = false;
-    //
-    //     for (payee in payees) {
-    //
-    //       if (payees[payee].paymentID == senderKey) {
-    //         exists = true;
-    //       }
-    //
-    //     }
-    //
-    //     if (!exists) {
-    //
-    //       let payee = {nickname: payload_json.from, paymentID: senderKey, "address": payload_json.from};
-    //       savePayeeToDatabase(payee);
-    //
-    //     }
-    //
-    //     saveIncomingMessage(payload_json);
-    //
-    //     resolve(payload_json);
-    //
-    // } else {
-
         if (tx.m || tx.b || tx.brd) {
-          reject();
+          // reject();
+          tx.hash = hash;
+          if (await boardsMessageExists(hash)) {
+            reject();
+            return;
+          }
+          getBoardsMessage(tx);
           return;
         }
 

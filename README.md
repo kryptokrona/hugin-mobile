@@ -1,10 +1,9 @@
-# Kryptokrona Mobile Wallet
-
-![Screenshot](https://user-images.githubusercontent.com/3246908/89831748-a4696200-db5e-11ea-9a87-758617a504b8.png)
+# Hugin Messenger Mobile
 
 ### Initial Setup
 
-* `cd kryptokrona-mobile-wallet`
+* `git clone https://github.com/kryptokrona/hugin-mobile.git`
+* `cd hugin-mobile`
 * `yarn install`
 
 ### Running
@@ -65,4 +64,6 @@ You can also just display the URI as a hyperlink. If a user clicks the link, it 
 - German - Milka Barisic
 - Chinese (zh) - bingo1168
 - Russian (ru) - Bolibompadraken
+- Norwegian - Daniel Boye
+
 
