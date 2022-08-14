@@ -163,5 +163,8 @@
   close: "关闭",
   edit: "编辑",
   cancelOptimize: "无需优化!您还可以发送{inputs.length}条消息",
-  optimizationComplete: "优化完成"
+  optimizationComplete: "优化完成",
+  nickname: "昵称",
+  recoverWalletTitle: "恢复钱包?",
+  recoverWalletDescr: "这将使所有当前资金不可用（但可以使用您的私钥恢复)"
 }

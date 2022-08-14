@@ -234,7 +234,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     marginTop: 10,
                     fontSize: 16
                 }}>
-                    {t('emptyAddressBook')}
+                    {t('noMessages')}
                 </Text>
             </View>;
 

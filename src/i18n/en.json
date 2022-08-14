@@ -164,5 +164,7 @@
   edit: "Edit",
   cancelOptimize: "No need to optimize! You can already send {inputs.length} messages.",
   optimizationComplete: "Optimization complete!",
-  nickname: "Nickname"
+  nickname: "Nickname",
+  recoverWalletTitle: "Recover wallet?",
+  recoverWalletDescr: "This will make all current funds unavailable (but recoverable with your private keys)."
 }

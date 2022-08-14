@@ -164,5 +164,7 @@
   edit: "Redigera",
   cancelOptimize: "Du behöver inte optimera din plånbok. Du kan redan skicka {inputs.length} meddelanden.",
   optimizationComplete: "Optimering klar!",
-  nickname: "Visningsnamn"
+  nickname: "Visningsnamn",
+  recoverWalletTitle: "Rädda konto?",
+  recoverWalletDescr: "Detta gör dina XKR otillgängliga tills du synkar om från 0 med dina privata nycklar."
 }

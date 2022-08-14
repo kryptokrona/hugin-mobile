@@ -1634,17 +1634,17 @@ function rewindWallet(navigation) {
 
 function recoverWallet(navigation) {
     Alert.alert(
-        'Recover Wallet?',
-        'This will make all current funds unavailable (but recoverable with your private keys).',
+        i18next.t('recoverWalletTitle'),
+        i18next.t('recoverWalletDescr'),
         [
-            {text: 'Rewind', onPress: () => {
+            {text: i18next.t('ok'), onPress: () => {
                 const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
                 Globals.wallet.reset(walletBlockCount - 1);
 
                 toastPopUp('Wallet recovery initiated');
                 navigation.navigate('Main', { reloadBalance: true } );
             }},
-            {text: 'Cancel', style: 'cancel'},
+            {text: i18next.t('cancel'), style: 'cancel'},
         ],
     );
 }
