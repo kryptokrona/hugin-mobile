@@ -63,6 +63,7 @@ You can also just display the URI as a hyperlink. If a user clicks the link, it 
 
 - German - Milka Barisic
 - Chinese (zh) - bingo1168
+- Russian (ru) - Bolibompadraken
 - Norwegian - Daniel Boye
 
 
