@@ -166,5 +166,5 @@
   optimizationComplete: "Optimalisering fullført!",
   nickname: "Kallenavn",
   recoverWalletTitle: "Gjenopprette lommebok?",
-   recoverWalletDescr: "Dette vil gjøre alle gjeldende midler utilgjengelige (men kan gjenvinnes med dine private nøkler)."
+  recoverWalletDescr: "Dette vil gjøre alle gjeldende midler utilgjengelige (men kan gjenvinnes med dine private nøkler)."
 }
