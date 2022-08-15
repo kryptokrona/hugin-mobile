@@ -1408,9 +1408,14 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     iconName: 'refresh',
                                     IconType: SimpleLineIcons,
                                 },
-                                onClick: () => {
+                                onClick: async () => {
                                     // optimizeWallet(this.props.navigation);
-                                    optimizeMessages(10, false);
+                                    const result = await optimizeMessages(10, false);
+                                    if (result === true) {
+                                      toastPopUp(i18next.t('optimizationComplete'));
+                                    } else {
+                                      toastPopUp(i18next.t('cancelOptimize').replace(/{inputs.length}/g, result));
+                                    }
                                 },
 
                             },

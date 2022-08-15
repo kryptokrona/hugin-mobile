@@ -27,10 +27,6 @@ import Identicon from 'identicon.js';
 
 import { getLatestBoardMessage, getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
-import './i18n.js';
-
-import i18next from './i18n';
-
 import {
     Address,
     AddressPrefix,
@@ -334,40 +330,33 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs, background=true, fee=10000, attempt=0) {
+export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
   if (attempt > 10) {
     return false;
   }
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
 
   if (inputs.length > 8) {
-
-    if (!background) {
-      toastPopUp(i18next.t('cancelOptimize').replace(/{Config.appName}/g, inputs.length));
-    }
-    return;
+    return inputs.length;
   }
 
   let subWallets = Globals.wallet.subWallets.subWallets;
+
   subWallets.forEach((value, name) => {
     let txs = value.unconfirmedIncomingAmounts.length;
 
     if (txs > 0) {
-      if (!background) {
-        // toastPopUp('There are already new inputs on the way!');
-      }
-      return;
+      return txs;
     }
   })
 
-  // let [new_address, error] = await Globals.wallet.addSubWallet();
-  // console.log('Optimizing and creating new wallet ', new_address);
-  // toastPopUp('Optimizing wallet!');
   let payments = [];
   let i = 0;
+
   /* User payment */
   while (i < nbrOfTxs - 1 && i < 10) {
     payments.push([
@@ -392,84 +381,13 @@ export async function optimizeMessages(nbrOfTxs, background=true, fee=10000, att
   );
 
   if (result.success) {
-    // toastPopUp('Optimizing wallet!');
-    if (!background) {
-      toastPopUp(i18next.t('optimizationComplete'));
-    }
+    return true;
+
   } else {
-    optimizeMessages(nbrOfTxs, background, fee + 500, attempt + 1)
+    optimizeMessages(nbrOfTxs, fee + 500, attempt + 1)
   }
 
   return result;
-      //
-      // let my_address = Globals.wallet.getPrimaryAddress();
-      //
-      // let my_addresses = Globals.wallet.getAddresses();
-      //
-      // let my_message_address = '';
-      // let my_change_address = '';
-      //
-      // if (my_addresses.length < 3) {
-      //   let [address, error] = await Globals.wallet.addSubWallet();
-      //   if (!error) {
-      //        //console.log(`Created subwallet with address of ${address}`);
-      //   } else {
-      //     my_message_address = address;
-      //
-      //   }
-      //
-      //   let [address2, error2] = await Globals.wallet.addSubWallet();
-      //   if (!error2) {
-      //        //console.log(`Created subwallet with address of ${address}`);
-      //   } else {
-      //     my_change_address = address2;
-      //
-      //   }
-      //
-      // } else {
-      //   my_message_address = my_addresses[1];
-      //   my_change_address = my_addresses[2];
-      // }
-      //
-      // let payments = [];
-      //
-      // let nbrOfTxs = transaction.totalAmount() / 0.00011;
-      // let i = 0;
-      // /* User payment */
-      // while (i < nbrOfTxs) {
-      //   payments.push([
-      //       my_message_address,
-      //       11
-      //   ]);
-      //
-      //   i += 1;
-      //
-      // }
-      //
-      // let result = await Globals.wallet.sendTransactionAdvanced(
-      //     payments, // destinations,
-      //     0, // mixin
-      //     {fixedFee: 10, isFixedFee: true}, // fee
-      //     undefined, //paymentID
-      //     [my_address], // subWalletsToTakeFrom
-      //     my_change_address, // changeAddress
-      //     true, // relayToNetwork
-      //     false, // sneedAll
-      //     undefined
-      // );
-      //
-      // if (result.success) {
-      //   toastPopUp('Optimizing wallet!');
-      // } else {
-      //   toastPopUp('Failed to optimizeMessages');
-      // }
-      //
-      // Globals.logger.addLogMessage(JSON.stringify(result));
-      //
-      // // toastPopUp('Sending message..');
-      // // toastPopUp(result);
-      // return '';
-
 
 
 }

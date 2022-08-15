@@ -87,12 +87,12 @@ async function init(navigation) {
             continue;
           }
         }
+        console.log('message_inputs', message_inputs);
         if (message_inputs < 2) {
           optimizeMessages(10);
 
-        } else {
-
         }
+        
     });
 
     Globals.wallet.on('deadnode', () => {
