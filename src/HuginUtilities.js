@@ -27,6 +27,9 @@ import Identicon from 'identicon.js';
 
 import { getLatestBoardMessage, getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
+import './i18n.js';
+
+import i18next from './i18n';
 
 import {
     Address,
@@ -331,7 +334,11 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs, background=true) {
+export async function optimizeMessages(nbrOfTxs, background=true, fee=10000, attempt=0) {
+
+  if (attempt > 10) {
+    return false;
+  }
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
@@ -374,7 +381,7 @@ export async function optimizeMessages(nbrOfTxs, background=true) {
 
   let result = await Globals.wallet.sendTransactionAdvanced(
       payments, // destinations,
-      0, // mixin
+      3, // mixin
       {fixedFee: 10000, isFixedFee: true}, // fee
       undefined, //paymentID
       undefined, // subWalletsToTakeFrom
@@ -389,6 +396,8 @@ export async function optimizeMessages(nbrOfTxs, background=true) {
     if (!background) {
       toastPopUp(i18next.t('optimizationComplete'));
     }
+  } else {
+    optimizeMessages(nbrOfTxs, background, fee + 500, attempt + 1)
   }
 
   return result;
