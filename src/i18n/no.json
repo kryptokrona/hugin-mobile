@@ -164,5 +164,7 @@
   edit: "Rediger",
   cancelOptimize: "Du trenger ikke å optimalisere lommeboken din. Du kan allerede sende {inputs.length} meldinger.",
   optimizationComplete: "Optimalisering fullført!",
-  nickname: "Kallenavn"
+  nickname: "Kallenavn",
+  recoverWalletTitle: "Gjenopprette lommebok?",
+   recoverWalletDescr: "Dette vil gjøre alle gjeldende midler utilgjengelige (men kan gjenvinnes med dine private nøkler)."
 }

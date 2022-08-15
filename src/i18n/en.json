@@ -82,7 +82,7 @@
   cancel: "Cancel",
   update: "Update",
   sendAllLabel: "Sending entire balance",
-  minute: "minute",
+  minute: "minutes",
   second: "second",
   welcomeMessage: "Welcome to the open beta of Hugin Messenger, the blockchain messenger.",
   createNewAccount: "Create new account",

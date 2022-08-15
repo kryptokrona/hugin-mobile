@@ -164,5 +164,7 @@
   edit: "Düzenle",
   cancelOptimize: "Cüzdanınızı optimize etmenize gerek yok. Zaten {inputs.length} mesaj gönderebilirsiniz.",
   optimizationComplete: "Optimizasyon tamamlandı!",
-  nickname: "Takma ad"
+  nickname: "Takma ad",
+  recoveryWalletTitle: "Cüzdan kurtarılsın mı?",
+  recoveryWalletDescr: "Bu, mevcut tüm fonları kullanılamaz hale getirecek (ancak özel anahtarlarınızla kurtarılabilir)."
 }

@@ -164,5 +164,7 @@
     edit: "bearbeiten",
     cancelOptimize: "Sie müssen Ihr Wallet nicht optimieren. Sie können bereits {inputs.length} Nachrichten senden.",
     optimizationComplete: "Optimierung abgeschlossen!",
-    nickname: "Betiteln"
+    nickname: "Betiteln",
+    recoveryWalletTitle: "Wallet wiederherstellen?",
+    recoveryWalletDescr: "Dadurch werden alle aktuellen Gelder nicht verfügbar (aber mit Ihren privaten Schlüsseln wiederherstellbar)."
   }

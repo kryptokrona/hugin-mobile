@@ -82,7 +82,7 @@
   cancel: "Avbryt",
   update: "Uppdatera",
   sendAllLabel: "Skickar hela ditt saldo",
-  minute: "minut",
+  minute: "minuter",
   second: "sekund",
   welcomeMessage: "Välkommen till den öppna betan av Hugin Messenger, den blockkedjebaserade meddelandetjänsten.",
   createNewAccount: "Skapa nytt konto",
