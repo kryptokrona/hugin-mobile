@@ -640,7 +640,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let old_messages = await getMessages();
 
             for (msg in old_messages) {
-              if (old_messages[msg].conversation == receiver && old_messages[msg].type == 'received') {
+              if (old_messages[msg].conversation == receiver && old_messages[msg].type == 'sent') {
                 has_history = true;
               }
 
