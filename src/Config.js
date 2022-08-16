@@ -220,7 +220,7 @@ const Config = new function() {
     /**
      * Base URL for us to chuck a hash on the end, and find a transaction
      */
-    this.explorerBaseURL = 'https://explorer.kryptokrona.se/?hash=';
+    this.explorerBaseURL = 'https://explorer.kryptokrona.se/transaction.html?hash=';
 
     /**
      * A link to your app on the Apple app store. Currently blank because we
