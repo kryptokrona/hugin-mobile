@@ -727,6 +727,40 @@ export async function getMessages(conversation=false) {
     return undefined;
 }
 
+export async function getHistory(conversation) {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            conversation,
+            type,
+            message,
+            timestamp
+        FROM
+            message_db
+        WHERE conversation = "${conversation}"
+        AND type = "sent"
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+        1`
+    );
+
+    if (data && data.rows && data.rows.length) {
+      // This block should be removed in the future.
+      // It's only used for users who have not yet sent a message to all their
+      // contacts at v1.1.2 or later.
+      if (data.rows.item(0).timestamp < 1660687886749) {
+        return false;
+      }
+      //
+      return true;
+    } else {
+      return false;
+    }
+
+}
+
 export async function getBoardsMessages(board='Home') {
 
     const [data] = await database.executeSql(

@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getLatestBoardMessage, getMessages, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 import {
     Address,
@@ -505,36 +505,20 @@ export async function sendBoardsMessage(message, board) {
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
-  // optimizeMessages(10000000);
-
-  // return;
-
-  // toastPopUp('Sending massage!');
-
-  let has_history = false;
+  let has_history = await getHistory(receiver);
 
     if (message.length == 0) {
       return;
     }
 
 
-
-    // Globals.logger.addLogMessage(Globals.wallet.getPrimaryAddress());
-
-
     let my_address = Globals.wallet.getPrimaryAddress();
 
     let my_addresses = Globals.wallet.getAddresses();
-    //console.log('my_addr', my_addresses);
-    // let [changeAddress, error] = await Globals.wallet.addSubWallet();
-    // if (error) {
-    //   toastPopUp(error);
-    // }
 
     try {
 
       let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance();
-      //console.log('bal', munlockedBalance, mlockedBalance);
 
       if (munlockedBalance < 11 && mlockedBalance > 0) {
 
@@ -546,40 +530,15 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       toastPopUp('Error!');
       return;
     }
-    // toastPopUp('Success!');
-
-    // let payments = [];
-    //
-    // /* User payment */
-    // payments.push([
-    //     receiver,
-    //     10
-    // ]);
-
 
     let timestamp = Date.now();
-
-
-
-
-        // **TO DO** Check whether this is the first outgoing transaction to the recipient
-
-    let old_messages = await getMessages();
-
-            for (msg in old_messages) {
-              if (old_messages[msg].conversation == receiver && old_messages[msg].type == 'sent') {
-                has_history = true;
-              }
-
-            }
-
-        // History has been asserted, continue sending message
 
     let box;
 
     if (!has_history) {
-      //console.log('No history found..');
-      // payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
+      // If you haven't yet sent a message to this specific contact, send the
+      // first one with a sealed box so it can be decrypted by the recipient
+      // at now, or at a later stage.
       const addr = await Address.fromAddress(my_address);
       const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
       let xkr_private_key = privateSpendKey;
@@ -588,8 +547,8 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
       box = new NaclSealed.sealedbox(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey));
     } else {
-      //console.log('Has history, not using sealedbox');
-      // Convert message data to json
+      // If you have history with this contact, it should be sent with a regular
+      // box.
       let payload_json = {"from":my_address, "msg":message};
 
       let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
@@ -602,11 +561,8 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
 
-    // let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp, "key":Buffer.from(getKeyPair().publicKey).toString('hex')};
     // Convert json to hex
     let payload_hex = toHex(JSON.stringify(payload_box));
-
-    // toastPopUp(payload_hex);
 
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
@@ -619,12 +575,10 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         false, // sneedAll
         Buffer.from(payload_hex, 'hex')
     );
-    // console.log('result', result);
 
     if (result.success) {
 
       saveMessage(receiver, 'sent', message, timestamp);
-      // toastPopUp('Message sent!');
 
 
       const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
@@ -642,10 +596,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       }
       if (message_inputs < 2) {
         optimizeMessages(10);
-      } else {
-        // console.log("No need to optimize, got ", message_inputs, " inputs.");
       }
-      // optimizeMessages(2);
     } else {
 
       toastPopUp('Message failed to send..');
@@ -656,62 +607,6 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     Globals.logger.addLogMessage(JSON.stringify(result));
 
-    // return '';
-
-    // let magnetLinks = /(magnet:\?[^\s\"]*)/gmi.exec(message);
-
-    // if (!silent) {
-    //   let id_elem = Date.now();
-    //
-    //          // let links = handle_links(message);
-    //          // let display_message = links[0];
-    //
-    // $('#messages').append('<li class="sent_message" id="' + id_elem +  '"><img class="message_avatar" src="data:image/svg+xml;base64,' + avatar_base64 + '"><p>' + display_message + '</p><span class="time" timestamp="' + Date.now() + '">right now</span></li>');
-    //   //console.log('debagg2', id_elem);
-    //   $('#' + id_elem).click(function(){
-    //     shell.openExternal($(this).attr('href'));
-    //   })
-    //
-    // if (magnetLinks) {
-    //   handleMagnetLink(magnetLinks, id_elem);
-    // }
-    // }
-
-    // Scroll to bottom
-    // $('#messages_pane').scrollTop($('#messages').height());
-    //
-    // $('#message_form').val('');
-    // $('#message_form').focus();
-
-    // receiver = $('#recipient_form').val();
-
-
-      // keychain.find({ "address": receiver }, function (err, docs) {
-      //
-      //   if (docs.length == 0) {
-      //
-      //     keychain.insert({key: $('#recipient_pubkey_form').val(), address: receiver});
-      //
-      //   }
-      //
-      // });
-
-      // if (!silent) {
-      // $('#loading_border').animate({width: '40%'},600);
-      // $('#message_form').prop('disabled',true);
-      // }
-
-      // Transaction details
-
-      //
-      //
-      // transfer = [ { 'amount':amount, 'address':receiver } ];
-      //
-      // return sendTransaction(mixin, transfer, fee, sendAddr, payload_hex, payload_json, silent);
-      //
-      // });
-
-
 }
 
 export function fromHex(hex,str){
@@ -720,7 +615,6 @@ export function fromHex(hex,str){
   }
   catch(e){
     str = hex
-    // //console.log('invalid hex input: ' + hex)
   }
   return str
 }
@@ -762,6 +656,10 @@ async function getBoardsMessage(json) {
   let reply = json.r ? json.r : 0;
   let hash = json.hash;
   let sent = false;
+
+  if (nickname = 'null') {
+    nickname = 'Anonymous';
+  }
 
   saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
   if (from != Globals.wallet.getPrimaryAddress()) {
