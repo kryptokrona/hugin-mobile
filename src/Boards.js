@@ -380,12 +380,12 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     backgroundColor: getBoardColors(item.board),
-                                    borderRadius: 45
+                                    borderRadius: 15
                                 }}>
                                     <Text style={[Styles.centeredText, {
                                         fontSize: 30,
                                         lineHeight: 40,
-                                        fontFamily: 'Montserrat-Black',
+                                        fontFamily: 'Montserrat-Bold',
                                         color: 'white',
                                     }]}>
                                         {runes(item.board)[0].toUpperCase()}
@@ -398,7 +398,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     backgroundColor: '#FF5F57',
-                                    borderRadius: 45
+                                    borderRadius: 15
                                 }}>
                                     <Text style={[Styles.centeredText, {
                                       fontSize: 30,
@@ -425,7 +425,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             </ScrollView>;
 
             const storyStyle = {
-              borderRadius: 32,
+              borderRadius: 25,
               width: 64,
               height: 64,
               backgroundColor: 'white',
@@ -455,7 +455,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     marginRight: -29
                 }}>
                 {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
-                  console.log(item.board);
                   return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
                 })
                 }
@@ -463,8 +462,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 </View>;
 
             const boardsRecommendations =
-            <View style={{height:118}}>
-              <Text style={{fontFamily: 'Montserrat-Regular'}}>Board recommendations:</Text>
+            <View style={{height:124}}>
+              <Text style={{fontFamily: 'Montserrat-Regular', marginBottom: 5}}>{t('boardsRecommendations')}</Text>
                 <ScrollView
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
@@ -477,7 +476,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     // marginLeft: -29
                 }}>
                 {boardsRecommendationsItems != undefined && boardsRecommendationsItems.map(function(item, i){
-                  console.log(item.board);
                   return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
                 })
                 }
@@ -489,8 +487,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 showsVerticalScrollIndicator={false}
                  style={{
                     width: '120%',
-                    marginBottom: 20,
-                    marginTop: 20,
+                    marginBottom: 10,
                     marginLeft: '-10%',
                     borderWidth: 0,
                     borderColor: 'transparent'
@@ -698,7 +695,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                       >
                         <View style={{
                           margin: 20,
-                          backgroundColor: this.props.screenProps.theme.backgroundColour,
+                          backgroundColor: '#272527',
                           borderRadius: 20,
                           padding: 25,
                           alignItems: "center",
@@ -711,7 +708,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           shadowRadius: 4,
                           elevation: 5
                         }}>
-                        {boardsRecommendationsItems != undefined && boardsRecommendations}
                           <View>
                             <Text style={{
                                 marginLeft: 35,
@@ -724,7 +720,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             <View
                             style={{
                                 // width: this.state.messageHasLength ? '80%' : '100%',
-                                  width: 175,
+                                  width: 225,
                                   backgroundColor: 'rgba(255,255,255,0.1)',
                                   borderWidth: 0,
                                   borderColor: 'transparent',
@@ -774,24 +770,32 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 errorMessage={this.props.error}
                             />
                             </View>
-                            <Button
-                              title={t('close')}
-                              onPress={() => this.setModalVisible(!modalVisible)}
-                            />
+
                             <View style={{
                                 backgroundColor: 'transparent',
-                                height: 200,
+                                height: 300,
                                 alignItems: 'flex-start',
                                 justifyContent: 'flex-start',
                             }}>
                             { boardsSubscriptionsComponent }
 
                             </View>
-                            <Button
-                              title={t('edit')}
-                              onPress={() => this.setEditingMode(!editingBoards)}
-                            />
+                            <View style={{flexDirection:"row", marginBottom: 10}}>
+                              <View style={{width: '40%', marginLeft: 25 }}>
+                                <Button
+                                  title={t('edit')}
+                                  onPress={() => this.setEditingMode(!editingBoards)}
+                                />
+                              </View>
+                              <View style={{width: '40%', marginLeft: 10 }}>
+                                <Button
+                                  title={t('close')}
+                                  onPress={() => this.setModalVisible(!modalVisible)}
+                                />
+                              </View>
+                            </View>
                           </View>
+                          {boardsRecommendationsItems != undefined && boardsRecommendations}
                         </View>
                       </Modal>
                     </View>
