@@ -166,5 +166,6 @@
     optimizationComplete: "Optimierung abgeschlossen!",
     nickname: "Betiteln",
     recoverWalletTitle: "Wallet wiederherstellen?",
-    recoverWalletDescr: "Dadurch werden alle aktuellen Gelder nicht verfügbar (aber mit Ihren privaten Schlüsseln wiederherstellbar)."
+    recoverWalletDescr: "Dadurch werden alle aktuellen Gelder nicht verfügbar (aber mit Ihren privaten Schlüsseln wiederherstellbar).",
+    boardsRecommendations: "Empfohlen"
   }

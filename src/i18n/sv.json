@@ -166,5 +166,6 @@
   optimizationComplete: "Optimering klar!",
   nickname: "Visningsnamn",
   recoverWalletTitle: "Rädda konto?",
-  recoverWalletDescr: "Detta gör dina XKR otillgängliga tills du synkar om från 0 med dina privata nycklar."
+  recoverWalletDescr: "Detta gör dina XKR otillgängliga tills du synkar om från 0 med dina privata nycklar.",
+  boardsRecommendations: "Rekommendationer"
 }

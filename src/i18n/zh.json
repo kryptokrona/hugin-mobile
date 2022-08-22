@@ -166,5 +166,5 @@
   optimizationComplete: "优化完成",
   nickname: "昵称",
   recoverWalletTitle: "恢复钱包?",
-  recoverWalletDescr: "这将使所有当前资金不可用（但可以使用您的私钥恢复)"
+  recoverWalletDescr: "推荐"
 }
