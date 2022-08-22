@@ -95,6 +95,7 @@ class globals {
         this.pinCode = undefined;
         this.backgroundSaveTimer = undefined;
         this.logger = new Logger();
+        this.payees = [];
         removeMessages();
     }
 

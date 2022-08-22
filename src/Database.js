@@ -621,6 +621,16 @@ export async function removeMessages() {
             `DELETE FROM payees`
         );
     });
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM boards_message_db`
+        );
+    });
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM boards_subscriptions`
+        );
+    });
 }
 
 export async function loadPayeeDataFromDatabase() {
@@ -781,7 +791,7 @@ export async function getBoardsMessages(board='Home') {
             timestamp
         DESC
         LIMIT
-        100`
+        20`
     );
     console.log('Got ' + data.rows.length + " board messages");
     if (data && data.rows && data.rows.length) {
