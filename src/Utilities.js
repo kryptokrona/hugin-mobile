@@ -124,11 +124,15 @@ export function getArrivalTime(timeUnitTranslation) {
 
 export async function handleURI(data, navigation) {
 
+  console.log(data);
+
     if (data.url ) {
 
       const params = Qs.parse(data.url.replace('xkr://', ''));
 
       if(params.board != undefined) {
+
+              console.log(params.board);
 
               navigation.navigate(
                   'BoardsHome', {
@@ -154,6 +158,8 @@ export async function handleURI(data, navigation) {
               payee: {address: address, nickname: name, paymentID: paymentID},
           });
 
+    } else if (!data.startsWith('xkr://SEKR')) {
+      return;
     }
 
     const result = await parseURI(data);
