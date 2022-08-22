@@ -27,6 +27,8 @@ import { Styles } from './Styles';
 
 import Moment from 'react-moment';
 
+const runes = require('runes');
+
 import 'moment/locale/de';
 import 'moment/locale/sv';
 import 'moment/locale/tr';
@@ -377,7 +379,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     height: 50,
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    backgroundColor: getBoardColors(item.board)[0],
+                                    backgroundColor: getBoardColors(item.board),
                                     borderRadius: 45
                                 }}>
                                     <Text style={[Styles.centeredText, {
@@ -386,7 +388,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                         fontFamily: 'Montserrat-Black',
                                         color: 'white',
                                     }]}>
-                                        {item.board[0].toUpperCase()}
+                                        {runes(item.board)[0].toUpperCase()}
                                     </Text>
 
                                 </View> :
@@ -454,7 +456,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 }}>
                 {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
                   console.log(item.board);
-                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)[0]}]}><Text style={storyTextStyle}>{item.board[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
                 })
                 }
                 </ScrollView>
@@ -476,7 +478,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 }}>
                 {boardsRecommendationsItems != undefined && boardsRecommendationsItems.map(function(item, i){
                   console.log(item.board);
-                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)[0]}]}><Text style={storyTextStyle}>{item.board[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
                 })
                 }
                 </ScrollView>
