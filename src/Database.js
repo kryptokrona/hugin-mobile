@@ -811,6 +811,42 @@ export async function getBoardsMessages(board='Home') {
 }
 
 
+export async function getBoardRecommendations() {
+
+    const [data] = await database.executeSql(
+      `
+      SELECT board, COUNT(*) as count
+      FROM boards_message_db
+      WHERE board is not null AND board is not 'Home' AND board is not '' AND board not in (select board from boards_subscriptions)
+      GROUP BY board
+      ORDER BY
+          count
+      DESC
+      LIMIT
+      20
+      `
+    );
+
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                board: item.board,
+                count: item.count
+            });
+        }
+
+        return res;
+    }
+
+    return [];
+}
+
+
 export async function getBoardSubscriptions() {
 
     const [data] = await database.executeSql(

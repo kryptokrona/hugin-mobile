@@ -41,7 +41,7 @@ import {intToRGB, hashCode, get_avatar, sendBoardsMessage, getBoardColors} from 
 
 import {toastPopUp} from './Utilities';
 
-import { getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase, removeBoard } from './Database';
+import { getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase, removeBoard, getBoardRecommendations } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -95,13 +95,14 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         const this_messages = await getBoardsMessages(this.state.board);
 
         const boardsSubscriptions = [{board: 'Home', key: 0}].concat(Globals.boardsSubscriptions);
-        // console.log(boardsSubscriptions);
-        // boardsSubscriptions.append({board: 'Home', key: '0'});
+
+        const boardsRecommendationsItems = await getBoardRecommendations();
 
         this.setState({
           messages: this_messages,
           boardssubscriptions: boardsSubscriptions,
-          isSubscribedToBoard: true
+          isSubscribedToBoard: true,
+          boardsRecommendationsItems: boardsRecommendationsItems
         });
 
         Globals.activeChat = this.state.address;
@@ -221,6 +222,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         const { t } = this.props;
         const messages = this.state.messages;
         const boardsSubscriptionsItems = this.state.boardssubscriptions;
+        const boardsRecommendationsItems = this.state.boardsRecommendationsItems;
 
         const board = this.state.board;
         this.state.isSubscribedToBoard = isSubscribedTo(this.state.board);
@@ -267,7 +269,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           renderItem={({item}) => (
                               <ListItem
                                   title={item.nickname ? item.nickname + " in " + item.board : 'Anonymous in ' + item.board}
-                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
+                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
                                   subtitleStyle={{
                                       fontFamily: "Montserrat-Regular",
                                       overflow: 'hidden'
@@ -420,12 +422,71 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     />
             </ScrollView>;
 
+            const storyStyle = {
+              borderRadius: 32,
+              width: 64,
+              height: 64,
+              backgroundColor: 'white',
+              marginRight: 10
+            };
+
+            const storyTextStyle = [Styles.centeredText, {
+                fontSize: 30,
+                lineHeight: 60,
+                width: 64,
+                fontFamily: 'Montserrat-Bold',
+                color: 'white',
+            }];
+
+            const boardsStories =
+            <View style={{height:118}}>
+                <ScrollView
+                showsHorizontalScrollIndicator={false}
+                horizontal={true}
+                 style={{
+                    width: '116%',
+                    marginBottom: 20,
+                    borderWidth: 0,
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent',
+                    marginLeft: -20,
+                    marginRight: -29
+                }}>
+                {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
+                  console.log(item.board);
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)[0]}]}><Text style={storyTextStyle}>{item.board[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
+                })
+                }
+                </ScrollView>
+                </View>;
+
+            const boardsRecommendations =
+            <View style={{height:118}}>
+              <Text style={{fontFamily: 'Montserrat-Regular'}}>Board recommendations:</Text>
+                <ScrollView
+                showsHorizontalScrollIndicator={false}
+                horizontal={true}
+                 style={{
+                    // width: '116%',
+                    marginBottom: 20,
+                    borderWidth: 0,
+                    borderColor: 'transparent',
+                    backgroundColor: 'transparent',
+                    // marginLeft: -29
+                }}>
+                {boardsRecommendationsItems != undefined && boardsRecommendationsItems.map(function(item, i){
+                  console.log(item.board);
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)[0]}]}><Text style={storyTextStyle}>{item.board[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
+                })
+                }
+                </ScrollView>
+                </View>;
+
             const boardsSubscriptionsComponent =
                 <ScrollView
                 showsVerticalScrollIndicator={false}
                  style={{
                     width: '120%',
-                    height: '70%',
                     marginBottom: 20,
                     marginTop: 20,
                     marginLeft: '-10%',
@@ -519,7 +580,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                             {!this.state.isSubscribedToBoard &&
                               <TouchableWithoutFeedback
-                                  onPress={() => {
+                                  onPress={async () => {
                                       if ( isSubscribedTo(board) ) {
                                         return;
                                       }
@@ -528,6 +589,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                       const subs = this.state.boardssubscriptions;
                                       subs.push({board: board,key: 0});
                                       this.state.boardssubscriptions = subs;
+                                      this.state.boardsRecommendationsItems = await getBoardRecommendations();
                                   }}
                               >
                               <View style={{
@@ -566,6 +628,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 fontFamily: "Montserrat-SemiBold",
                                 marginTop: -5
                             }}>
+
                                 {board}
                             </Text>
                             </View>
@@ -574,6 +637,10 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         </View>
                     </TouchableWithoutFeedback>
 
+                    {this.state.board == 'Home' && boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.length > 1 && boardsStories}
+
+                    {this.state.board == 'Home' && boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.length < 2 && boardsRecommendations}
+
                     <KeyboardAvoidingView
                      behavior={Platform.OS == "ios" ? "padding" : "height"}
                      style={{
@@ -581,8 +648,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         marginRight: 12,
                         flexDirection: 'row'
                     }}>
-
-                        {this.state.board && messageInput}
+                        {this.state.board && this.state.board != 'Home' && messageInput}
 
                         {this.state.messageHasLength &&
 
@@ -643,6 +709,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           shadowRadius: 4,
                           elevation: 5
                         }}>
+                        {boardsRecommendationsItems != undefined && boardsRecommendations}
                           <View>
                             <Text style={{
                                 marginLeft: 35,
@@ -651,6 +718,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                 fontFamily: "Montserrat-SemiBold"
                             }}>{t('myBoards')}
                             </Text>
+
                             <View
                             style={{
                                 // width: this.state.messageHasLength ? '80%' : '100%',
@@ -710,7 +778,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             />
                             <View style={{
                                 backgroundColor: 'transparent',
-                                flex: 1,
+                                height: 200,
                                 alignItems: 'flex-start',
                                 justifyContent: 'flex-start',
                             }}>
@@ -730,7 +798,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     <View style={{
                         backgroundColor: this.props.screenProps.theme.backgroundColour,
                         flex: 1,
-                        marginRight: 15,
+                        marginRight: 5,
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                     }}>
