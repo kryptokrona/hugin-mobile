@@ -429,7 +429,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
               width: 64,
               height: 64,
               backgroundColor: 'white',
-              marginRight: 10
+              marginRight: 10,
+              flexDirection:'row'
             };
 
             const storyTextStyle = [Styles.centeredText, {
@@ -438,10 +439,12 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 width: 64,
                 fontFamily: 'Montserrat-Bold',
                 color: 'white',
+                flex: 1,
+                flexWrap: 'wrap'
             }];
 
             const boardsStories =
-            <View style={{height:118}}>
+            <View style={{height:120}}>
                 <ScrollView
                 showsHorizontalScrollIndicator={false}
                 horizontal={true}
@@ -462,7 +465,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 </View>;
 
             const boardsRecommendations =
-            <View style={{height:124}}>
+            <View style={{height:142}}>
               <Text style={{fontFamily: 'Montserrat-Regular', marginBottom: 5}}>{t('boardsRecommendations')}</Text>
                 <ScrollView
                 showsHorizontalScrollIndicator={false}
@@ -640,14 +643,14 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                     {this.state.board == 'Home' && boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.length < 2 && boardsRecommendations}
 
-                    <KeyboardAvoidingView
+                    {this.state.board && this.state.board != 'Home' && <KeyboardAvoidingView
                      behavior={Platform.OS == "ios" ? "padding" : "height"}
                      style={{
                         marginBottom: 10,
                         marginRight: 12,
                         flexDirection: 'row'
                     }}>
-                        {this.state.board && this.state.board != 'Home' && messageInput}
+                        {messageInput}
 
                         {this.state.messageHasLength &&
 
@@ -681,7 +684,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                         }
 
-                    </KeyboardAvoidingView>
+                    </KeyboardAvoidingView>}
 
                     <View>
                       <Modal
