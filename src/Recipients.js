@@ -120,7 +120,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.nickname}
-                                subtitle={item.lastMessage ? <Text><Text>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
+                                subtitle={item.lastMessage ? <Text><Text style={{fontFamily: 'Montserrat-Regular'}}>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
