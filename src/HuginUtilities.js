@@ -438,6 +438,12 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
           return;
         }
 
+        if (fromMyself) {
+          silent = true;
+        } else {
+          silent = false;
+        }
+
         saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
 
         if (nickname == 'null') {
@@ -661,7 +667,10 @@ async function getBoardsMessage(json) {
     nickname = 'Anonymous';
   }
 
-  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent);
+  let silent = from == Globals.wallet.getPrimaryAddress() ? true : false;
+
+
+  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent, silent);
   if (from != Globals.wallet.getPrimaryAddress()) {
   PushNotification.localNotification({
       title: nickname + ' in ' + board,//'Incoming transaction received!',

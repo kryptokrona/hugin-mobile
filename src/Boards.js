@@ -204,6 +204,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         const getBoard = async (board) => {
           const board_messages = await getBoardsMessages(board);
+          Globals.activeBoard = board;
           this.setModalVisible(false);
           this.setState({
               board: board,

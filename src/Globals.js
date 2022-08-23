@@ -84,6 +84,8 @@ class globals {
 
         this.activeChat = '';
 
+        this.activeBoard = '';
+
         this.language = 'en-US';
 
         this.fromChat = false;
@@ -136,7 +138,12 @@ class globals {
     }
 
     async updateBoardsMessages() {
-      this.boardsMessages = await getBoardsMessages();
+      console.log(Globals.activeBoard);
+      if (Globals.activeBoard != '') {
+          this.boardsMessages = await getBoardsMessages(this.activeBoard);
+      } else if (Globals.activeBoard == 'Home' || Globals.activeBoard == '') {
+        this.boardsMessages = await getBoardsMessages();
+      }
       this.updateBoards();
 
     }
