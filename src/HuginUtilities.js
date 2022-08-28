@@ -115,14 +115,12 @@ export async function getBestCache() {
 
   for (cache in caches) {
     let this_cache = caches[cache];
-    console.log(this_cache);
 
     let cacheURL = `${this_cache.url}/api/v1/posts/latest`;
     try {
       const resp = await fetch(cacheURL, {
          method: 'GET'
       }, 1000);
-      console.log(resp);
      if (resp.ok) {
        recommended_cache = this_cache;
        return(this_cache);
@@ -325,7 +323,6 @@ export function toHex(str,hex){
   }
   catch(e){
     hex = str
-    //console.log('invalid text input: ' + str)
   }
   return hex
 }
@@ -398,26 +395,20 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
       latest_board_message_timestamp = await getLatestBoardMessage();
     }
 
-    console.log(latest_board_message_timestamp);
-
-    console.log(page);
-
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
-    console.log(Globals.preferences.cache);
-    console.log(cacheURL);
-    console.log('Fetching ' + cacheURL + "/api/v1/posts?size=50&page=" + page);
+
       fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
     .then((response) => response.json())
     .then(async (json) => {
-      console.log(json);
+
       const items = json.items;
 
       for (item in items) {
 
-        console.log(items[item]);
+
 
         if (items[item].time < latest_board_message_timestamp) {
-          console.log(items[item].time, latest_board_message_timestamp);
+
           return;
         }
 
@@ -432,6 +423,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
         const reply = items[item].reply;
         const hash = items[item].tx_hash;
         const sent = fromMyself ? true : false;
+
 
         if (await boardsMessageExists(hash)) {
           continue;
@@ -505,7 +497,6 @@ export async function sendBoardsMessage(message, board) {
       Buffer.from(payload_hex, 'hex')
   );
   return result;
-  console.log(result);
 
 }
 
@@ -653,6 +644,7 @@ export async function getExtra(hash){
 
 async function getBoardsMessage(json) {
 
+
   let message = json.m;
   let from = json.k;
   let signature = json.s;
@@ -663,7 +655,7 @@ async function getBoardsMessage(json) {
   let hash = json.hash;
   let sent = false;
 
-  if (nickname = 'null') {
+  if (nickname == 'null') {
     nickname = 'Anonymous';
   }
 
@@ -712,9 +704,6 @@ export async function getMessage(extra, hash){
 
         // If no key is appended to message we need to try the keys in our payload_keychain
         let box = tx.box;
-        //console.log('box', box);
-        //console.log('tx', tx);
-        //console.log('tx', tx);
 
         let timestamp = tx.t;
 
@@ -734,10 +723,7 @@ export async function getMessage(extra, hash){
          getKeyPair().secretKey);
          createNewPayee = true;
          } catch (err) {
-           // //console.log('timestamp', timestamp);
-           //console.log(err);
          }
-         //console.log(decryptBox);
 
         let i = 0;
 
@@ -746,7 +732,6 @@ export async function getMessage(extra, hash){
 
               let possibleKey = payees[i].paymentID;
               i += 1;
-              //console.log('Trying key:', possibleKey);
               Globals.logger.addLogMessage('Trying key: ' + possibleKey);
               try {
                decryptBox = nacl.box.open(hexToUint(box),
@@ -755,11 +740,8 @@ export async function getMessage(extra, hash){
                getKeyPair().secretKey);
                key = possibleKey;
              } catch (err) {
-               // //console.log('timestamp', timestamp);
-               //console.log(err);
                continue;
              }
-             //console.log('Decrypted:', decryptBox);
 
              }
 
@@ -767,18 +749,12 @@ export async function getMessage(extra, hash){
 
               let message_dec = naclUtil.encodeUTF8(decryptBox);
 
-              //console.log(message_dec);
-
               let payload_json = JSON.parse(message_dec);
 
               payload_json.t = timestamp;
-               console.log(payload_json);
                let from = payload_json.from;
-              //console.log('from', from);
-              //console.log('walletaddr',  Globals.wallet.getPrimaryAddress());
               let from_myself = false;
                if (from == Globals.wallet.getPrimaryAddress()) {
-                 //console.log('Message is from self, ignore');
                  from_myself = true;
                }
 
@@ -806,18 +782,13 @@ export async function getMessage(extra, hash){
               }
             } else {
 
-              console.log(key);
               from_payee = payees.filter(payee => {
                 return payee.paymentID == key;
               })
-              console.log(from_payee);
 
             }
 
               if (createNewPayee && !from_myself) {
-                // let new_payee = {nickname: payload_json.from, paymentID: payload_json.k, "address": payload_json.from};
-                // //console.log('Adding new payee', new_payee);
-                // savePayeeToDatabase(new_payee);
                 const payee = {
                     nickname: payload_json.from.substring(0,12) + "..",
                     address: payload_json.from,
@@ -838,10 +809,7 @@ export async function getMessage(extra, hash){
                 }
 
                 saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
-                // console.log('from', from);
-                // console.log('message', payload_json.msg);
-                // console.log('payload_json.t', payload_json.t);
-                // console.log('activeChat=', Globals.activeChat, ' from=', payload_json.from);
+
                 if (Globals.activeChat != payload_json.from && !from_myself) {
                   PushNotification.localNotification({
                       title: from,//'Incoming transaction received!',
@@ -858,39 +826,6 @@ export async function getMessage(extra, hash){
 
 
 
-          // }
-          // //console.log('Decrypting..');
-
-
-    // }
-
-    // END PASTE
-//
-//     let data = fromHex(json.result.tx.extra.substring(66));
-//
-//     Globals.logger.addLogMessage('Message detected: ' + data);
-//
-//     let tx = JSON.parse(data);
-//
-//     let senderKey = 'ada8e36ba2874b16c551caa4537805ab802147dc52747910dc9869f42e6c712c'; //tx.key;
-//
-//     let box = tx.box;
-//
-//     let timestamp = tx.t;
-//
-//     let decryptBox = nacl.box.open(hexToUint(box), nonceFromTimestamp(timestamp), hexToUint(senderKey), getKeyPair().secretKey);
-//
-//   if (!decryptBox) {
-//     //console.log('Cant decrypt new conversation');
-//     reject();
-//   }
-//
-//   let message_dec = naclUtil.encodeUTF8(decryptBox);
-//
-//   let payload_json = JSON.parse(message_dec);
-//
-//   resolve(payload_json);
-//
 
 });
 
