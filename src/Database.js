@@ -242,7 +242,7 @@ async function createTables(DB) {
             )`
         );
 
-        //
+
         //   tx.executeSql(
         //     `DROP TABLE boards_subscriptions`
         // );
@@ -250,7 +250,8 @@ async function createTables(DB) {
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS boards_subscriptions (
                  board TEXT,
-                 key TEXT
+                 key TEXT,
+                 latest_message INT default 0
             )`
         );
 
@@ -283,6 +284,16 @@ async function createTables(DB) {
               ADD
                   nickname TEXT default 'Anonymous'`
             );
+        }
+
+        if (dbVersion === 4) {
+
+          tx.executeSql(
+            `ALTER TABLE
+                boards_subscriptions
+             ADD
+                latest_message INT default 0`);
+
         }
 
         /* Setup default preference values */
@@ -350,7 +361,7 @@ async function createTables(DB) {
 
 
         tx.executeSql(
-            `PRAGMA user_version = 4`
+            `PRAGMA user_version = 5`
         );
     });
 }
@@ -484,10 +495,27 @@ let fromMyself = address == Globals.wallet.getPrimaryAddress();
           ]
       );
   });
+  console.log(silent);
+
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `    UPDATE
+                  boards_subscriptions
+              SET
+                  latest_message = ?
+              WHERE
+                  board = ?`,
+          [
+              timestamp, board
+          ]
+      );
+  });
 
   if (!silent) {
     Globals.updateBoardsMessages();
   }
+
 }
 
 
@@ -865,6 +893,9 @@ export async function getBoardSubscriptions() {
             key
         FROM
             boards_subscriptions
+        ORDER BY
+            latest_message
+        DESC
         `
     );
     console.log('Got ' + data.rows.length + " board messages");

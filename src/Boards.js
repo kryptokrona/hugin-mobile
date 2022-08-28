@@ -87,7 +87,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         Globals.updateBoardsFunctions.push(() => {
             this.setState({
-                messages: Globals.boardsMessages
+                messages: Globals.boardsMessages,
+                boardssubscriptions: [{board: 'Home', key: 0}].concat(Globals.boardsSubscriptions)
             })
         });
     }
