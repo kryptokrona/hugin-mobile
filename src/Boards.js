@@ -304,17 +304,19 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     </View>
                                     <View style={{
                                       backgroundColor: getBoardColors(item.board)[0],
-                                      padding: 5,
+                                      padding: 2,
+                                      paddingBottom: 5,
                                       paddingTop: 8,
                                       borderRadius: 5,
-                                      height: 28
+                                      height: 20,
+                                      marginLeft: 'auto'
                                     }}>
                                     <Text style={{
                                         marginLeft: 5,
                                         marginRight: 5,
                                         color: this.props.screenProps.theme.primaryColour,
-                                        fontSize: 16,
-                                        fontFamily: "Montserrat-SemiBold",
+                                        fontSize: 10,
+                                        fontFamily: "Montserrat-Regular",
                                         marginTop: -5
                                     }}>
 
@@ -897,7 +899,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             style={{width: 50, height: 50, marginTop: -10}}
                             source={{uri: get_avatar(this.state.activePost.address)}}
                           />
-                          <View style={{width: 180, overflow: 'hidden'}}>
+                          <View style={{width: 150, overflow: 'hidden'}}>
                             <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
                                 color: '#ffffff',
                                 fontSize: 18,
@@ -905,34 +907,41 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
                             </Text>
                             </View>
+                            {board == 'Home' &&
+                            <View>
                             <View style={{
                               backgroundColor: getBoardColors(this.state.activePost.board)[0],
-                              padding: 5,
+                              padding: 2,
+                              paddingBottom: 5,
                               paddingTop: 8,
                               borderRadius: 5,
-                              height: 28
+                              height: 20,
+                              marginLeft: 'auto'
                             }}>
-                            <Text style={{
+                            <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
                                 marginLeft: 5,
                                 marginRight: 5,
                                 color: this.props.screenProps.theme.primaryColour,
-                                fontSize: 16,
-                                fontFamily: "Montserrat-SemiBold",
+                                fontSize: 10,
+                                fontFamily: "Montserrat-Regular",
                                 marginTop: -5
                             }}>
 
                                 {this.state.activePost.board}
-                            </Text>
+                              </Text>
                             </View>
+                            </View>
+                           }
+
 
                             </View>
                             <View style={{paddingLeft: 20, paddingRight: 20}}>
-                            <Hyperlink linkDefault={ true }>
-                              <Text selectable style={{fontFamily: "Montserrat-Regular"}}>
+
+
                               <Text selectable>{this.state.activePost.message + "\n"}</Text>
                               <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp}</Moment>
-                              </Text>
-                            </Hyperlink>
+
+
                             </View>
                         </View>
 
