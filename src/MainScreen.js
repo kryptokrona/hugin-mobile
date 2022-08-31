@@ -32,7 +32,7 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp } from './Utilities';
 import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
@@ -92,7 +92,7 @@ async function init(navigation) {
           optimizeMessages(10);
 
         }
-        
+
     });
 
     Globals.wallet.on('deadnode', () => {
@@ -189,7 +189,7 @@ function handleNotification(notification) {
 
       payee = new URLSearchParams(payee).toString();
 
-      let url = 'xkr://' + payee;
+      let url = 'xkr://'.replace('address=', '') + payee;
 
       Linking.openURL(url);
 
@@ -208,6 +208,8 @@ function handleNotification(notification) {
 export async function sendNotification(transaction) {
     // /* Don't show notifications if disabled */
 
+    console.log('WTFWTFWTF');
+
     let this_addr = await Address.fromAddress(Globals.wallet.getPrimaryAddress());
 
     let my_public_key = this_addr.spend.publicKey;
@@ -216,40 +218,33 @@ export async function sendNotification(transaction) {
 
     let payments = [];
 
-    let nbrOfTxs = amount_received / 10000;
+    let nbrOfTxs = amount_received / 100000;
 
-    //optimizeMessages(nbrOfTxs);
+    console.log('Receieved ', nbrOfTxs);
 
-    // for (transfer in transaction.transfers)
+    if (nbrOfTxs < 1) {
+      return;
+    }
+    console.log(transaction);
+    console.log(transaction.paymentID);
+    let isTip = await boardsMessageExists(transaction.paymentID);
+    console.log('isTip', isTip);
+    let tippedMsg;
+    isTip = (isTip && transaction.paymentID != '');
+    console.log('isTip2', isTip);
+    if (isTip) {
+      tippedMsg = await getBoardsMessage(transaction.paymentID);
+    }
+    console.log(tippedMsg);
+    const title = (isTip ? 'Tip received' : 'Payment received');
+    const message = (isTip ? `You just received a tip for your post "${tippedMsg[0].message}" in ${tippedMsg[0].board} worth ${nbrOfTxs} XKR` : `You just received ${nbrOfTxs} XKR`);
 
-    let extra = await getExtra(transaction.hash);
-
-
-
-    let message = await getMessage(extra);
-
-    // let messages = await getMessages();
-    // Globals.logger.addLogMessage('MessagesDB: ' + JSON.stringify(messages));
-    Globals.logger.addLogMessage('Received message: ' + JSON.stringify(message));
-
-    let from = message.from;
-
-    let payees = await loadPayeeDataFromDatabase();
-            for (payee in payees) {
-
-              if (payees[payee].address == from) {
-                from = payees[payee].nickname;
-              }
-
-            }
-
-    // PushNotification.localNotification({
-    //     title: from,//'Incoming transaction received!',
-    //     //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-    //     message: message.msg,
-    //     data: JSON.stringify(transaction.hash),
-    //     largeIconUrl: get_avatar(message.from, 64),
-    // });
+    PushNotification.localNotification({
+        title: title,//'Incoming transaction received!',
+        //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+        message: message,
+        data: JSON.stringify(transaction.hash)
+    });
 }
 
 /**

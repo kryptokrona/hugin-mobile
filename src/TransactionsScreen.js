@@ -198,7 +198,7 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
                             {...this.props}
                         />}
 
-                        {tipTo &&
+                        {tipTo && this.state.transaction.paymentID !== '' &&
                           <>
                           <View style={{width: '90%', margin: 10}}>
                           <Text style={{
