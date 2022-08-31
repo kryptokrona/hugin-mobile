@@ -143,6 +143,42 @@ export async function handleURI(data, navigation) {
               return;
       }
 
+      if(params.istip != undefined) {
+
+        const newPayee = {
+            nickname: params.name,
+            address: params.address,
+            paymentID: params.paymentid
+        }
+
+        console.log(newPayee);
+        const result = {
+            payee: newPayee,
+            suggestedAction: 'Transfer',
+            valid: true,
+        };
+
+        console.log(params);
+        console.log(result);
+        if (!result.valid) {
+            Alert.alert(
+                'Cannot send transaction',
+                result.error,
+                [
+                    {text: 'OK'},
+                ]
+            );
+        } else {
+
+            /* Hop into the transfer stack */
+            navigation.navigate('ChoosePayee');
+            // navigation.navigate('Recipients');
+            /* Then navigate to the nested route, if needed */
+            navigation.navigate('Transfer', {...result});
+            return;
+        }
+      }
+
       const address = params.address;
       const name = params.name;
 
@@ -198,7 +234,8 @@ export async function parseURI(qrData) {
         const address = data.substr(0, index);
         const params = Qs.parse(data.substr(index));
 
-
+        console.log(params);
+        console.log(address);
         const amount = params.amount;
         const name = params.name;
         let paymentID = params.paymentid;

@@ -176,6 +176,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
       }
 
+      const sendTip = (address, hash, name) => {
+        console.log(name);
+        const url = `xkr://?address=${address}&paymentid=${hash}&istip=true&name=${name}`;
+        this.setMessageModalVisible(false);
+        Linking.openURL(url);
+      }
+
       const submitMessage = async (text) => {
 
         Keyboard.dismiss();
@@ -946,7 +953,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         </View>
 
                         <View style={{flexDirection:"row", marginBottom: 10}}>
-                          <View style={{width: '40%', marginLeft: 25 }}>
+                          <View style={{width: '40%', marginLeft: 15 }}>
                           {this.state.board == 'Home' &&
                             <Button
                               title={"Go to board"}
@@ -963,6 +970,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                               onPress={() => this.setMessageModalVisible(false)}
                             />
                           </View>
+                        </View>
+
+                        <View style={{width: '85%', marginLeft: 15 }}>
+                          <Button
+                            title={'Send tip'}
+                            onPress={() => sendTip(this.state.activePost.address, this.state.activePost.hash, this.state.activePost.nickname)}
+                          />
                         </View>
 
                       </View>
