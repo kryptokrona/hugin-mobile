@@ -82,7 +82,20 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             board: board,
             modalVisible: false,
             editingBoards: false,
-            isSubscribedToBoard: false
+            isSubscribedToBoard: false,
+            messageModalVisible: false,
+            activePost: {
+                        "message": "",
+                        "address": "",
+                        "signature": "",
+                        "board": "",
+                        "timestamp": "",
+                        "nickname": "",
+                        "reply": "0",
+                        "hash": "",
+                        "sent": 0,
+                        "read": 0
+                    }
         }
 
         Globals.updateBoardsFunctions.push(() => {
@@ -133,13 +146,21 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
       this.setState({ modalVisible: visible });
     }
 
+    setMessageModalVisible = (visible) => {
+      this.setState({ messageModalVisible: visible });
+    }
+
+    setActivePost = (item) => {
+      this.setState({ activePost: item });
+    }
+
     setEditingMode = (editing) => {
       this.setState({ editingBoards: editing })
     }
 
     render() {
 
-      const { modalVisible, editingBoards } = this.state;
+      const { modalVisible, messageModalVisible, editingBoards, activePost } = this.state;
 
       const isSubscribedTo = (board) => {
 
@@ -272,7 +293,38 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           keyExtractor={item => item.hash}
                           renderItem={({item}) => (
                               <ListItem
-                                  title={item.nickname ? item.nickname + " in " + item.board : 'Anonymous in ' + item.board}
+                                  title={board == 'Home' ? <View style={{flexDirection:"row", marginBottom: 10}}>
+                                  <View style={{width: 150, overflow: 'hidden'}}>
+                                    <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                        color: '#ffffff',
+                                        fontSize: 18,
+                                        fontFamily: "Montserrat-SemiBold"
+                                    }}>{item.nickname ? item.nickname : 'Anonymous'}
+                                    </Text>
+                                    </View>
+                                    <View style={{
+                                      backgroundColor: getBoardColors(item.board)[0],
+                                      padding: 5,
+                                      paddingTop: 8,
+                                      borderRadius: 5,
+                                      height: 28
+                                    }}>
+                                    <Text style={{
+                                        marginLeft: 5,
+                                        marginRight: 5,
+                                        color: this.props.screenProps.theme.primaryColour,
+                                        fontSize: 16,
+                                        fontFamily: "Montserrat-SemiBold",
+                                        marginTop: -5
+                                    }}>
+
+                                        {item.board}
+                                    </Text>
+                                    </View>
+
+                                    </View> :
+                                    item.nickname ? item.nickname : 'Anonymous'
+                                  }
                                   subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
                                   subtitleStyle={{
                                       fontFamily: "Montserrat-Regular",
@@ -311,7 +363,10 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                   }}
                                   onPress={async () => {
 
-                                      getBoard(item.board);
+                                      //getBoard(item.board);
+                                      console.log(item);
+                                      this.setMessageModalVisible(true);
+                                      this.setActivePost(item);
 
                                       // let messages = await getBoardsMessages(board);
                                       //
@@ -804,6 +859,107 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         </View>
                       </Modal>
                     </View>
+
+
+
+                    <View>
+                      <Modal
+                        style={{}}
+                        animationType="slide"
+                        transparent={true}
+                        visible={messageModalVisible}
+                        onRequestClose={() => {
+                          this.setMessageModalVisible(!messageModalVisible);
+                        }}
+                      >
+                        <View style={{
+                          margin: 20,
+                          backgroundColor: '#272527',
+                          borderRadius: 20,
+                          padding: 25,
+                          alignItems: "center",
+                          shadowColor: "#000",
+                          shadowOffset: {
+                            width: 0,
+                            height: 2
+                          },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 4,
+                          elevation: 5
+                        }}>
+                          <View style={{
+                            margin: 10
+                          }}>
+
+                          <View style={{flexDirection:"row", marginBottom: 10}}>
+
+                          <Image
+                            style={{width: 50, height: 50, marginTop: -10}}
+                            source={{uri: get_avatar(this.state.activePost.address)}}
+                          />
+                          <View style={{width: 180, overflow: 'hidden'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                color: '#ffffff',
+                                fontSize: 18,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
+                            </Text>
+                            </View>
+                            <View style={{
+                              backgroundColor: getBoardColors(this.state.activePost.board)[0],
+                              padding: 5,
+                              paddingTop: 8,
+                              borderRadius: 5,
+                              height: 28
+                            }}>
+                            <Text style={{
+                                marginLeft: 5,
+                                marginRight: 5,
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 16,
+                                fontFamily: "Montserrat-SemiBold",
+                                marginTop: -5
+                            }}>
+
+                                {this.state.activePost.board}
+                            </Text>
+                            </View>
+
+                            </View>
+                            <View style={{paddingLeft: 20, paddingRight: 20}}>
+                            <Hyperlink linkDefault={ true }>
+                              <Text selectable style={{fontFamily: "Montserrat-Regular"}}>
+                              <Text selectable>{this.state.activePost.message + "\n"}</Text>
+                              <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp}</Moment>
+                              </Text>
+                            </Hyperlink>
+                            </View>
+                        </View>
+
+                        <View style={{flexDirection:"row", marginBottom: 10}}>
+                          <View style={{width: '40%', marginLeft: 25 }}>
+                          {this.state.board == 'Home' &&
+                            <Button
+                              title={"Go to board"}
+                              onPress={() => {
+                                getBoard(this.state.activePost.board);
+                                this.setMessageModalVisible(false);
+                              }}
+                            />
+                          }
+                          </View>
+                          <View style={{width: '40%', marginLeft: 10 }}>
+                            <Button
+                              title={t('close')}
+                              onPress={() => this.setMessageModalVisible(false)}
+                            />
+                          </View>
+                        </View>
+
+                      </View>
+                      </Modal>
+                    </View>
+
 
 
                     <View style={{
