@@ -9,9 +9,10 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import TextTicker from 'react-native-text-ticker';
 
 import { Header } from 'react-native-elements';
-import { View, Text, FlatList, Button, Linking, ScrollView } from 'react-native';
-import { prettyPrintAmount } from 'kryptokrona-wallet-backend-js';
+import { View, Text, FlatList, Button, Linking, ScrollView, Image } from 'react-native';
 
+import { prettyPrintAmount } from 'kryptokrona-wallet-backend-js';
+import {intToRGB, hashCode, get_avatar, getBoardColors} from './HuginUtilities';
 import Config from './Config';
 import ListItem from './ListItem';
 import List from './ListContainer';
@@ -21,6 +22,7 @@ import { Styles } from './Styles';
 import { Globals } from './Globals';
 import { coinsToFiat } from './Currency';
 import { prettyPrintUnixTimestamp, prettyPrintDate, prettyPrintDate2 } from './Utilities';
+import { getBoardsMessage, boardsMessageExists } from './Database'
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 class ItemDescription extends React.Component {
@@ -79,9 +81,21 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
             address: txDetails ? txDetails.address : undefined,
             payee: txDetails ? txDetails.payee : undefined,
             memo: txDetails ? txDetails.memo : undefined,
+            tipTo: null
         };
 
         (async () => {
+
+            const isTip = await boardsMessageExists(this.state.transaction.paymentID);
+            console.log(isTip);
+            if (isTip) {
+              const tipTo = await getBoardsMessage(this.state.transaction.paymentID);
+              console.log(tipTo);
+              this.setState({
+                tipTo: tipTo
+              })
+            }
+
             const coinValue = await coinsToFiat(
                 this.state.amount,
                 Globals.preferences.currency,
@@ -95,6 +109,7 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
 
     render() {
         const { t } = this.props;
+        const tipTo = this.state.tipTo;
         return(
             <View style={{
                 flex: 1,
@@ -182,6 +197,90 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
                             item={this.state.transaction.paymentID}
                             {...this.props}
                         />}
+
+                        {tipTo &&
+                          <>
+                          <View style={{width: '90%', margin: 10}}>
+                          <Text style={{
+                              color: '#ffffff',
+                              fontSize: 14,
+                              fontFamily: "Montserrat-SemiBold"
+                          }}>{'This payment was sent as a tip for the post below:'}
+                          </Text>
+                          </View>
+                          <View style={{
+                          margin: 0,
+                          backgroundColor: '#272527',
+                          borderRadius: 20,
+                          padding: 25,
+                          alignItems: "center",
+                          shadowColor: "#000",
+                          width: '90%',
+                          shadowOffset: {
+                            width: 0,
+                            height: 2
+                          },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 4,
+                          elevation: 5
+                        }}>
+                          <View style={{
+                            margin: 0
+                          }}>
+
+                          <View style={{flexDirection:"row", marginBottom: 10}}>
+
+                          <Image
+                            style={{width: 50, height: 50, marginTop: -10}}
+                            source={{uri: get_avatar(tipTo[0].address)}}
+                          />
+                          <View style={{width: 150, overflow: 'hidden'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                color: '#ffffff',
+                                fontSize: 18,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>{tipTo[0].nickname ? tipTo[0].nickname : 'Anonymous'}
+                            </Text>
+                            </View>
+
+                            <View>
+                            <View style={{
+                              backgroundColor: getBoardColors(tipTo[0].board)[0],
+                              padding: 2,
+                              paddingBottom: 5,
+                              paddingTop: 8,
+                              borderRadius: 5,
+                              height: 20,
+                              marginLeft: 'auto'
+                            }}>
+                            <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
+                                marginLeft: 5,
+                                marginRight: 5,
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 10,
+                                fontFamily: "Montserrat-Regular",
+                                marginTop: -5
+                            }}>
+
+                                {tipTo[0].board}
+                              </Text>
+                            </View>
+                            </View>
+
+
+
+                            </View>
+                            <View style={{paddingLeft: 20, paddingRight: 20}}>
+
+
+                              <Text selectable>{tipTo[0].message + "\n"}</Text>
+
+
+
+                            </View>
+                            </View>
+                        </View></>}
+
                     </ScrollView>
 
                     {this.state.complete && <View style={[Styles.buttonContainer, {width: '100%', marginBottom: 20 }]}>

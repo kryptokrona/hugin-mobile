@@ -848,6 +848,51 @@ export async function getBoardsMessages(board='Home') {
     return [];
 }
 
+export async function getBoardsMessage(hash) {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            message,
+            address,
+            signature,
+            board,
+            timestamp,
+            nickname,
+            reply,
+            hash,
+            sent,
+            read
+        FROM
+            boards_message_db WHERE hash = '${hash}'
+        `
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                message: item.message,
+                address: item.address,
+                signature: item.signature,
+                board: item.board,
+                timestamp: item.timestamp,
+                nickname: item.nickname,
+                reply: item.reply,
+                hash: item.hash,
+                sent: item.sent,
+                read: item.read
+            });
+        }
+
+        return res;
+    }
+
+    return [];
+}
+
 
 export async function getBoardRecommendations() {
 
@@ -890,7 +935,8 @@ export async function getBoardSubscriptions() {
     const [data] = await database.executeSql(
         `SELECT
             board,
-            key
+            key,
+            latest_message
         FROM
             boards_subscriptions
         ORDER BY
