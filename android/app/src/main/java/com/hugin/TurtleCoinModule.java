@@ -300,7 +300,7 @@ public class TurtleCoinModule extends ReactContextBaseJavaModule {
             connection.setRequestProperty("Accept", "application/json");
 
             /* tonchan-vx.x.x */
-            connection.setRequestProperty("User-Agent", "hugin-messenger-v1.1.4");
+            connection.setRequestProperty("User-Agent", "hugin-messenger-v1.1.5");
 
             /* Indicate we have a POST body */
             connection.setDoOutput(true);

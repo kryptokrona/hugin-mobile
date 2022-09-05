@@ -67,7 +67,7 @@ public class MainApplication extends Application implements ReactApplication {
     upgradeSecurityProvider();
 
     /* tonchan-vx.x.x */
-    setUserAgent("hugin-messenger-v1.1.4");
+    setUserAgent("hugin-messenger-v1.1.5");
 
     SoLoader.init(this, /* native exopackage */ false);
   }
