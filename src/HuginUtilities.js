@@ -438,11 +438,18 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
         saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
 
-        if (nickname == 'null') {
+        if (!nickname) {
           nickname = 'Anonymous';
         }
 
-        if (latest_board_message_timestamp != 0 && !fromMyself) {
+
+
+
+        const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
+          return sub.board == board;
+        })
+
+        if (latest_board_message_timestamp != 0 && !fromMyself && subscriptionList.length > 0 )  {
           PushNotification.localNotification({
               title: nickname + ' in ' + board,//'Incoming transaction received!',
               //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
@@ -719,7 +726,14 @@ async function getBoardsMessage(json) {
   }
 
   saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent, silent);
-  if (from != Globals.wallet.getPrimaryAddress()) {
+
+
+    const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
+      return sub.board == board;
+    })
+
+
+  if (from != Globals.wallet.getPrimaryAddress() && subscriptionList.length > 0) {
   PushNotification.localNotification({
       title: nickname + ' in ' + board,//'Incoming transaction received!',
       //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
