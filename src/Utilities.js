@@ -141,6 +141,23 @@ export async function handleURI(data, navigation) {
 
 
               return;
+      } else if (params.group != undefined) {
+
+        // To do: Separate between a new group and a notification call
+
+        const group_object = Globals.groups.filter(group => {
+          return group.key == params.group;
+        })
+
+        console.log(group_object[0]);
+
+          navigation.navigate(
+              'GroupChatScreen', {
+                  group: {group: group_object[0].group, key: group_object[0].key}
+              });
+
+              return;
+
       }
 
       if(params.istip != undefined) {
