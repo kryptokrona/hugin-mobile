@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 import {
     Address,
@@ -461,6 +461,55 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
 }
 
+
+export async function createGroup() {
+  return await Buffer.from(nacl.randomBytes(32)).toString('hex');
+}
+
+
+export async function sendGroupsMessage(message, group) {
+
+  const my_address = Globals.wallet.getPrimaryAddress();
+
+  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+
+  const signature = await xkrUtils.signMessage(message, privateSpendKey);
+
+  const timestamp = parseInt(Date.now());
+
+  const nonce = nonceFromTimestamp(timestamp);
+
+  let message_json = {
+    "m": message,
+    "k": my_address,
+    "s": signature,
+    "g": group,
+    "n": Globals.preferences.nickname
+  }
+
+  const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
+
+  const secretbox = nacl.secretbox(payload_unencrypted, nonce, hexToUint(group));
+
+  const payload_encrypted = {"sb":Buffer.from(secretbox).toString('hex'), "t":timestamp};
+
+  const payload_encrypted_hex = toHex(JSON.stringify(payload_encrypted));
+
+  const result = await Globals.wallet.sendTransactionAdvanced(
+      [[my_address, 1]], // destinations,
+      3, // mixin
+      {fixedFee: 5000, isFixedFee: true}, // fee
+      undefined, //paymentID
+      undefined, // subWalletsToTakeFrom
+      undefined, // changeAddress
+      true, // relayToNetwork
+      false, // sneedAll
+      Buffer.from(payload_encrypted_hex, 'hex')
+  );
+  return result;
+
+}
+
 export async function sendBoardsMessage(message, board) {
 
   const my_address = Globals.wallet.getPrimaryAddress();
@@ -661,6 +710,13 @@ async function getBoardsMessage(json) {
 
   let silent = from == Globals.wallet.getPrimaryAddress() ? true : false;
 
+  const this_addr = await Address.fromAddress(from);
+
+  const verified = await xkrUtils.verifyMessageSignature(message, this_addr.spend.publicKey, signature);
+
+  if (!verified) {
+    return false;
+  }
 
   saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent, silent);
   if (from != Globals.wallet.getPrimaryAddress()) {
@@ -675,14 +731,90 @@ async function getBoardsMessage(json) {
 }
 }
 
+async function getGroupMessage(tx) {
+
+  console.log(tx);
+
+  let decryptBox = false;
+
+  const groups = Globals.groups;
+
+  let key;
+
+  let i = 0;
+
+  while (!decryptBox && i < groups.length) {
+
+    let possibleKey = groups[i].key;
+
+
+
+    i += 1;
+
+    Globals.logger.addLogMessage('Trying key: ' + possibleKey);
+
+    try {
+
+     decryptBox = nacl.secretbox.open(
+       hexToUint(tx.sb),
+       nonceFromTimestamp(tx.t),
+       hexToUint(possibleKey)
+     );
+
+     key = possibleKey;
+    } catch (err) {
+      console.log(err);
+     continue;
+    }
+
+
+
+  }
+
+  if (!decryptBox) {
+    return false;
+  }
+
+
+  const message_dec = naclUtil.encodeUTF8(decryptBox);
+
+  const payload_json = JSON.parse(message_dec);
+
+  console.log(key);
+  console.log(payload_json);
+
+  const from = payload_json.k;
+  const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
+  const received = (from_myself ? 'sent' : 'received');
+
+  const this_addr = await Address.fromAddress(from);
+
+  const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
+
+  saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k);
+
+  const nickname = payload_json.n ? payload_json.n : t('Anonymous');
+
+    if (Globals.activeChat != key && !from_myself) {
+      PushNotification.localNotification({
+          title: `${nickname}`,//'Incoming transaction received!',
+          //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+          message: payload_json.m,
+          data: tx.t,
+          //userInfo: from_payee,
+          largeIconUrl: get_avatar(from, 64),
+      });
+    }
+
+  return payload_json;
+
+
+}
+
 export async function getMessage(extra, hash){
 
 
   Globals.logger.addLogMessage('Getting payees..');
-
-  let payees = await loadPayeeDataFromDatabase();
-
-  Globals.logger.addLogMessage('Payees: ' + JSON.stringify(payees));
 
   return new Promise(async (resolve, reject) => {
 
@@ -702,6 +834,17 @@ export async function getMessage(extra, hash){
           return;
         }
 
+        if (tx.sb) {
+
+          if (await groupMessageExists(tx.t)) {
+            reject();
+            return;
+          }
+          getGroupMessage(tx);
+          return;
+
+        }
+
         // If no key is appended to message we need to try the keys in our payload_keychain
         let box = tx.box;
 
@@ -718,110 +861,113 @@ export async function getMessage(extra, hash){
         let key = '';
 
         try {
-         decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
-         nonceFromTimestamp(timestamp),
-         getKeyPair().secretKey);
-         createNewPayee = true;
+           decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
+           nonceFromTimestamp(timestamp),
+           getKeyPair().secretKey);
+           createNewPayee = true;
          } catch (err) {
          }
 
         let i = 0;
 
+        let payees = await loadPayeeDataFromDatabase();
 
-            while (!decryptBox && i < payees.length) {
+        while (!decryptBox && i < payees.length) {
 
-              let possibleKey = payees[i].paymentID;
-              i += 1;
-              Globals.logger.addLogMessage('Trying key: ' + possibleKey);
-              try {
-               decryptBox = nacl.box.open(hexToUint(box),
-               nonceFromTimestamp(timestamp),
-               hexToUint(possibleKey),
-               getKeyPair().secretKey);
-               key = possibleKey;
-             } catch (err) {
-               continue;
-             }
+          let possibleKey = payees[i].paymentID;
 
-             }
+          i += 1;
 
+          Globals.logger.addLogMessage('Trying key: ' + possibleKey);
 
+          try {
+           decryptBox = nacl.box.open(hexToUint(box),
+           nonceFromTimestamp(timestamp),
+           hexToUint(possibleKey),
+           getKeyPair().secretKey);
+           key = possibleKey;
+          } catch (err) {
+           continue;
+          }
 
-              let message_dec = naclUtil.encodeUTF8(decryptBox);
-
-              let payload_json = JSON.parse(message_dec);
-
-              payload_json.t = timestamp;
-               let from = payload_json.from;
-              let from_myself = false;
-               if (from == Globals.wallet.getPrimaryAddress()) {
-                 from_myself = true;
-               }
-
-              let from_address = from;
-
-              let from_payee = {};
-
-              if (!from_myself) {
-
-              for (payee in payees) {
-
-                if (payees[payee].address == from) {
-                  from = payees[payee].nickname;
-                  createNewPayee = false;
-
-                  from_payee = {
-                      name: from,
-                      address: from_address,
-                      paymentID: payees[payee].paymentID,
-                  };
-
-                }
+        }
 
 
-              }
-            } else {
+        let message_dec = naclUtil.encodeUTF8(decryptBox);
 
-              from_payee = payees.filter(payee => {
-                return payee.paymentID == key;
-              })
+        let payload_json = JSON.parse(message_dec);
 
-            }
+        payload_json.t = timestamp;
+         let from = payload_json.from;
+        let from_myself = false;
+         if (from == Globals.wallet.getPrimaryAddress()) {
+           from_myself = true;
+         }
 
-              if (createNewPayee && !from_myself) {
-                const payee = {
-                    nickname: payload_json.from.substring(0,12) + "..",
-                    address: payload_json.from,
-                    paymentID: payload_json.k,
-                };
+        let from_address = from;
 
-                Globals.addPayee(payee);
+        let from_payee = {};
 
-                from_payee = payee;
+        if (!from_myself) {
 
-              }
+        for (payee in payees) {
 
-                let received = 'received';
+          if (payees[payee].address == from) {
+            from = payees[payee].nickname;
+            createNewPayee = false;
 
-                if (from_myself) {
-                  payload_json.from = from_payee[0].address;
-                  received = 'sent';
-                }
+            from_payee = {
+                name: from,
+                address: from_address,
+                paymentID: payees[payee].paymentID,
+            };
 
-                saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+          }
 
-                if (Globals.activeChat != payload_json.from && !from_myself) {
-                  PushNotification.localNotification({
-                      title: from,//'Incoming transaction received!',
-                      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-                      message: payload_json.msg,
-                      data: payload_json.t,
-                      userInfo: from_payee,
-                      largeIconUrl: get_avatar(payload_json.from, 64),
-                  });
-                }
 
-              resolve(payload_json);
+        }
+        } else {
+
+        from_payee = payees.filter(payee => {
+          return payee.paymentID == key;
+        })
+
+        }
+
+        if (createNewPayee && !from_myself) {
+          const payee = {
+              nickname: payload_json.from.substring(0,12) + "..",
+              address: payload_json.from,
+              paymentID: payload_json.k,
+          };
+
+          Globals.addPayee(payee);
+
+          from_payee = payee;
+
+        }
+
+          let received = 'received';
+
+          if (from_myself) {
+            payload_json.from = from_payee[0].address;
+            received = 'sent';
+          }
+
+          saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+
+          if (Globals.activeChat != payload_json.from && !from_myself) {
+            PushNotification.localNotification({
+                title: from,//'Incoming transaction received!',
+                //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                message: payload_json.msg,
+                data: payload_json.t,
+                userInfo: from_payee,
+                largeIconUrl: get_avatar(payload_json.from, 64),
+            });
+          }
+
+        resolve(payload_json);
 
 
 
