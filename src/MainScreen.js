@@ -183,6 +183,10 @@ async function init(navigation) {
 
 function handleNotification(notification) {
 
+    if (notification.transaction != undefined) {
+      return;
+    }
+
     let payee = notification.userInfo;
 
     if (payee.address) {
@@ -248,7 +252,8 @@ export async function sendNotification(transaction) {
         title: title,//'Incoming transaction received!',
         //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
         message: message,
-        data: JSON.stringify(transaction.hash)
+        data: JSON.stringify(transaction.hash),
+        transaction: JSON.stringify(transaction.hash)
     });
 }
 
