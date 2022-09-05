@@ -953,7 +953,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         </View>
 
                         <View style={{flexDirection:"row", marginBottom: 10}}>
-                          <View style={{width: '40%', marginLeft: 15 }}>
+                          <View style={{width: (this.state.board == 'Home' ? '40%' : 0), marginLeft: (this.state.board == 'Home' ? 15 : 0) }}>
                           {this.state.board == 'Home' &&
                             <Button
                               title={"Go to board"}
@@ -964,7 +964,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             />
                           }
                           </View>
-                          <View style={{width: '40%', marginLeft: 10 }}>
+                          <View style={{width: (this.state.board == 'Home' ? '40%' : '85%'), marginLeft: (this.state.board == 'Home' ? 10 : 15  ) }}>
                             <Button
                               title={t('close')}
                               onPress={() => this.setMessageModalVisible(false)}
