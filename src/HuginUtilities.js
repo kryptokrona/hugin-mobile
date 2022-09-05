@@ -25,7 +25,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 import {
     Address,
@@ -733,8 +733,6 @@ async function getBoardsMessage(json) {
 
 async function getGroupMessage(tx) {
 
-  console.log(tx);
-
   let decryptBox = false;
 
   const groups = Globals.groups;
@@ -746,7 +744,6 @@ async function getGroupMessage(tx) {
   while (!decryptBox && i < groups.length) {
 
     let possibleKey = groups[i].key;
-
 
 
     i += 1;
@@ -780,9 +777,6 @@ async function getGroupMessage(tx) {
 
   const payload_json = JSON.parse(message_dec);
 
-  console.log(key);
-  console.log(payload_json);
-
   const from = payload_json.k;
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
   const received = (from_myself ? 'sent' : 'received');
@@ -795,13 +789,19 @@ async function getGroupMessage(tx) {
 
   const nickname = payload_json.n ? payload_json.n : t('Anonymous');
 
+  const group_object = Globals.groups.filter(group => {
+    return group.key == key;
+  })
+
+  const groupname = await getGroupName(key);
+
     if (Globals.activeChat != key && !from_myself) {
       PushNotification.localNotification({
-          title: `${nickname}`,//'Incoming transaction received!',
+          title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
           //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
           message: payload_json.m,
           data: tx.t,
-          //userInfo: from_payee,
+          userInfo: group_object[0],
           largeIconUrl: get_avatar(from, 64),
       });
     }

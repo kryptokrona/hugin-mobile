@@ -12,7 +12,8 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions } from './Database';
+import { getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 
 import { Logger } from './Logger';
@@ -22,11 +23,6 @@ import { getBestCache } from './HuginUtilities';
 import offline_node_list from './nodes.json';
 
 import offline_cache_list from './apis.json';
-
-import {
-    removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
-    loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase,
-} from './Database';
 
 class globals {
     constructor() {
@@ -62,11 +58,16 @@ class globals {
         /* People in our address book */
         this.payees = [];
 
+        this.groups = [];
+
         this.logger = new Logger();
 
         this.updatePayeeFunctions = [];
 
+        this.updateGroupsFunctions = [];
+
         this.updateChatFunctions = [];
+
         this.updateBoardsFunctions = [];
 
         /* Mapping of tx hash to address sent, payee name, memo */
@@ -79,6 +80,8 @@ class globals {
         this.messages = [];
 
         this.boardsMessages = [];
+
+        this.groupMessages = [];
 
         this.knownTXs = [];
 
@@ -98,6 +101,7 @@ class globals {
         this.backgroundSaveTimer = undefined;
         this.logger = new Logger();
         this.payees = [];
+        this.groups = [];
         removeMessages();
     }
 
@@ -124,6 +128,39 @@ class globals {
         });
     }
 
+    updateGroupsFunction() {
+      Globals.updateGroupsFunctions.forEach((f) => {
+          f();
+      });
+    }
+
+
+    addGroup(group) {
+        Globals.groups.push(group);
+        saveGroupToDatabase(group);
+        this.updateGroups();
+    }
+
+    removeGroup(key, removeMessages) {
+        _.remove(Globals.group, (item) => item.key === key);
+        removeGroupFromDatabase(key, removeMessages);
+        this.updateGroups();
+    }
+
+
+      async updateGroups() {
+
+        const groups = await loadGroupsDataFromDatabase();
+
+        if (groups !== undefined) {
+            Globals.groups = groups;
+        }
+
+        this.groupMessages = await getGroupMessages();
+        this.updateGroupsFunction();
+
+      }
+
     async updateMessages() {
       this.messages = await getMessages();
       this.updateChat();
@@ -144,6 +181,7 @@ class globals {
       } else if (Globals.activeBoard == 'Home' || Globals.activeBoard == '') {
         this.boardsMessages = await getBoardsMessages();
       }
+      Globals.boardsSubscriptions = await getBoardSubscriptions();
       this.updateBoards();
 
     }
@@ -244,16 +282,18 @@ function updateConnection(connection) {
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
 export async function initGlobals() {
-  console.log('wazzaaa');
+
     const payees = await loadPayeeDataFromDatabase();
 
     if (payees !== undefined) {
         Globals.payees = payees;
     }
 
-    Globals.boardsSubscriptions = await getBoardSubscriptions();
+    const groups = await loadGroupsDataFromDatabase();
 
-    console.log('wtf', Globals.boardsSubscriptions);
+    Globals.groups = groups;
+
+    Globals.boardsSubscriptions = await getBoardSubscriptions();
 
     const transactionDetails = await loadTransactionDetailsFromDatabase();
 

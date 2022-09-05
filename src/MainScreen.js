@@ -193,16 +193,21 @@ function handleNotification(notification) {
 
       Linking.openURL(url);
 
+    } else if (payee.key) {
+
+      let url = `xkr://?group=${payee.key}`;
+
+      Linking.openURL(url);
+
     } else {
 
-        let url = 'xkr://?board=' + payee;
+      let url = 'xkr://?board=' + payee;
 
-        Linking.openURL(url);
+      Linking.openURL(url);
 
 
     }
 
-    // notification.finish(PushNotificationIOS.FetchResult.NoData);
 }
 
 export async function sendNotification(transaction) {

@@ -24,6 +24,7 @@ import { SplashScreen } from './SplashScreen';
 import { DisclaimerScreen } from './DisclaimerScreen';
 import { loadPreferencesFromDatabase, openDB } from './Database';
 import { ChatScreen, ModifyPayeeScreen, RecipientsScreen } from './Recipients';
+import { GroupChatScreen, ModifyGroupScreen, GroupsScreen, NewGroupScreen } from './Groups';
 import { BoardsHomeScreen } from './Boards';
 import { WalletOptionScreen, CreateWalletScreen } from './CreateScreen';
 import { TransactionsScreen, TransactionDetailsScreen } from './TransactionsScreen';
@@ -221,6 +222,45 @@ RecipientNavigator.navigationOptions = ({ navigation, screenProps }) => ({
 });
 
 
+const GroupsNavigator = createStackNavigator(
+    {
+        Groups: GroupsScreen,
+        ModifyGroup: ModifyGroupScreen,
+        GroupChatScreen: GroupChatScreen,
+        NewGroup: NewGroupScreen,
+    },
+    {
+        initialRouteName: '',
+        headerLayoutPreset: 'center',
+        defaultNavigationOptions: {
+            headerTitleStyle: {
+                fontWeight: 'bold',
+                color: Themes.darkMode.primaryColour,
+            },
+            headerTransparent: true,
+            headerTintColor: Themes.darkMode.primaryColour,
+        },
+    }
+);
+
+GroupsNavigator.navigationOptions = ({ navigation, screenProps }) => ({
+    tabBarOptions: {
+        activeBackgroundColor: screenProps.theme.backgroundColour,
+        inactiveBackgroundColor: screenProps.theme.backgroundColour,
+        activeTintColor: screenProps.theme.primaryColour,
+        inactiveTintColor: screenProps.theme.slightlyMoreVisibleColour,
+        showLabel: false,
+        style: {
+          borderTopWidth: 0,
+          height: 46,
+          textAlignVertical: "bottom",
+          backgroundColor: "#FF00FF",
+          marginBottom: 5
+        }
+    }
+});
+
+
 const BoardsNavigator = createStackNavigator(
     {
         BoardsHome: BoardsHomeScreen
@@ -265,6 +305,7 @@ const HomeNavigator = createBottomTabNavigator(
         Transfer: TransferNavigator,
         Boards: BoardsNavigator,
         Recipients: RecipientNavigator,
+        Groups: GroupsNavigator,
         Settings: SettingsNavigator,
     },
     {
@@ -305,8 +346,11 @@ const HomeNavigator = createBottomTabNavigator(
                     iconName = 'ios-settings';
                   } else if (routeName === 'Boards') {
                       IconComponent = Entypo;
+                      iconName = 'megaphone';
+                } else if (routeName === 'Groups') {
+                      IconComponent = Entypo;
                       iconName = 'chat';
-                }
+              }
 
                 return <IconComponent name={iconName} size={32} color={tintColor}/>;
             },

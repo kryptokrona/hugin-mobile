@@ -223,9 +223,28 @@ async function createTables(DB) {
             )`
         );
 
-      //   tx.executeSql(
-      //     `DROP TABLE boards_message_db`
-      // );
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS privateboards (
+                name TEXT,
+                key TEXT,
+                latestmessage INT default 0
+            )`
+        );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
+                board TEXT,
+                nickname TEXT,
+                address TEXT,
+                type TEXT,
+                message TEXT,
+                timestamp TEXT,
+                read BOOLEAN default 1,
+                UNIQUE (timestamp)
+            )`
+        );
+
+
 
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS boards_message_db (
@@ -480,6 +499,38 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 }
 
+
+export async function saveGroupMessage(group, type, message, timestamp, nickname, address) {
+
+
+
+  const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
+
+  console.log('Saving group message', group, type, message, timestamp, nickname, address, read);
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `REPLACE INTO privateboards_messages_db
+              (board, type, message, timestamp, read, nickname, address, read)
+          VALUES
+              (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+              group,
+              type,
+              message,
+              timestamp,
+              'false',
+              nickname,
+              address,
+              read
+          ]
+      );
+  });
+
+  Globals.updateGroups();
+
+}
+
 export async function saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent=false) {
 
 let fromMyself = address == Globals.wallet.getPrimaryAddress();
@@ -576,6 +627,26 @@ export async function markConversationAsRead(conversation) {
 
 }
 
+
+export async function markGroupConversationAsRead(group) {
+
+  await database.transaction((tx) => {
+     tx.executeSql(
+      `UPDATE
+          privateboards_messages_db
+      SET
+          read = 1
+      WHERE
+          board = ?`,
+      [
+        group
+      ],
+  );
+
+});
+
+}
+
 export async function markBoardsMessageAsRead(hash) {
 
   console.log('Marking ' + hash + ' as read.');
@@ -638,6 +709,47 @@ export async function removePayeeFromDatabase(nickname, removeMessages) {
 }
 
 
+
+export async function saveGroupToDatabase(group) {
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `INSERT INTO privateboards
+              (name, key, latestmessage)
+            VALUES
+                (?, ?, ?)`,
+            [ group.group, group.key, Date.now() ]
+        );
+    });
+}
+
+
+export async function removeGroupFromDatabase(key, removeMessages) {
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM
+                privateboards
+            WHERE
+                key = ?`,
+            [ key ]
+        );
+    });
+    if (removeMessages) {
+      //console.log('Removing messages for', address);
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM
+                privateboards_messages_db
+            WHERE
+                board = ?`,
+            [ key ]
+        );
+    })
+  }
+}
+
+
+
+
 export async function removeMessages() {
     await database.transaction((tx) => {
         tx.executeSql(
@@ -659,6 +771,123 @@ export async function removeMessages() {
             `DELETE FROM boards_subscriptions`
         );
     });
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM privateboards_message_db`
+        );
+    });
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM privateboards`
+        );
+    });
+}
+
+
+export async function getGroupKey(group) {
+    const [data] = await database.executeSql(
+        `SELECT
+            key
+        FROM
+            privateboards
+        WHERE
+            name = ${group}`
+    );
+
+    if (data && data.rows && data.rows.length) {
+
+        const res = [];
+        const payees = data.rows.raw();
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+
+            if (item.key) {
+              return item.key;
+            } else {
+              return false;
+            }
+
+
+          }
+
+    } else {
+      return false;
+    }
+}
+
+export async function getGroupName(key) {
+    const [data] = await database.executeSql(
+        `SELECT
+            *
+        FROM
+            privateboards
+        WHERE
+            key = "${key}"`
+    );
+
+    if (data && data.rows && data.rows.length) {
+
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+
+            const item = data.rows.item(i);
+            console.log(item);
+            if (item.name) {
+              return item.name;
+            } else {
+              return false;
+            }
+
+
+          }
+
+    } else {
+      return false;
+    }
+}
+
+
+export async function loadGroupsDataFromDatabase() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            name,
+            key,
+            latestmessage
+        FROM
+            privateboards`
+    );
+
+    if (data && data.rows && data.rows.length) {
+
+        const res = [];
+        const groups = data.rows.raw();
+
+        let latestMessages = await getLatestGroupMessages();
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            const latestMessage = latestMessages.filter(m => m.group == item.key);
+            console.log(latestMessage);
+            res.push({
+                group: item.name,
+                key: item.key,
+                lastMessage: latestMessage.length ? latestMessage[0].message : false,
+                lastMessageNickname: latestMessage.length ? latestMessage[0].nickname : false,
+                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
+                read: latestMessage.length ? latestMessage[0].read : true
+            })
+
+          }
+
+        return res.sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp)
+    }
+
+
+    return [];
 }
 
 export async function loadPayeeDataFromDatabase() {
@@ -697,6 +926,38 @@ export async function loadPayeeDataFromDatabase() {
 
 
     return undefined;
+}
+
+export async function getLatestGroupMessages() {
+    const [data] = await database.executeSql(
+        `
+        SELECT *
+        FROM privateboards_messages_db D
+        WHERE timestamp = (SELECT MAX(timestamp) FROM privateboards_messages_db WHERE board = D.board)
+        ORDER BY
+            timestamp
+        ASC
+        `);
+
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                group: item.board,
+                nickname: item.nickname,
+                message: item.message,
+                timestamp: item.timestamp,
+                read: item.read
+            });
+        }
+        console.log(res);
+        return res;
+    }
+
+    return [];
 }
 
 export async function getLatestMessages() {
@@ -764,6 +1025,48 @@ export async function getMessages(conversation=false) {
 
     return undefined;
 }
+
+export async function getGroupMessages(group=false) {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            nickname,
+            type,
+            message,
+            timestamp,
+            board,
+            address
+        FROM
+            privateboards_messages_db
+        ${group ? 'WHERE board = "' + group + '"' : ''}
+        ORDER BY
+            timestamp
+        ASC`
+    );
+
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            res.push({
+                nickname: item.nickname,
+                type: item.type,
+                message: item.message,
+                timestamp: item.timestamp,
+                group: item.board,
+                address: item.address
+            });
+        }
+
+        return res;
+    } else {
+      console.log('No message le found!');
+    }
+
+    return undefined;
+}
+
 
 export async function getHistory(conversation) {
 
@@ -983,6 +1286,21 @@ export async function subscribeToBoard(board, key) {
 }
 
 
+export async function subscribeToGroup(group, key) {
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `REPLACE INTO privateboards
+                (name, key)
+            VALUES
+                (?, ?)`,
+                [group, key]
+        );
+    });
+
+}
+
+
 export async function removeBoard(board) {
 
 
@@ -1035,6 +1353,28 @@ export async function messageExists(timestamp) {
             timestamp
         FROM
             message_db
+        WHERE
+            timestamp = ${timestamp}
+        `
+    );
+    if (data && data.rows && data.rows.length) {
+      return true;
+    } else {
+      return false;
+    }
+
+}
+
+
+export async function groupMessageExists(timestamp) {
+    const [data] = await database.executeSql(
+        `SELECT
+            board,
+            type,
+            message,
+            timestamp
+        FROM
+            privateboards_messages_db
         WHERE
             timestamp = ${timestamp}
         `
