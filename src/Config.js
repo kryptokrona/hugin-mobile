@@ -242,7 +242,7 @@ const Config = new function() {
     /**
     * A Url to fetch Hugin Caches from.
     */
-    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/hugin-cache-list/main/apis.json';
+    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/hugin-api-list/main/apis.json';
 };
 
 module.exports = Config;

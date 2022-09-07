@@ -397,15 +397,13 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
-      fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
+    fetch(cacheURL + "/api/v2/posts?&size=50&page=" + page)
     .then((response) => response.json())
     .then(async (json) => {
 
       const items = json.items;
 
       for (item in items) {
-
-
 
         if (items[item].time < latest_board_message_timestamp) {
 
@@ -423,7 +421,6 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
         const reply = items[item].reply;
         const hash = items[item].tx_hash;
         const sent = fromMyself ? true : false;
-
 
         if (await boardsMessageExists(hash)) {
           continue;

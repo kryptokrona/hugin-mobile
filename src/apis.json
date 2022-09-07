@@ -1,19 +1,24 @@
 {
     "apis": [
         {
-            "url": "https://cache.hugin.chat",
+            "url": "https://api.hugin.chat",
             "name": "Official Hugin Cache API",
-            "description": "The Official Hugin Cache API hosted by Kryptokrona project",
+            "description": "The Official Hugin Cache API Powered by Novastack Hosting",
         },
         {
-            "url": "https://cache.novastack.org",
+            "url": "https://api.novastack.org",
             "name": "Novastack Hugin Cache API",
             "description": "High Performance Hugin Cache API Powered by Novastack Hosting",
         },
         {
-            "url": "https://testcache.novastack.org",
+            "url": "https://test-api.novastack.org",
             "name": "Novastack Testing Hugin Cache API",
             "description": "Used to test new/latest features before running on main Novastack Cache",
+        },
+        {
+            "url": "https://cache.norpool.org",
+            "name": "Norpool Cache API",
+            "description": "Norpool Hugin Cache API"
         }
     ]
 }
