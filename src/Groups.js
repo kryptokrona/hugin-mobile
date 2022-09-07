@@ -69,8 +69,6 @@ export class GroupsScreenNoTranslation extends React.Component {
             index: 0,
         }
 
-        console.log(Globals.groups);
-
         Globals.updateGroupsFunctions.push(() => {
             this.setState(prevState => ({
                 groups: Globals.groups,
@@ -160,7 +158,6 @@ export class GroupsScreenNoTranslation extends React.Component {
                                     fontFamily: 'Montserrat-Regular'
                                 }}
                                 onPress={async () => {
-                                    console.log('gdbye');
                                     this.props.navigation.navigate(
                                         'GroupChatScreen', {
                                             group: item,
@@ -193,8 +190,6 @@ export class GroupsScreenNoTranslation extends React.Component {
                     <TouchableWithoutFeedback
                         onPress={async () => {
                             const newGroup = await createGroup();
-                            // console.log(newGroup);
-                            // subscribeToGroup('test', newGroup);
                             Globals.fromChat = true;
                             this.props.navigation.navigate('NewGroup', {
                                 finishFunction: (item) => {
@@ -280,8 +275,6 @@ function isPaymentIDValid(paymentID) {
 
 function validGroupName(group) {
     let errorMessage = '';
-    console.log(group);
-    console.log(Globals.groups.some((groups) => groups.group === group));
 
     if (Globals.groups.some((groups) => groups.group === group)) {
         errorMessage = `A group with the name ${group} already exists.`;
@@ -728,7 +721,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
         super(props);
 
         const { group, key } = this.props.navigation.state.params.group;
-        console.log(group, key);
 
         this.state = {
             group,
@@ -770,8 +762,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
           messages = [];
         }
 
-        console.log('Le messages', messages);
-
         this.setState({
           messages: messages
         });
@@ -795,9 +785,9 @@ export class GroupChatScreenNoTranslation extends React.Component {
        const items = [];
 
        for (message in this.state.messages) {
-         console.log(this.state.messages[message]);
+
          if (this.state.key == this.state.messages[message].group){
-           console.log('okgo');
+
            let timestamp = this.state.messages[message].timestamp / 1000;
            // if (this.state.messages[message].type == 'received'){
               items.push(<View  key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}><View style={{flexDirection:"row", marginBottom: 10}}><Image
@@ -824,7 +814,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
              Keyboard.dismiss();
 
              let updated_messages = await getGroupMessages(this.state.key);
-             console.log(updated_messages);
              if (!updated_messages) {
                updated_messages = [];
              }
@@ -848,18 +837,11 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              let success = await sendGroupsMessage(checkText(text), this.state.key);
 
-
-             // saveGroupMessage({})
-
-             // await removeGroupMessage(temp_timestamp);
-             console.log('wut', success);
              if (success.success == true) {
 
              this.state.input.current.clear();
 
              } else {
-
-               console.log('faaaail', success);
 
                toastPopUp('Message failed to send..');
 
@@ -898,7 +880,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                           source={{uri: get_avatar(this.state.key)}}
                         />
                         <Text onPress={() => {
-                          console.log(this.props.navigation.state.params.group);
                             this.props.navigation.navigate(
                                 'ModifyGroup', {
                                     group: this.props.navigation.state.params.group,
