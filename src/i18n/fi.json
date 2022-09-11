@@ -63,7 +63,7 @@
     blockHeight: "Block height",
     address: "Osoite",
     notes: "Muistiinpanoja",
-    viewOnExplorer: "View in explorer",
+    viewOnExplorer: "Katso explorerissa",
     transferTitle: "Lähetä XKR to {nimi}",
     sendAmountLabel: "Lähetettävä summa ",
     sendMaxButton: "Lähetä kaikki",
