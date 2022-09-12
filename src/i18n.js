@@ -7,6 +7,7 @@ import zh from './i18n/zh.json';
 import tr from './i18n/tr.json';
 import de from './i18n/de.json';
 import ru from './i18n/ru.json';
+import fi from './i18n/fi.json';
 import { Globals } from './Globals';
 import i18nextReactNative from 'i18next-react-native-language-detector'
 
@@ -48,6 +49,9 @@ i18next
       },
       ru: {
         translation: ru,
+      },
+      fi: {
+        translation: fi,
       },
     },
   });
