@@ -46,7 +46,7 @@
     resyncWalletDescr: "Uudelleen synkronoi lompakko alusta asti",
     deleteWallet: "Poista tunnus",
     deleteWalletDescr: "Ole hyvä ja varmuuskopio sinun avaimet eka!",
-    noMessages: "Ei viestejä" 🥱",
+    noMessages: "Ei viestejä 🥱",
     typeMessageHere: "Kirjoita tähän..",
     page: "Sivu",
     processing: "Käsittely alkaen ",
@@ -89,7 +89,7 @@
     restoreAccount: "Palauta tunnus",
     disclaimer: "Ennekuin jatkamme, ole hyvä ja lue ja hyväksy alla olevat tiedonannot.",
     privateKeyWarning: "Minä ymmärrän että olen ainoa omistaja minun yksityis avaimille/muistisana sarjalle ,jos minä kadotan ne, lompakkoa ei voida palauttaa.",
-    warrantyWarning: "Minä ymmärrän että tätä sovellusta käytettäessä ei anneta takuuta, eivätkä tämän sovelluksen käytön yhteydessä menetetyt varat ole sovelluksen luojan, julkaisijan tai jakelijan vastuulla."
+    warrantyWarning: "Minä ymmärrän että tätä sovellusta käytettäessä ei anneta takuuta, eivätkä tämän sovelluksen käytön yhteydessä menetetyt varat ole sovelluksen luojan, julkaisijan tai jakelijan vastuulla.",
     authenticateHow: "Kuinka haluat suojata tunnuksesi?",
     useHardware: "Käytä laitteiston todennusta jos on saatavilla (Sormenjälki, FaceID, TouchID) jos ei ole saatavilla, palaa takaisin tunnuslukuun",
     usePinCode: "Käytä 6 numeroista tunnuslukua.",
@@ -162,11 +162,10 @@
     myBoards: "Minun Kortit",
     close: "Sulje",
     edit: "Muokkaa",
-    cancelOptimize: "Ei tarvetta optimoinille! Sinä voit jo lähettää {inputs.length} viestejä."
+    cancelOptimize: "Ei tarvetta optimoinille! Sinä voit jo lähettää {inputs.length} viestejä.",
     optimizationComplete: "Optimointi valmis!",
     nickname: "Lempinimi",
     recoverWalletTitle: "Palauta lompakko?",
     recoverWalletDescr: "Tämä tekee kaikki nykyiset varat saatamattomaksi (mutta ovat palautettavissa sinun yksityis avaimilla).",
     boardsRecommendations: "Suositellut taulut"
   }
-  
