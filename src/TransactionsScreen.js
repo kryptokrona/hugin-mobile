@@ -79,7 +79,7 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
             complete: tx.timestamp !== 0,
             coinValue: '0',
             address: txDetails ? txDetails.address : undefined,
-            payee: txDetails ? txDetails.payee : undefined,
+            payee: txDetails && txDetails.payee != '' ? txDetails.payee : undefined,
             memo: txDetails ? txDetails.memo : undefined,
             tipTo: null
         };
@@ -265,6 +265,7 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
                                 {tipTo[0].board}
                               </Text>
                             </View>
+
                             </View>
 
 
@@ -280,6 +281,8 @@ export class TransactionDetailsScreenNoTranslation extends React.Component {
                             </View>
                             </View>
                         </View></>}
+
+
 
                     </ScrollView>
 
