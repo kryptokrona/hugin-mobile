@@ -388,3 +388,21 @@ export function validAmount(amount, unlockedBalance) {
 
     return [true, ''];
 }
+
+export function prettyPrintAmountMainScreen(amount) {
+
+  // Get float with 5 decimals
+  amount = parseFloat(amount / (10 ** Config.decimalPlaces)).toFixed(5);
+
+  if (amount.toString().split('.')[0].length > 6) {
+    // More than 100K XKR
+    amount = amount.toString().split('.')[0];
+  } else if (amount.toString().split('.')[0].length < 4) {
+    // Less than 1K XKR
+    amount = amount;
+  } else {
+    // Between 1K & 100K XKR
+    amount = amount.toString().split('.')[0] = amount.toString().slice(0,-3);
+  }
+  return amount;
+}

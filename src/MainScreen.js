@@ -11,7 +11,6 @@ import * as Animatable from 'react-native-animatable';
 import QRCode from 'react-native-qrcode-svg';
 import NativeLinking from "react-native/Libraries/Linking/NativeLinking";
 import PushNotification from 'react-native-push-notification';
-
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
 import {
@@ -29,12 +28,11 @@ import { Address } from 'kryptokrona-utils';
 import Config from './Config';
 
 import { Styles } from './Styles';
-import { handleURI, toastPopUp } from './Utilities';
+import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
 import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
-import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
@@ -42,7 +40,6 @@ import { coinsToFiat, getCoinPriceFromAPI } from './Currency';
 import { withTranslation } from 'react-i18next';
 import './i18n.js';
 import i18next from './i18n'
-
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -476,24 +473,10 @@ export class MainScreen extends React.PureComponent {
                 />
                 <View style={{
                     justifyContent: 'space-around',
-                    height: Dimensions.get('window').height - 73,
+                    height: Dimensions.get('window').height - 100,
                 }}>
                     <View style={{
-                      height: '10%',
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      marginBottom: 30,
-                      padding: 0,
-                      opacity: this.state.addressOnly ? 0 : 100,
-                      shadowColor: "#000",
-                      shadowOffset: {
-                      	width: 0,
-                      	height: 7,
-                      },
-                      shadowOpacity: 0.43,
-                      shadowRadius: 9.51,
-
-                      elevation: 15,
+                      height: 50
                     }}>
 
                     </View>
@@ -560,6 +543,7 @@ class AddressComponent extends React.PureComponent {
                     name='Address'
                     {...this.props}
                 />
+
                 <Text style={[Styles.centeredText, {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'left',
@@ -746,12 +730,9 @@ class BalanceComponentNoTranslation extends React.Component {
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
                                      style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'black' : 'black', fontSize: 24}}
-                                     onPress={() => this.setState({
-                                         expandedBalance: !this.state.expandedBalance
-                                     })}
                                 >
 
-                                     {prettyPrintAmount(this.props.unlockedBalance + this.props.lockedBalance, Config).slice(0,-4)}
+                                     {prettyPrintAmountMainScreen(this.props.unlockedBalance)}
                                </OneLineText>;
 
         const lockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -818,10 +799,16 @@ class BalanceComponentNoTranslation extends React.Component {
                     <View style={{marginLeft: 64, marginBottom: 10}} ref={this.balanceRef}>
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
                     </View>
-
+                    {parseInt(this.props.lockedBalance) > 0 &&
+                    <Text style={{color: 'black'}}>+ {prettyPrintAmount(this.props.lockedBalance, Config).slice(0,-4)}</Text>}
             </Animated.View>
 
             <OpenURLButton></OpenURLButton>
+<Text>
+            {this.props.unlockedBalance &&
+            <Text>{this.props.coinValue}</Text>
+            }
+            </Text>
             </View>
         );
     }
@@ -930,7 +917,6 @@ async function backgroundSave() {
         await saveToDatabase(Globals.wallet);
         Globals.logger.addLogMessage('Save complete.');
     } catch (err) {
-        reportCaughtException(err);
         Globals.logger.addLogMessage('Failed to background save: ' + err);
     }
 }
