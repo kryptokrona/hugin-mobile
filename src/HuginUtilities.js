@@ -510,6 +510,11 @@ export async function sendGroupsMessage(message, group) {
       false, // sneedAll
       Buffer.from(payload_encrypted_hex, 'hex')
   );
+
+  if (result.success == true) {
+    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k);
+  }
+
   return result;
 
 }
