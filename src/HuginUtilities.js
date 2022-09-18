@@ -27,6 +27,19 @@ import Identicon from 'identicon.js';
 
 import { getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
+/**
+ * Save wallet in background
+ */
+async function backgroundSave() {
+    Globals.logger.addLogMessage('Saving wallet...');
+
+    try {
+        await saveToDatabase(Globals.wallet);
+        Globals.logger.addLogMessage('Save complete.');
+    } catch (err) {
+        Globals.logger.addLogMessage('Failed to background save: ' + err);
+    }
+}
 import {
     Address,
     AddressPrefix,
@@ -513,6 +526,7 @@ export async function sendGroupsMessage(message, group) {
 
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k);
+    backgroundSave();
   }
 
   return result;
@@ -554,6 +568,7 @@ export async function sendBoardsMessage(message, board) {
       false, // sneedAll
       Buffer.from(payload_hex, 'hex')
   );
+  backgroundSave();
   return result;
 
 }
@@ -634,7 +649,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     if (result.success) {
 
       saveMessage(receiver, 'sent', message, timestamp);
-
+      backgroundSave();
 
       const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
       let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
