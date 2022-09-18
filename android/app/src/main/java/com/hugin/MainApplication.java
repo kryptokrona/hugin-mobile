@@ -24,8 +24,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.gms.security.ProviderInstaller.ProviderInstallListener;
 
-import io.sentry.RNSentryPackage;
-
 import java.util.List;
 import java.io.IOException;
 
@@ -67,7 +65,7 @@ public class MainApplication extends Application implements ReactApplication {
     upgradeSecurityProvider();
 
     /* tonchan-vx.x.x */
-    setUserAgent("hugin-messenger-v1.1.5");
+    setUserAgent("hugin-messenger-v1.1.6");
 
     SoLoader.init(this, /* native exopackage */ false);
   }
