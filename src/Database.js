@@ -13,8 +13,6 @@ import Constants from './Constants';
 
 import { Globals } from './Globals';
 
-import { reportCaughtException } from './Sentry';
-
 /* Use promise based API instead of callback based */
 SQLite.enablePromise(true);
 
@@ -124,7 +122,6 @@ export async function loadWallet() {
             return [ result, undefined ];
         }
     } catch (err) {
-        reportCaughtException(err);
         return [ undefined, err ];
     }
 
@@ -1413,7 +1410,6 @@ export async function saveToDatabase(wallet) {
         await saveWallet(wallet.toJSONString());
         await setHaveWallet(true);
     } catch (err) {
-        reportCaughtException(err);
         Globals.logger.addLogMessage('Err saving wallet: ' + err);
     };
 }
@@ -1428,7 +1424,6 @@ export async function haveWallet() {
 
         return false;
     } catch (error) {
-        reportCaughtException(error);
         Globals.logger.addLogMessage('Error determining if we have data: ' + error);
         return false;
     }
@@ -1438,7 +1433,6 @@ export async function setHaveWallet(haveWallet) {
     try {
         await AsyncStorage.setItem(Config.coinName + 'HaveWallet', haveWallet.toString());
     } catch (error) {
-        reportCaughtException(error);
         Globals.logger.addLogMessage('Failed to save have wallet status: ' + error);
     }
 }
