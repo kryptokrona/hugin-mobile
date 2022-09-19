@@ -301,6 +301,12 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           renderItem={({item}) => (
                               <ListItem
                                   title={board == 'Home' ? <View style={{flexDirection:"row", marginBottom: 10}}>
+                                  <View style={{flexDirection:"row"}}>
+
+                                  <Image
+                                    style={{width: 50, height: 50, marginTop: -10}}
+                                    source={{uri: get_avatar(item.address)}}
+                                  />
                                   <View style={{width: 150, overflow: 'hidden'}}>
                                     <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
                                         color: '#ffffff',
@@ -308,6 +314,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                         fontFamily: "Montserrat-SemiBold"
                                     }}>{item.nickname ? item.nickname : 'Anonymous'}
                                     </Text>
+                                    </View>
                                     </View>
                                     <View style={{
                                       backgroundColor: getBoardColors(item.board)[0],
@@ -332,7 +339,21 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     </View>
 
                                     </View> :
-                                    item.nickname ? item.nickname : 'Anonymous'
+                                    <View style={{flexDirection:"row"}}>
+
+                                    <Image
+                                      style={{width: 50, height: 50, marginTop: -10}}
+                                      source={{uri: get_avatar(item.address)}}
+                                    />
+                                    <View style={{width: 150, overflow: 'hidden'}}>
+                                      <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                          color: '#ffffff',
+                                          fontSize: 18,
+                                          fontFamily: "Montserrat-SemiBold"
+                                      }}>{item.nickname ? item.nickname : 'Anonymous'}
+                                      </Text>
+                                      </View>
+                                    </View>
                                   }
                                   subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
                                   subtitleStyle={{
@@ -340,28 +361,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                       overflow: 'hidden'
                                   }}
                                   chevron={item.read == '1' ? false : newMessageIndicator }
-                                  leftIcon={
-                                      <Image
-                                        style={{width: 50, height: 50}}
-                                        source={{uri: get_avatar(item.address)}}
-                                      />
-                                      // <View style={{
-                                      //     width: 50,
-                                      //     height: 50,
-                                      //     alignItems: 'center',
-                                      //     justifyContent: 'center',
-                                      //     backgroundColor: this.props.screenProps.theme.iconColour,
-                                      //     borderRadius: 45
-                                      // }}>
-                                      //     <Text style={[Styles.centeredText, {
-                                      //         fontSize: 30,
-                                      //         color: this.props.screenProps.theme.primaryColour,
-                                      //     }]}>
-                                      //         {item.nickname[0].toUpperCase()}
-                                      //     </Text>
-                                      //
-                                      // </View>
-                                  }
                                   titleStyle={{
                                       color: this.props.screenProps.theme.primaryColour,
                                       fontFamily: 'Montserrat-SemiBold'
