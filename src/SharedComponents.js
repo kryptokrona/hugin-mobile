@@ -161,7 +161,7 @@ export class BottomButton extends React.Component {
                         backgroundColor: this.props.screenProps.theme.buttonColour,
                         height: 50,
                         borderRadius: 5,
-                        marginBottom: 48,
+                        marginBottom: 0,
                         width: "50%",
                         marginLeft: "25%",
                         fontFamily: 'Montserrat-SemiBold'
