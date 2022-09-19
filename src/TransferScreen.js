@@ -1413,9 +1413,6 @@ export class ChoosePayeeScreenNoTranslation extends React.Component {
                             <View style={{
                                 height: 37,
                                 width: 37,
-                                borderWidth: 1,
-                                borderColor: this.props.screenProps.theme.borderColour,
-                                borderRadius: 45,
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}>
