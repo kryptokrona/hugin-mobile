@@ -27,7 +27,7 @@ export const Styles = StyleSheet.create({
         textAlign: 'center',
     },
     alignBottom: {
-        position: 'absolute',
+        position: 'relative',
         alignItems: 'stretch',
         justifyContent: 'center',
         width: '100%',
