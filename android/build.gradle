@@ -3,7 +3,7 @@
 buildscript {
     ext {
         buildToolsVersion = "28.0.3"
-        minSdkVersion = 19
+        minSdkVersion = 20
         compileSdkVersion = 30
         targetSdkVersion = 30
         supportLibVersion = "28.0.0"
@@ -36,7 +36,7 @@ allprojects {
             // Android JSC is installed from npm
             url("$rootDir/../node_modules/jsc-android/dist")
         }
-	
+
         google()
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
