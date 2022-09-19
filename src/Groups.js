@@ -223,7 +223,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                                 <SimpleLineIcons
                                     name={'plus'}
                                     size={24}
-                                    color={this.props.screenProps.theme.primaryColour}
+                                    color={this.props.screenProps.theme.slightlyMoreVisibleColour}
                                     padding={5}
                                 />
                             </View>
@@ -413,6 +413,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
 
     render() {
         const { t } = this.props;
+        const group = this.state.group;
         return(
             <View style={{
                 flex: 1,
@@ -556,7 +557,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
 
                                   if (valid) {
                                       this.setState({
-                                          newGroupName: text,
+                                          newGroup: text,
                                           ...shared,
                                       });
                                   } else {
@@ -643,9 +644,12 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                                     group: this.state.newGroup,
                                     key: this.state.key
                                 });
+
                                 this.setState({
-                                    groups: Globals.groups
+                                    groups: Globals.groups,
+                                    group: this.state.newGroup
                                 });
+
                                 this.props.navigation.goBack();
                             }}
                             color={this.props.screenProps.theme.primaryColour}
@@ -944,7 +948,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                         padding: 15,
 
                     }}
-                    maxLength={Config.integratedAddressLength}
+                    maxLength={512}
                     placeholder={t('typeMessageHere')}
                     placeholderTextColor={'#ffffff'}
                     onSubmitEditing={async (e) => {
@@ -1032,6 +1036,11 @@ export class NewGroupScreenNoTranslation extends React.Component {
             return [false, errorMessage];
         }
 
+        if (Globals.groups.some((groups) => groups.key === paymentID)) {
+            errorMessage = `A group with the key ${paymentID} already exists.`;
+            return [false, errorMessage];
+        }
+
         const paymentIDError = validatePaymentID(paymentID);
 
         if (paymentIDError.errorCode !== WalletErrorCode.SUCCESS) {
@@ -1073,6 +1082,8 @@ export class NewGroupScreenNoTranslation extends React.Component {
                     flex: 1,
                     marginTop: 60,
                 }}>
+
+
                     <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 25, marginBottom: 40, marginLeft: 30 }}>
                         {'Add group'}
                     </Text>
@@ -1176,6 +1187,7 @@ export class NewGroupScreenNoTranslation extends React.Component {
                         }}
                         errorMessage={this.state.keyError}
                     />
+
 
 
                     <BottomButton

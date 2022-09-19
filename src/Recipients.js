@@ -10,6 +10,7 @@ import {
     Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
 
+
 import {
     validateAddresses, WalletErrorCode, validatePaymentID,
 } from 'kryptokrona-wallet-backend-js';
@@ -215,9 +216,6 @@ export class RecipientsScreenNoTranslation extends React.Component {
                             <View style={{
                                 height: 37,
                                 width: 37,
-                                borderWidth: 1,
-                                borderColor: this.props.screenProps.theme.notVeryVisibleColour,
-                                borderRadius: 45,
                                 alignItems: 'center',
                                 justifyContent: 'center',
                             }}>
@@ -1052,7 +1050,7 @@ export class ChatScreenNoTranslation extends React.Component {
                         padding: 15,
 
                     }}
-                    maxLength={Config.integratedAddressLength}
+                    maxLength={512}
                     placeholder={t('typeMessageHere')}
                     placeholderTextColor={'#ffffff'}
                     onSubmitEditing={async (e) => {

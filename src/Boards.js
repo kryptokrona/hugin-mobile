@@ -589,7 +589,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     padding: 15,
 
                 }}
-                maxLength={Config.integratedAddressLength}
+                maxLength={512}
                 placeholder={"✏️ " + t('typeMessageHere')}
                 placeholderTextColor={'#ffffff'}
                 onSubmitEditing={async (e) => {
