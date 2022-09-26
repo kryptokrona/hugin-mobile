@@ -961,7 +961,7 @@ export class ConfirmScreenNoTranslation extends React.Component {
         const result = await Globals.wallet.sendTransactionAdvanced(
             payments, // destinations,
             3, // mixin
-            {feePerByte: 10, isFeePerByte: true}, // fee
+            {fixedFee: 1000, isFixedFee: true}, // fee
             this.state.payee.paymentID,
             undefined, // subWalletsToTakeFrom
             undefined, // changeAddress
