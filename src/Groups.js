@@ -47,6 +47,8 @@ import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRe
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {
@@ -931,11 +933,10 @@ export class GroupChatScreenNoTranslation extends React.Component {
                       backgroundColor: 'rgba(0,0,0,0.2)',
                       borderWidth: 0,
                       borderColor: 'transparent',
-                      borderRadius: 15,
-                      height: 50
+                      borderRadius: 15
                   }}
                 >
-                <TextInput
+                <AutoGrowingTextInput
                     multiline={true}
                     textAlignVertical={'top'}
                     ref={this.state.input}

@@ -48,6 +48,8 @@ import { getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveT
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {
@@ -572,11 +574,10 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                   backgroundColor: 'rgba(255,255,255,0.1)',
                   borderWidth: 0,
                   borderColor: 'transparent',
-                  borderRadius: 15,
-                  height: 70
+                  borderRadius: 15
               }}
             >
-            <TextInput
+            <AutoGrowingTextInput
                 multiline={true}
                 textAlignVertical={'top'}
                 ref={input => { this.input = input }}
