@@ -845,7 +845,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              if (success.success == true) {
 
-             this.state.input.current.clear();
+             this.state.input.current._textInput.clear();
 
              } else {
 

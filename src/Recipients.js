@@ -36,7 +36,6 @@ import 'moment/locale/nb';
 import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
-
 import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
@@ -947,7 +946,7 @@ export class ChatScreenNoTranslation extends React.Component {
                messageHasLength: false
              });
 
-             this.state.input.current.clear();
+             this.state.input.current._textInput.clear();
 
              this.setState({messageHasLength: this.state.message.length > 0});
 

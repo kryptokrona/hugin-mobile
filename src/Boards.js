@@ -210,7 +210,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
           message: ''
         });
 
-        this.input.clear();
+        this.input._textInput.clear();
 
         this.setState({messageHasLength: this.state.message.length > 0});
 
