@@ -410,7 +410,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
-    fetch(cacheURL + "/api/v2/posts?&size=50&page=" + page)
+    fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
     .then((response) => response.json())
     .then(async (json) => {
 
