@@ -881,6 +881,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           this.setMessageModalVisible(!messageModalVisible);
                         }}
                       >
+                        <ScrollView>
                         <View style={{
                           margin: 20,
                           backgroundColor: '#272527',
@@ -896,6 +897,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           shadowRadius: 4,
                           elevation: 5
                         }}>
+
                           <View style={{
                             margin: 10
                           }}>
@@ -980,6 +982,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                         </View>
 
                       </View>
+                      </ScrollView>
                       </Modal>
                     </View>
 
