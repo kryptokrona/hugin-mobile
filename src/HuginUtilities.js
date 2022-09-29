@@ -128,8 +128,7 @@ export async function getBestCache() {
 
   for (cache in caches) {
     let this_cache = caches[cache];
-
-    let cacheURL = `${this_cache.url}/api/v1/posts/latest`;
+    let cacheURL = `${this_cache.url}/api/v1/posts`;
     try {
       const resp = await fetch(cacheURL, {
          method: 'GET'
