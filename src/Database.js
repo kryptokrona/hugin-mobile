@@ -1099,6 +1099,58 @@ export async function getHistory(conversation) {
 
 }
 
+
+export async function getReplies(post) {
+
+  console.log(post);
+
+    const [data] = await database.executeSql(
+        `SELECT
+            message,
+            address,
+            signature,
+            board,
+            timestamp,
+            nickname,
+            reply,
+            hash,
+            sent,
+            read
+        FROM
+            boards_message_db WHERE reply = "${post}"
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+        20`
+    );
+    console.log('Got ' + data.rows.length + " board messages");
+    if (data && data.rows && data.rows.length) {
+        const res = [];
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            console.log(item);
+            res.push({
+                message: item.message,
+                address: item.address,
+                signature: item.signature,
+                board: item.board,
+                timestamp: item.timestamp,
+                nickname: item.nickname,
+                reply: item.reply,
+                hash: item.hash,
+                sent: item.sent,
+                read: item.read
+            });
+        }
+
+        return res;
+    }
+
+    return [];
+}
+
 export async function getBoardsMessages(board='Home') {
 
     const [data] = await database.executeSql(
@@ -1128,7 +1180,8 @@ export async function getBoardsMessages(board='Home') {
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
             console.log(item);
-            res.push({
+
+            let json = {
                 message: item.message,
                 address: item.address,
                 signature: item.signature,
@@ -1139,7 +1192,14 @@ export async function getBoardsMessages(board='Home') {
                 hash: item.hash,
                 sent: item.sent,
                 read: item.read
-            });
+            };
+
+            if (item.reply && item.reply != '0') {
+              const reply = await getBoardsMessage(item.reply);
+              json.op = reply[0];
+            }
+
+            res.push(json);
         }
 
         return res;

@@ -532,7 +532,7 @@ export async function sendGroupsMessage(message, group) {
 
 }
 
-export async function sendBoardsMessage(message, board) {
+export async function sendBoardsMessage(message, board, reply=false) {
 
   const my_address = Globals.wallet.getPrimaryAddress();
 
@@ -546,6 +546,10 @@ export async function sendBoardsMessage(message, board) {
     "s": signature,
     "brd": board,
     "t": parseInt(Date.now() / 1000)
+  }
+
+  if (reply) {
+    message_json.r = reply;
   }
 
   if (Globals.preferences.nickname != 'Anonymous') {

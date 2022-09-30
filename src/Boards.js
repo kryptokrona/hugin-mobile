@@ -43,7 +43,7 @@ import {intToRGB, hashCode, get_avatar, sendBoardsMessage, getBoardColors} from 
 
 import {toastPopUp} from './Utilities';
 
-import { getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase, removeBoard, getBoardRecommendations } from './Database';
+import { getBoardsMessage, saveBoardsMessage, getReplies, getBoardSubscriptions, subscribeToBoard, markBoardsMessageAsRead, saveToDatabase, getBoardsMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase, removeBoard, getBoardRecommendations } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -185,6 +185,88 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         Linking.openURL(url);
       }
 
+
+
+      const submitReply = async (text) => {
+
+        Keyboard.dismiss();
+
+        let updated_messages = await getBoardsMessages(this.state.board);
+        if (!updated_messages) {
+          updated_messages = [];
+        }
+        let temp_timestamp = parseInt(Date.now() / 1000);
+
+        updated_messages.unshift({
+            board: this.state.activePost.board,
+            address: Globals.wallet.getPrimaryAddress(),
+            message: checkText(text),
+            timestamp: temp_timestamp,
+            hash: temp_timestamp.toString(),
+            read: 1,
+            nickname: Globals.preferences.nickname,
+            reply: this.state.activePost.hash,
+            op: this.state.activePost
+        });
+
+        this.setState({
+          messages: updated_messages,
+          messageHasLength: false,
+          message: ''
+        });
+
+        this.replyinput._textInput.clear();
+
+        this.setState({replyHasLength: this.state.reply.length > 0});
+
+        let success = await sendBoardsMessage(checkText(text), this.state.activePost.board, this.state.activePost.hash);
+
+
+        // await removeMessage(temp_timestamp);
+        if (success.success) {
+          console.log(success);
+          await saveBoardsMessage(
+            checkText(text),
+            Globals.wallet.getPrimaryAddress(),
+            '',
+            this.state.activePost.board,
+            temp_timestamp,
+            Globals.preferences.nickname,
+            this.state.activePost.hash,
+            success.transactionHash,
+            '1',
+            false);
+          // let updated_replies = this.state.replies;
+
+          // updated_replies.unshift({
+          //     message: checkText(text),
+          //     address: Globals.wallet.getPrimaryAddress(),
+          //     signature: '',
+          //     board: this.state.activePost.board,
+          //     timestamp: temp_timestamp.toString(),
+          //     nickname: Globals.preferences.nickname,
+          //     reply: this.state.activePost.hash,
+          //     hash: success.transactionHash,
+          //     sent: 0,
+          //     read: 1
+          //
+          // });
+          // console.log(updated_replies);
+          // this.state.replies = updated_replies;
+          // console.log(this.state.replies);
+          this.state.replies = await getReplies(this.state.activePost.hash);
+          // this.state.input.current.clear();
+        } else {
+          updated_messages = await getBoardsMessages(this.state.board);
+
+            this.setState({
+              messages: updated_messages,
+              messageHasLength: true
+            })
+
+        }
+      }
+
       const submitMessage = async (text) => {
 
         Keyboard.dismiss();
@@ -255,6 +337,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         const { t } = this.props;
         const messages = this.state.messages;
+
         const boardsSubscriptionsItems = this.state.boardssubscriptions;
         const boardsRecommendationsItems = this.state.boardsRecommendationsItems;
 
@@ -302,7 +385,14 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           keyExtractor={item => item.hash}
                           renderItem={({item}) => (
                               <ListItem
-                                  title={board == 'Home' ? <View style={{flexDirection:"row", marginBottom: 10}}>
+                                  title={
+                                    <View>
+                                    <Text style={{height: (item.reply && item.reply != 0 ? 20 : 0)}}>
+                                    {item.reply && item.reply != 0 &&
+                                        <Text style={{fontFamily: "Montserrat-SemiBold"}}>Replying to {item.op.nickname}</Text>
+                                    }
+                                    </Text>
+                                  <View style={{flexDirection:"row", marginBottom: 10, marginTop: 10}}>
                                   <View style={{flexDirection:"row"}}>
 
                                   <Image
@@ -318,6 +408,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     </Text>
                                     </View>
                                     </View>
+                                    {board == 'Home' &&
                                     <View style={{
                                       backgroundColor: getBoardColors(item.board)[0],
                                       padding: 2,
@@ -338,23 +429,10 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                                         {item.board}
                                     </Text>
+
                                     </View>
-
-                                    </View> :
-                                    <View style={{flexDirection:"row"}}>
-
-                                    <Image
-                                      style={{width: 50, height: 50, marginTop: -10}}
-                                      source={{uri: get_avatar(item.address)}}
-                                    />
-                                    <View style={{width: 150, overflow: 'hidden'}}>
-                                      <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
-                                          color: '#ffffff',
-                                          fontSize: 18,
-                                          fontFamily: "Montserrat-SemiBold"
-                                      }}>{item.nickname ? item.nickname : 'Anonymous'}
-                                      </Text>
-                                      </View>
+                                    }
+                                    </View>
                                     </View>
                                   }
                                   subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
@@ -373,10 +451,20 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                   }}
                                   onPress={async () => {
 
-                                      //getBoard(item.board);
-                                      console.log(item);
+
                                       this.setMessageModalVisible(true);
-                                      this.setActivePost(item);
+                                      if (item.reply && item.reply != 0) {
+                                        this.state.replies = await getReplies(item.reply);
+                                        const op = await getBoardsMessage(item.reply);
+                                        console.log(op[0]);
+                                        this.setActivePost(op[0]);
+
+                                      } else {
+                                        this.state.replies = await getReplies(item.hash);
+                                        this.setActivePost(item);
+
+                                      }
+
 
                                       // let messages = await getBoardsMessages(board);
                                       //
@@ -605,6 +693,50 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     }
                     this.state.message = text;
                     this.setState({messageHasLength: this.state.message.length > 0});
+                }}
+                errorMessage={this.props.error}
+            />
+            </View>;
+
+            const replyInput =
+            <View
+            style={{
+                width: this.state.replyHasLength ? '80%' : '100%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderWidth: 0,
+                  borderColor: 'transparent',
+                  borderRadius: 15,
+                  marginBottom: 15
+              }}
+            >
+            <AutoGrowingTextInput
+                multiline={true}
+                textAlignVertical={'top'}
+                ref={input => { this.replyinput = input }}
+                style={{
+                    color: this.props.screenProps.theme.primaryColour,
+                    fontFamily: 'Montserrat-Regular',
+                    fontSize: 15,
+                    width: '100%',
+                    height: '100%',
+                    padding: 15,
+
+                }}
+                maxLength={512}
+                placeholder={"✏️ " + t('typeMessageHere')}
+                placeholderTextColor={'#ffffff'}
+                onSubmitEditing={async (e) => {
+                  e.preventDefault();
+                    // return;
+                    // submitMessage(this.state.message);
+                    // this.setState({message: '', messageHasLength: false});
+                }}
+                onChangeText={(text) => {
+                    if (this.props.onChange) {
+                        this.props.onChange(text);
+                    }
+                    this.state.reply = text;
+                    this.setState({replyHasLength: this.state.reply.length > 0});
                 }}
                 errorMessage={this.props.error}
             />
@@ -954,6 +1086,50 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                             </View>
                         </View>
 
+                        <KeyboardAvoidingView
+                         behavior={Platform.OS == "ios" ? "padding" : "height"}
+                         style={{
+                            marginBottom: 10,
+                            marginRight: 12,
+                            flexDirection: 'row'
+                        }}>
+
+                        {replyInput}
+
+                        {this.state.replyHasLength &&
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                  submitReply(this.state.reply);
+                                  this.setState({reply: '', replyHasLength: false});
+                                }}
+                            >
+                              <View style={{
+                                backgroundColor: '#63D880',
+                                padding: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 28,
+                                marginTop: 20,
+                                marginLeft: 10
+                              }}>
+                              <Text style={{
+                                  marginLeft: 5,
+                                  marginRight: 5,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 16,
+                                  fontFamily: "Montserrat-SemiBold",
+                                  marginTop: -5
+                              }}>
+                            {t('send')}
+                            </Text>
+                            </View>
+                            </TouchableOpacity>
+
+                        }
+
+                        </KeyboardAvoidingView>
+
                         <View style={{flexDirection:"row", marginBottom: 10}}>
                           <View style={{width: (this.state.board == 'Home' ? '40%' : 0), marginLeft: (this.state.board == 'Home' ? 15 : 0) }}>
                           {this.state.board == 'Home' &&
@@ -981,7 +1157,35 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           />
                         </View>
 
+
+                      <View style={{marginTop: 10}}>
+
+                      {this.state.replies && this.state.replies.map((item,i) => {
+                        return <View style={{padding: 10, borderRadius: 20, margin: 10, backgroundColor: "rgba(0,0,0,0.2)"}}>
+                        <View style={{flexDirection:"row"}}>
+
+                        <Image
+                          style={{width: 32, height: 32, marginTop: -5}}
+                          source={{uri: get_avatar(item.address)}}
+                        />
+                        <View style={{width: 150, overflow: 'hidden'}}>
+                          <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                              color: '#ffffff',
+                              fontSize: 18,
+                              fontFamily: "Montserrat-SemiBold"
+                          }}>{item.nickname ? item.nickname : 'Anonymous'}
+                          </Text>
+                          </View>
+                        </View>
+                        <Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}>{item.message}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Hyperlink>
+                        </View>
+                      } ) }
+
                       </View>
+
+                      </View>
+
+
                       </ScrollView>
                       </Modal>
                     </View>
