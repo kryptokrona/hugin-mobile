@@ -132,8 +132,8 @@ android {
         applicationId "com.hugin"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 024
-        versionName "v1.1.6"
+        versionCode 026
+        versionName "v1.1.7"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
             moduleName "TurtleCoin_jni"
