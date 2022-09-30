@@ -1196,7 +1196,12 @@ export async function getBoardsMessages(board='Home') {
 
             if (item.reply && item.reply != '0') {
               const reply = await getBoardsMessage(item.reply);
-              json.op = reply[0];
+              if (reply.length != 0) {
+                json.op = reply[0];
+              } else {
+                json.op = {nickname: 'Unknown'}
+              }
+
             }
 
             res.push(json);

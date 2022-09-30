@@ -452,11 +452,13 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                   onPress={async () => {
 
 
-                                      this.setMessageModalVisible(true);
+
                                       if (item.reply && item.reply != 0) {
                                         this.state.replies = await getReplies(item.reply);
                                         const op = await getBoardsMessage(item.reply);
-                                        console.log(op[0]);
+                                        if (op.length == 0) {
+                                          return;
+                                        }
                                         this.setActivePost(op[0]);
 
                                       } else {
@@ -464,6 +466,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                         this.setActivePost(item);
 
                                       }
+
+                                      this.setMessageModalVisible(true);
 
 
                                       // let messages = await getBoardsMessages(board);
