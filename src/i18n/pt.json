@@ -71,7 +71,7 @@
   reviewTitle: "Revise sua transação",
   change: "Mudar",
   none: "Nada",
-  details: "\"s detalhes",
+  details: "'s detalhes",
   transferDetails: "Detalhes",
   gets: "recebe",
   nodeFee: "Taxa",
@@ -127,7 +127,7 @@
   customNodeFormat: "O formato é url:port:ssl (ssl=true/false)",
   or: "ou",
   nodeOfflineWarning: "O nó está offline. Por favor, escolha um novo nas configurações.",
-  disableDozeText: "Desativar modo Soneca para {Config.appName} pode ajudar a garantir que sua carteira esteja quase sempre sincronizada. O modo Soneca impede que a sincronização em segundo plano seja disparada de forma consistente, especialmente se você não estiver usando seu telefone, para economizar bateria.{\n\n}Para desativar o modo Soneca, basta clicar no link abaixo e selecionar 'Todos os aplicativos'.{\n\n}Em seguida, role para baixo para encontrar {Config.appName}, clique nele e escolha 'Não otimizar'.{\n\n}Clique em concluído e pronto!{\n\n}"
+  disableDozeText: "Desativar modo Soneca para {Config.appName} pode ajudar a garantir que sua carteira esteja quase sempre sincronizada. O modo Soneca impede que a sincronização em segundo plano seja disparada de forma consistente, especialmente se você não estiver usando seu telefone, para economizar bateria.{\n\n}Para desativar o modo Soneca, basta clicar no link abaixo e selecionar 'Todos os aplicativos'.{\n\n}Em seguida, role para baixo para encontrar {Config.appName}, clique nele e escolha 'Não otimizar'.{\n\n}Clique em concluído e pronto!{\n\n}",
   dozeDisabled: "Ótimo! O modo Soneca já está desabilitado. Você não precisa fazer mais nada!",
   dozeEnabled: "O modo Soneca ainda não está desativado. Continue lendo para descobrir como desativá-lo.",
   openBatteryMenu: "Clique aqui para abrir o menu de otimização da bateria.",
