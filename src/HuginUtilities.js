@@ -401,7 +401,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
 }
 
-export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=0) {
+export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=1) {
 
     if(first) {
       latest_board_message_timestamp = await getLatestBoardMessage();
@@ -413,12 +413,11 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
     .then((response) => response.json())
     .then(async (json) => {
 
-      const items = json.items;
+      const items = json.posts;
 
       for (item in items) {
 
         if (items[item].time < latest_board_message_timestamp) {
-
           return;
         }
 
@@ -430,7 +429,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
         const board = items[item].board;
         const timestamp = items[item].time;
         const nickname = items[item].nickname;
-        const reply = items[item].reply;
+        const reply = items[item].reply_tx_hash;
         const hash = items[item].tx_hash;
         const sent = fromMyself ? true : false;
 
@@ -470,7 +469,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
         }
 
       }
-      if (json.currentPage != json.totalPages) {
+      if (json.current_page != json.total_pages) {
             cacheSync(silent, latest_board_message_timestamp, false, page+1);
       }
     })
