@@ -5,7 +5,7 @@
 import React from 'react';
 import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
-
+import GestureRecognizer from 'react-native-swipe-gestures';
 import {
     Linking, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
 } from 'react-native';
@@ -587,8 +587,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
             const storyStyle = {
               borderRadius: 25,
-              width: 64,
-              height: 64,
+              width: 60,
+              height: 60,
               backgroundColor: 'white',
               marginRight: 10,
               flexDirection:'row'
@@ -596,8 +596,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
             const storyTextStyle = [Styles.centeredText, {
                 fontSize: 30,
-                lineHeight: 60,
-                width: 64,
+                lineHeight: 58,
+                width: 60,
                 fontFamily: 'Montserrat-Bold',
                 color: 'white',
                 flex: 1,
@@ -925,285 +925,292 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                     </KeyboardAvoidingView>}
 
-                    <View>
-                      <Modal
-                        style={{}}
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalVisible}
-                        onRequestClose={() => {
-                          this.setModalVisible(!modalVisible);
-                        }}
-                      >
-                        <View style={modalStyle}>
-                          <View>
-                            <Text style={{
-                                marginLeft: 35,
-                                color: '#ffffff',
-                                fontSize: 24,
-                                fontFamily: "Montserrat-SemiBold"
-                            }}>{t('myBoards')}
-                            </Text>
+                    <GestureRecognizer
+                      onSwipeDown={ () => this.setModalVisible(false) }
+                    >
+                      <View>
+                        <Modal
+                          style={{}}
+                          animationType="slide"
+                          transparent={true}
+                          visible={modalVisible}
+                          onRequestClose={() => {
+                            this.setModalVisible(!modalVisible);
+                          }}
+                        >
+                          <View style={modalStyle}>
+                            <View>
+                              <Text style={{
+                                  marginLeft: 35,
+                                  color: '#ffffff',
+                                  fontSize: 24,
+                                  fontFamily: "Montserrat-SemiBold"
+                              }}>{t('myBoards')}
+                              </Text>
 
-                            <View
-                            style={{
-                                // width: this.state.messageHasLength ? '80%' : '100%',
-                                  width: 225,
-                                  backgroundColor: 'rgba(255,255,255,0.1)',
-                                  borderWidth: 0,
-                                  borderColor: 'transparent',
-                                  borderRadius: 15,
-                                  height: 50,
-                                  margin: 15,
-                                  padding: 7
-                              }}
-                            >
-                            <TextInput
-                                multiline={false}
-                                textAlignVertical={'bottom'}
-                                ref={boardinput => { this.boardinput = boardinput }}
-                                style={{
-                                    color: this.props.screenProps.theme.primaryColour,
-                                    fontFamily: 'Montserrat-Regular',
-                                    fontSize: 15,
-                                    paddingTop: 2,
-                                    paddingBottom: 6
-
+                              <View
+                              style={{
+                                  // width: this.state.messageHasLength ? '80%' : '100%',
+                                    width: 225,
+                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                    borderWidth: 0,
+                                    borderColor: 'transparent',
+                                    borderRadius: 15,
+                                    height: 50,
+                                    margin: 15,
+                                    padding: 7
                                 }}
-                                maxLength={20}
-                                placeholder={  "➕ " + t('subscribe')}
-                                placeholderTextColor={'#ffffff'}
-                                onSubmitEditing={async (e) => {
-                                  e.preventDefault();
+                              >
+                              <TextInput
+                                  multiline={false}
+                                  textAlignVertical={'bottom'}
+                                  ref={boardinput => { this.boardinput = boardinput }}
+                                  style={{
+                                      color: this.props.screenProps.theme.primaryColour,
+                                      fontFamily: 'Montserrat-Regular',
+                                      fontSize: 15,
+                                      paddingTop: 2,
+                                      paddingBottom: 6
 
-                                  subscribeToBoard(this.state.boardinput, 0);
+                                  }}
+                                  maxLength={20}
+                                  placeholder={  "➕ " + t('subscribe')}
+                                  placeholderTextColor={'#ffffff'}
+                                  onSubmitEditing={async (e) => {
+                                    e.preventDefault();
 
-                                  const subs = this.state.boardssubscriptions;
-                                  subs.push({board: this.state.boardinput,key: 0});
+                                    subscribeToBoard(this.state.boardinput, 0);
 
-                                  this.state.boardssubscriptions = subs;
-                                  this.setModalVisible(!modalVisible);
+                                    const subs = this.state.boardssubscriptions;
+                                    subs.push({board: this.state.boardinput,key: 0});
 
-                                    getBoard(this.state.boardinput);
-                                    // return;
-                                    // submitMessage(this.state.message);
-                                    // this.setState({message: '', messageHasLength: false});
-                                }}
-                                onChangeText={(text) => {
-                                    if (this.props.onChange) {
-                                        this.props.onChange(text);
-                                    }
-                                    this.state.boardinput = text;
-                                }}
-                                errorMessage={this.props.error}
-                            />
+                                    this.state.boardssubscriptions = subs;
+                                    this.setModalVisible(!modalVisible);
+
+                                      getBoard(this.state.boardinput);
+                                      // return;
+                                      // submitMessage(this.state.message);
+                                      // this.setState({message: '', messageHasLength: false});
+                                  }}
+                                  onChangeText={(text) => {
+                                      if (this.props.onChange) {
+                                          this.props.onChange(text);
+                                      }
+                                      this.state.boardinput = text;
+                                  }}
+                                  errorMessage={this.props.error}
+                              />
+                              </View>
+
+                              <View style={{
+                                  backgroundColor: 'transparent',
+                                  height: 300,
+                                  alignItems: 'flex-start',
+                                  justifyContent: 'flex-start',
+                              }}>
+                              { boardsSubscriptionsComponent }
+
+                              </View>
+                              <View style={{flexDirection:"row", marginBottom: 10}}>
+                                <View style={{width: '40%', marginLeft: 25 }}>
+                                  <Button
+                                    title={t('edit')}
+                                    onPress={() => this.setEditingMode(!editingBoards)}
+                                  />
+                                </View>
+                                <View style={{width: '40%', marginLeft: 10 }}>
+                                  <Button
+                                    title={t('close')}
+                                    onPress={() => this.setModalVisible(!modalVisible)}
+                                  />
+                                </View>
+                              </View>
                             </View>
+                            {boardsRecommendationsItems != undefined && boardsRecommendations}
+                          </View>
+                        </Modal>
+                      </View>
+                    </GestureRecognizer>
+
+
+                    <GestureRecognizer
+                      onSwipeDown={ () => this.setMessageModalVisible(false) }
+                    >
+                      <View>
+                        <Modal
+                          style={{}}
+                          animationType="slide"
+                          transparent={true}
+                          visible={messageModalVisible}
+                          onRequestClose={() => {
+                            this.setMessageModalVisible(!messageModalVisible);
+                          }}
+                        >
+                          <View style={modalStyle}>
+                          <ScrollView>
+
 
                             <View style={{
-                                backgroundColor: 'transparent',
-                                height: 300,
-                                alignItems: 'flex-start',
-                                justifyContent: 'flex-start',
+                              margin: 10
                             }}>
-                            { boardsSubscriptionsComponent }
 
-                            </View>
                             <View style={{flexDirection:"row", marginBottom: 10}}>
-                              <View style={{width: '40%', marginLeft: 25 }}>
-                                <Button
-                                  title={t('edit')}
-                                  onPress={() => this.setEditingMode(!editingBoards)}
-                                />
+
+                            <Image
+                              style={{width: 50, height: 50, marginTop: -10}}
+                              source={{uri: get_avatar(this.state.activePost.address)}}
+                            />
+                            <View style={{width: 150, overflow: 'hidden'}}>
+                              <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                  color: '#ffffff',
+                                  fontSize: 18,
+                                  fontFamily: "Montserrat-SemiBold"
+                              }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
+                              </Text>
                               </View>
-                              <View style={{width: '40%', marginLeft: 10 }}>
-                                <Button
-                                  title={t('close')}
-                                  onPress={() => this.setModalVisible(!modalVisible)}
-                                />
+                              {board == 'Home' &&
+                              <View>
+                              <View style={{
+                                backgroundColor: getBoardColors(this.state.activePost.board)[0],
+                                padding: 2,
+                                paddingBottom: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 20,
+                                marginLeft: 'auto'
+                              }}>
+                              <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
+                                  marginLeft: 5,
+                                  marginRight: 5,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 10,
+                                  fontFamily: "Montserrat-Regular",
+                                  marginTop: -5
+                              }}>
+
+                                  {this.state.activePost.board}
+                                </Text>
                               </View>
-                            </View>
+                              </View>
+                             }
+
+
+                              </View>
+                              <View style={{paddingLeft: 20, paddingRight: 20}}>
+
+
+                                <Text selectable>{this.state.activePost.message + "\n"}</Text>
+                                <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp}</Moment>
+
+
+                              </View>
                           </View>
-                          {boardsRecommendationsItems != undefined && boardsRecommendations}
-                        </View>
-                      </Modal>
-                    </View>
 
-
-
-                    <View>
-                      <Modal
-                        style={{}}
-                        animationType="slide"
-                        transparent={true}
-                        visible={messageModalVisible}
-                        onRequestClose={() => {
-                          this.setMessageModalVisible(!messageModalVisible);
-                        }}
-                      >
-                        <View style={modalStyle}>
-                        <ScrollView>
-
-
-                          <View style={{
-                            margin: 10
+                          <KeyboardAvoidingView
+                           behavior={Platform.OS == "ios" ? "padding" : "height"}
+                           style={{
+                              marginBottom: 10,
+                              marginRight: 12,
+                              flexDirection: 'row'
                           }}>
 
+                          {replyInput}
+
+                          {this.state.replyHasLength &&
+
+                              <TouchableOpacity
+                                  onPress={() => {
+                                    submitReply(this.state.reply);
+                                    this.setState({reply: '', replyHasLength: false});
+                                  }}
+                              >
+                                <View style={{
+                                  backgroundColor: '#63D880',
+                                  padding: 5,
+                                  paddingTop: 8,
+                                  borderRadius: 5,
+                                  height: 28,
+                                  marginTop: 20,
+                                  marginLeft: 10
+                                }}>
+                                <Text style={{
+                                    marginLeft: 5,
+                                    marginRight: 5,
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    fontSize: 16,
+                                    fontFamily: "Montserrat-SemiBold",
+                                    marginTop: -5
+                                }}>
+                              {t('send')}
+                              </Text>
+                              </View>
+                              </TouchableOpacity>
+
+                          }
+
+                          </KeyboardAvoidingView>
+
                           <View style={{flexDirection:"row", marginBottom: 10}}>
+                            <View style={{width: (this.state.board == 'Home' ? '40%' : 0), marginLeft: (this.state.board == 'Home' ? 15 : 0) }}>
+                            {this.state.board == 'Home' &&
+                              <Button
+                                title={"Go to board"}
+                                onPress={() => {
+                                  getBoard(this.state.activePost.board);
+                                  this.setMessageModalVisible(false);
+                                }}
+                              />
+                            }
+                            </View>
+                            <View style={{width: (this.state.board == 'Home' ? '40%' : '85%'), marginLeft: (this.state.board == 'Home' ? 10 : 15  ) }}>
+                              <Button
+                                title={t('close')}
+                                onPress={() => this.setMessageModalVisible(false)}
+                              />
+                            </View>
+                          </View>
+
+                          <View style={{width: '85%', marginLeft: 15 }}>
+                            <Button
+                              title={'Send tip'}
+                              onPress={() => sendTip(this.state.activePost.address, this.state.activePost.hash, this.state.activePost.nickname)}
+                            />
+                          </View>
+
+
+                        <View style={{marginTop: 10}}>
+
+                        {this.state.replies && this.state.replies.map((item,i) => {
+                          return <View style={{padding: 10, borderRadius: 20, margin: 10, backgroundColor: "rgba(0,0,0,0.2)"}}>
+                          <View style={{flexDirection:"row"}}>
 
                           <Image
-                            style={{width: 50, height: 50, marginTop: -10}}
-                            source={{uri: get_avatar(this.state.activePost.address)}}
+                            style={{width: 32, height: 32, marginTop: -5}}
+                            source={{uri: get_avatar(item.address)}}
                           />
                           <View style={{width: 150, overflow: 'hidden'}}>
                             <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
                                 color: '#ffffff',
                                 fontSize: 18,
                                 fontFamily: "Montserrat-SemiBold"
-                            }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
+                            }}>{item.nickname ? item.nickname : 'Anonymous'}
                             </Text>
                             </View>
-                            {board == 'Home' &&
-                            <View>
-                            <View style={{
-                              backgroundColor: getBoardColors(this.state.activePost.board)[0],
-                              padding: 2,
-                              paddingBottom: 5,
-                              paddingTop: 8,
-                              borderRadius: 5,
-                              height: 20,
-                              marginLeft: 'auto'
-                            }}>
-                            <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
-                                marginLeft: 5,
-                                marginRight: 5,
-                                color: this.props.screenProps.theme.primaryColour,
-                                fontSize: 10,
-                                fontFamily: "Montserrat-Regular",
-                                marginTop: -5
-                            }}>
-
-                                {this.state.activePost.board}
-                              </Text>
-                            </View>
-                            </View>
-                           }
-
-
-                            </View>
-                            <View style={{paddingLeft: 20, paddingRight: 20}}>
-
-
-                              <Text selectable>{this.state.activePost.message + "\n"}</Text>
-                              <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp}</Moment>
-
-
-                            </View>
-                        </View>
-
-                        <KeyboardAvoidingView
-                         behavior={Platform.OS == "ios" ? "padding" : "height"}
-                         style={{
-                            marginBottom: 10,
-                            marginRight: 12,
-                            flexDirection: 'row'
-                        }}>
-
-                        {replyInput}
-
-                        {this.state.replyHasLength &&
-
-                            <TouchableOpacity
-                                onPress={() => {
-                                  submitReply(this.state.reply);
-                                  this.setState({reply: '', replyHasLength: false});
-                                }}
-                            >
-                              <View style={{
-                                backgroundColor: '#63D880',
-                                padding: 5,
-                                paddingTop: 8,
-                                borderRadius: 5,
-                                height: 28,
-                                marginTop: 20,
-                                marginLeft: 10
-                              }}>
-                              <Text style={{
-                                  marginLeft: 5,
-                                  marginRight: 5,
-                                  color: this.props.screenProps.theme.primaryColour,
-                                  fontSize: 16,
-                                  fontFamily: "Montserrat-SemiBold",
-                                  marginTop: -5
-                              }}>
-                            {t('send')}
-                            </Text>
-                            </View>
-                            </TouchableOpacity>
-
-                        }
-
-                        </KeyboardAvoidingView>
-
-                        <View style={{flexDirection:"row", marginBottom: 10}}>
-                          <View style={{width: (this.state.board == 'Home' ? '40%' : 0), marginLeft: (this.state.board == 'Home' ? 15 : 0) }}>
-                          {this.state.board == 'Home' &&
-                            <Button
-                              title={"Go to board"}
-                              onPress={() => {
-                                getBoard(this.state.activePost.board);
-                                this.setMessageModalVisible(false);
-                              }}
-                            />
-                          }
                           </View>
-                          <View style={{width: (this.state.board == 'Home' ? '40%' : '85%'), marginLeft: (this.state.board == 'Home' ? 10 : 15  ) }}>
-                            <Button
-                              title={t('close')}
-                              onPress={() => this.setMessageModalVisible(false)}
-                            />
+                          <Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}>{item.message}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Hyperlink>
                           </View>
-                        </View>
+                        } ) }
 
-                        <View style={{width: '85%', marginLeft: 15 }}>
-                          <Button
-                            title={'Send tip'}
-                            onPress={() => sendTip(this.state.activePost.address, this.state.activePost.hash, this.state.activePost.nickname)}
-                          />
                         </View>
 
 
-                      <View style={{marginTop: 10}}>
 
-                      {this.state.replies && this.state.replies.map((item,i) => {
-                        return <View style={{padding: 10, borderRadius: 20, margin: 10, backgroundColor: "rgba(0,0,0,0.2)"}}>
-                        <View style={{flexDirection:"row"}}>
 
-                        <Image
-                          style={{width: 32, height: 32, marginTop: -5}}
-                          source={{uri: get_avatar(item.address)}}
-                        />
-                        <View style={{width: 150, overflow: 'hidden'}}>
-                          <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
-                              color: '#ffffff',
-                              fontSize: 18,
-                              fontFamily: "Montserrat-SemiBold"
-                          }}>{item.nickname ? item.nickname : 'Anonymous'}
-                          </Text>
-                          </View>
+                        </ScrollView>
                         </View>
-                        <Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}>{item.message}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Hyperlink>
-                        </View>
-                      } ) }
-
+                        </Modal>
                       </View>
-
-
-
-
-                      </ScrollView>
-                      </View>
-                      </Modal>
-                    </View>
+                    </GestureRecognizer>
 
 
 

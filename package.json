@@ -65,6 +65,7 @@
     "react-native-randombytes": "^3.5.3",
     "react-native-sqlite-storage": "^3.3.11",
     "react-native-svg": "^9.5.3",
+    "react-native-swipe-gestures": "^1.0.5",
     "react-native-tcp": "^3.3.1",
     "react-native-text-ticker": "^0.18.0",
     "react-native-udp": "^2.6.1",
