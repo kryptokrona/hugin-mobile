@@ -458,7 +458,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     </View>
                                     </View>
                                   }
-                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>{item.read == '1' ? false : <View style={{position: 'absolute', right: 10, top: -42}}>{newMessageIndicator}</View>}</Hyperlink>}
+                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>{item.read == '1' ? false : <View style={{position: 'absolute', right: 10, top: -24}}>{newMessageIndicator}</View>}</Hyperlink>}
                                   subtitleStyle={{
                                       fontFamily: "Montserrat-Regular",
                                       overflow: 'hidden'
@@ -592,7 +592,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                                 </View>
                                 }
-                                rightIcon={item.unread ? <View style={[unread_counter_style, {}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}
+                                rightIcon={item.unread ? <View style={[unread_counter_style, {borderColor: 'red'}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}
 
                                 showsVerticalScrollIndicator={false}
                                 onPress={async () => {
@@ -627,17 +627,18 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
             }];
 
             const unread_counter_style = {
-              borderRadius: 12,
-              minWidth: 24,
-              height: 24,
-              fontSize: 20,
+              borderRadius: 15,
+              minWidth: 28,
+              height: 28,
               backgroundColor: 'red',
-              color: 'white'
+              color: 'white',
+              padding: 4,
+              borderWidth: 5
             };
 
             const unread_counter_text_style = {
-              fontSize: 20,
-              lineHeight: 24,
+              fontSize: 14,
+              lineHeight: 14,
               fontFamily: 'Montserrat-Bold',
               color: 'white',
               textAlign: 'center'
@@ -676,7 +677,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     marginRight: -29
                 }}>
                 {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
-                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text>{item.unread ? <View style={[unread_counter_style, {position: 'absolute', top: 0, right: 10}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}</View>;
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text>{item.unread ? <View style={[unread_counter_style, {position: 'absolute', top: -5, right: 5, borderColor: '#171416'}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}</View>;
                 })
                 }
                 </ScrollView>
