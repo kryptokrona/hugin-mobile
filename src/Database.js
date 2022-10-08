@@ -1294,6 +1294,22 @@ export async function getBoardRecommendations() {
     return [];
 }
 
+async function getUnreadBoardMessages(board) {
+
+  const [data] = await database.executeSql(
+      `
+      SELECT COUNT(*)
+      FROM boards_message_db
+      WHERE
+      board = "${board}" AND read = "0"
+      `
+  );
+
+  if (data && data.rows && data.rows.length) {
+    return data.rows.item(0)['COUNT(*)'];
+  }
+
+}
 
 export async function getBoardSubscriptions() {
 
@@ -1314,11 +1330,15 @@ export async function getBoardSubscriptions() {
         const res = [];
 
         for (let i = 0; i < data.rows.length; i++) {
+
             const item = data.rows.item(i);
-            console.log(item);
+
+            const unread_messages = await getUnreadBoardMessages(item.board);
+
             res.push({
                 board: item.board,
-                key: item.key
+                key: item.key,
+                unread: unread_messages
             });
         }
         console.log(res);
