@@ -602,6 +602,44 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                 flexWrap: 'wrap'
             }];
 
+            const unread_counter_style = {
+              borderRadius: 12,
+              width: 24,
+              height: 24,
+              fontSize: 20,
+              backgroundColor: 'red',
+              color: 'white',
+              position: 'absolute',
+              top: 0,
+              right: 10
+            };
+
+            const unread_counter_text_style = {
+              fontSize: 20,
+              lineHeight: 24,
+              fontFamily: 'Montserrat-Bold',
+              color: 'white',
+              textAlign: 'center'
+            };
+
+            const modalStyle = {
+              height: '100%',
+              marginTop: 50,
+              backgroundColor: '#272527',
+              borderTopRightRadius: 50,
+              borderTopLeftRadius: 50,
+              padding: 25,
+              alignItems: "center",
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: 2
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5
+            };
+
             const boardsStories =
             <View style={{height:120}}>
                 <ScrollView
@@ -617,7 +655,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     marginRight: -29
                 }}>
                 {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
-                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text></View>;
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text>{item.unread ? <View style={unread_counter_style}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}</View>;
                 })
                 }
                 </ScrollView>
@@ -898,21 +936,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           this.setModalVisible(!modalVisible);
                         }}
                       >
-                        <View style={{
-                          margin: 20,
-                          backgroundColor: '#272527',
-                          borderRadius: 20,
-                          padding: 25,
-                          alignItems: "center",
-                          shadowColor: "#000",
-                          shadowOffset: {
-                            width: 0,
-                            height: 2
-                          },
-                          shadowOpacity: 0.25,
-                          shadowRadius: 4,
-                          elevation: 5
-                        }}>
+                        <View style={modalStyle}>
                           <View>
                             <Text style={{
                                 marginLeft: 35,
@@ -1017,22 +1041,9 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                           this.setMessageModalVisible(!messageModalVisible);
                         }}
                       >
+                        <View style={modalStyle}>
                         <ScrollView>
-                        <View style={{
-                          margin: 20,
-                          backgroundColor: '#272527',
-                          borderRadius: 20,
-                          padding: 25,
-                          alignItems: "center",
-                          shadowColor: "#000",
-                          shadowOffset: {
-                            width: 0,
-                            height: 2
-                          },
-                          shadowOpacity: 0.25,
-                          shadowRadius: 4,
-                          elevation: 5
-                        }}>
+
 
                           <View style={{
                             margin: 10
@@ -1187,10 +1198,11 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                       </View>
 
-                      </View>
+
 
 
                       </ScrollView>
+                      </View>
                       </Modal>
                     </View>
 
