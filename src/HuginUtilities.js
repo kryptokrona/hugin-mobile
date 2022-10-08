@@ -409,7 +409,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
-    fetch(cacheURL + "/api/v1/posts?&size=50&page=" + page)
+    fetch(`${cacheURL}/api/v1/posts?from=${latest_board_message_timestamp}&to=${Date.now() / 1000}&size=50&page=` + page)
     .then((response) => response.json())
     .then(async (json) => {
 
@@ -556,8 +556,6 @@ export async function sendBoardsMessage(message, board, reply=false) {
   }
 
   const payload_hex = toHex(JSON.stringify(message_json));
-
-  // toastPopUp(payload_hex);
 
   const result = await Globals.wallet.sendTransactionAdvanced(
       [[my_address, 1]], // destinations,

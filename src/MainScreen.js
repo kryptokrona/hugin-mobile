@@ -969,6 +969,8 @@ async function backgroundSyncMessages() {
   //     }))
   // });
 
+  cacheSync(false);
+
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
