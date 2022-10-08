@@ -63,6 +63,27 @@ String.prototype.hashCode = function() {
     return hash;
 }
 
+const markMessagesAsRead = async (this_messages) => {
+  console.log('Marking messages as read:', this_messages);
+  let i = 0;
+  while (i < this_messages.length) {
+    i++;
+    try {
+      let this_msg = this_messages[i];
+      if (!this_msg) { continue };
+      let this_hash = this_msg.hash;
+      if(!this_msg.read) {
+        await markBoardsMessageAsRead(this_hash);
+        this_messages[i].unread = 0;
+      }
+    } catch (err) {
+      console.log('Couldn\'t get message\'s read status..');
+    }
+
+  }
+  return this_messages;
+}
+
 export class BoardsHomeScreenNoTranslation extends React.Component {
 
     constructor(props) {
@@ -128,19 +149,17 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
         let i = 0;
 
-        while (i < this_messages.length) {
+        markMessagesAsRead(this_messages);
 
-          i++;
-          let this_msg = this_messages[i];
-          console.log(this_msg);
-          let this_hash = this_msg.hash;
-          console.log(this_hash);
-          if(!this_msg.read) {
-              markBoardsMessageAsRead(this_hash);
-          }
+        console.log(this_messages);
+
+        this.state.messages = this_messages;
+
+        this.setState({
+          messages: this_messages
+        });
 
 
-        }
 
     }
 
@@ -184,8 +203,6 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         this.setMessageModalVisible(false);
         Linking.openURL(url);
       }
-
-
 
       const submitReply = async (text) => {
 
@@ -315,15 +332,21 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
         }
       }
 
-        const getBoard = async (board) => {
-          const board_messages = await getBoardsMessages(board);
-          Globals.activeBoard = board;
-          this.setModalVisible(false);
-          this.setState({
-              board: board,
-              messages: board_messages
-          });
-        }
+      const getBoard = async (board) => {
+        const updated_subscriptions = await getBoardSubscriptions();
+        this.setState({
+            messages: Globals.boardsMessages,
+            boardssubscriptions: [{board: 'Home', key: 0}].concat(updated_subscriptions)
+        })
+        const board_messages = await getBoardsMessages(board);
+        markMessagesAsRead(board_messages);
+        Globals.activeBoard = board;
+        this.setModalVisible(false);
+        this.setState({
+            board: board,
+            messages: board_messages
+        });
+      }
 
         const deleteBoard = async (board) => {
           let newBoardsSubscriptions = this.state.boardssubscriptions;
@@ -435,12 +458,11 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                                     </View>
                                     </View>
                                   }
-                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text></Hyperlink>}
+                                  subtitle={<Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}><Text selectable>{item.message + "\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Text>{item.read == '1' ? false : <View style={{position: 'absolute', right: 10, top: -42}}>{newMessageIndicator}</View>}</Hyperlink>}
                                   subtitleStyle={{
                                       fontFamily: "Montserrat-Regular",
                                       overflow: 'hidden'
                                   }}
-                                  chevron={item.read == '1' ? false : newMessageIndicator }
                                   titleStyle={{
                                       color: this.props.screenProps.theme.primaryColour,
                                       fontFamily: 'Montserrat-SemiBold'
@@ -606,7 +628,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
             const unread_counter_style = {
               borderRadius: 12,
-              width: 24,
+              minWidth: 24,
               height: 24,
               fontSize: 20,
               backgroundColor: 'red',
