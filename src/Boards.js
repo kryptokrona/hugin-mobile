@@ -570,6 +570,8 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
 
                                 </View>
                                 }
+                                rightIcon={item.unread ? <View style={[unread_counter_style, {}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}
+
                                 showsVerticalScrollIndicator={false}
                                 onPress={async () => {
                                     !editingBoards || item.board == 'Home' ?
@@ -608,10 +610,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
               height: 24,
               fontSize: 20,
               backgroundColor: 'red',
-              color: 'white',
-              position: 'absolute',
-              top: 0,
-              right: 10
+              color: 'white'
             };
 
             const unread_counter_text_style = {
@@ -655,7 +654,7 @@ export class BoardsHomeScreenNoTranslation extends React.Component {
                     marginRight: -29
                 }}>
                 {boardsSubscriptionsItems != undefined && boardsSubscriptionsItems.map(function(item, i){
-                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text>{item.unread ? <View style={unread_counter_style}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}</View>;
+                  return <View><TouchableOpacity onPress={async () => { getBoard(item.board) }} style={[storyStyle, {backgroundColor: getBoardColors(item.board)}]}><Text style={storyTextStyle}>{runes(item.board)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.board}</Text>{item.unread ? <View style={[unread_counter_style, {position: 'absolute', top: 0, right: 10}]}><Text style={unread_counter_text_style}>{item.unread}</Text></View> : <></>}</View>;
                 })
                 }
                 </ScrollView>
