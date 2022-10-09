@@ -401,6 +401,21 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
 }
 
+export async function sendMessageWithHuginAPI(payload_hex) {
+
+  let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+  const response = await fetch(`${cacheURL}/api/v1/posts`, {
+    method: 'POST', // or 'PUT'
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({payload: payload_hex}),
+  });
+  return response.json();
+
+}
+
 export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=1) {
 
     if(first) {
@@ -414,6 +429,7 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
     .then(async (json) => {
 
       const items = json.posts;
+
 
       for (item in items) {
 
@@ -510,7 +526,7 @@ export async function sendGroupsMessage(message, group) {
 
   const payload_encrypted_hex = toHex(JSON.stringify(payload_encrypted));
 
-  const result = await Globals.wallet.sendTransactionAdvanced(
+  let result = await Globals.wallet.sendTransactionAdvanced(
       [[my_address, 1]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
@@ -521,6 +537,11 @@ export async function sendGroupsMessage(message, group) {
       false, // sneedAll
       Buffer.from(payload_encrypted_hex, 'hex')
   );
+
+
+  if (!result.success) {
+    result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+  }
 
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k);
@@ -568,7 +589,13 @@ export async function sendBoardsMessage(message, board, reply=false) {
       false, // sneedAll
       Buffer.from(payload_hex, 'hex')
   );
+
   backgroundSave();
+
+  if (!result.success) {
+    const result_api = await sendMessageWithHuginAPI(payload_hex);
+    return result_api;
+  }
   return result;
 
 }
@@ -645,6 +672,10 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
         false, // sneedAll
         Buffer.from(payload_hex, 'hex')
     );
+
+    if (!result.success) {
+      result = await sendMessageWithHuginAPI(payload_hex);
+    }
 
     if (result.success) {
 
