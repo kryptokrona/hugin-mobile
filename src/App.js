@@ -4,6 +4,7 @@
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
+import CustomIcon from './CustomIcon.js'
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import React from 'react';
@@ -330,29 +331,29 @@ const HomeNavigator = createBottomTabNavigator(
                 let IconComponent;
 
                 if (routeName === 'Main') {
-                    IconComponent = Entypo;
-                    iconName = 'home';
+                    IconComponent = CustomIcon;
+                    iconName = 'profile';
                 } else if (routeName === 'Transactions') {
-                    IconComponent = Ionicons;
-                    iconName = 'ios-list';
-                } else if (routeName === 'Transfer') {
-                    IconComponent = Entypo;
+                    IconComponent = CustomIcon;
                     iconName = 'wallet';
+                } else if (routeName === 'Transfer') {
+                  IconComponent = CustomIcon;
+                  iconName = 'people';
                 } else if (routeName === 'Recipients') {
-                    IconComponent = Entypo;
+                    IconComponent = CustomIcon;
                     iconName = 'message';
                 } else if (routeName === 'Settings') {
-                    IconComponent = Ionicons;
-                    iconName = 'ios-settings';
+                    IconComponent = CustomIcon;
+                    iconName = 'setting-2';
                   } else if (routeName === 'Boards') {
-                      IconComponent = Entypo;
-                      iconName = 'megaphone';
+                      IconComponent = CustomIcon;
+                      iconName = 'messages-2';
                 } else if (routeName === 'Groups') {
-                      IconComponent = Entypo;
-                      iconName = 'chat';
+                      IconComponent = CustomIcon;
+                      iconName = 'messages';
               }
 
-                return <IconComponent name={iconName} size={32} color={tintColor}/>;
+                return <IconComponent name={iconName} size={24} color={tintColor}/>;
             },
         }),
     }

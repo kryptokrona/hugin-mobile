@@ -37,6 +37,8 @@ target 'TonChan' do
 
   pod 'ReactNativePermissions', :path => '../node_modules/react-native-permissions'
 
+  pod 'RNVectorIcons', :path => '../node_modules/react-native-vector-icons'
+
   target 'TonChanTests' do
     inherit! :search_paths
     # Pods for testing

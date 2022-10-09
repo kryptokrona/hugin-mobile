@@ -209,6 +209,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-vector-icons')
     implementation project(':react-native-fingerprint-scanner')
     implementation project(':react-native-background-fetch')
     implementation 'com.facebook.fresco:fresco:2.0.0'
