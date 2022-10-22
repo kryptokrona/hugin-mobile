@@ -12,7 +12,7 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+import { getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 
@@ -92,6 +92,8 @@ class globals {
         this.language = 'en-US';
 
         this.fromChat = false;
+
+        this.unreadMessages = {boards: 0, groups: 0, pms: 0};
 
     }
 
@@ -294,6 +296,8 @@ export async function initGlobals() {
     Globals.groups = groups;
 
     Globals.boardsSubscriptions = await getBoardSubscriptions();
+
+    Globals.unreadMessages = await getUnreadMessages();
 
     const transactionDetails = await loadTransactionDetailsFromDatabase();
 

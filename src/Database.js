@@ -1311,6 +1311,55 @@ async function getUnreadBoardMessages(board) {
 
 }
 
+export async function getUnreadMessages() {
+
+  console.log('Getting unreads..');
+
+  const [data] = await database.executeSql(
+      `
+      SELECT COUNT(*)
+      FROM boards_message_db
+      WHERE
+      read = "0"
+      `
+  );
+
+  let unread_messages = {};
+
+  if (data && data.rows && data.rows.length) {
+    unread_messages.boards = data.rows.item(0)['COUNT(*)'];
+  }
+
+  const [data_groups] = await database.executeSql(
+      `
+      SELECT COUNT(*)
+      FROM privateboards_messages_db
+      WHERE
+      read = "0"
+      `
+  );
+
+  if (data_groups && data_groups.rows && data_groups.rows.length) {
+    unread_messages.groups = data_groups.rows.item(0)['COUNT(*)'];
+  }
+
+  const [data_pms] = await database.executeSql(
+      `
+      SELECT COUNT(*)
+      FROM message_db
+      WHERE
+      read = "0"
+      `
+  );
+
+  if (data_pms && data_pms.rows && data_pms.rows.length) {
+    unread_messages.pms = data_pms.rows.item(0)['COUNT(*)'];
+  }
+
+  return unread_messages;
+
+}
+
 export async function getBoardSubscriptions() {
 
     const [data] = await database.executeSql(

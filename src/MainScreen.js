@@ -13,6 +13,8 @@ import NativeLinking from "react-native/Libraries/Linking/NativeLinking";
 import PushNotification from 'react-native-push-notification';
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
 
+// import { useNavigation } from '@react-navigation/native';
+
 import {
     TextInput, Animated, Button, Text, View, Image, ImageBackground, TouchableOpacity, PushNotificationIOS,
     AppState, Platform, Linking, ScrollView, RefreshControl, Dimensions, Clipboard
@@ -31,15 +33,18 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
 import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
 import { coinsToFiat, getCoinPriceFromAPI } from './Currency';
-import { withTranslation } from 'react-i18next';
+import { withTranslation, Translation } from 'react-i18next';
 import './i18n.js';
 import i18next from './i18n'
+import { GroupsScreen } from './Groups';
+
+import CustomIcon from './CustomIcon.js'
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -291,7 +296,12 @@ export class MainScreen extends React.PureComponent {
             addressOnly: false,
             unlockedBalance: 0,
             lockedBalance: 0,
-            address: Globals.wallet.getPrimaryAddress()
+            address: Globals.wallet.getPrimaryAddress(),
+            messages: Globals.messages.length,
+            group_messages: Globals.groupMessages.length,
+            boards_messages: Globals.boardsMessages.length,
+            unreads: Globals.unreadMessages
+
         }
 
         this.updateBalance();
@@ -313,16 +323,39 @@ export class MainScreen extends React.PureComponent {
             this.updateBalance();
         });
 
+        Globals.updateBoardsFunctions.push(() => {
+            this.setState({
+                unreads: Globals.unreadMessages
+            })
+        });
+
+        Globals.updatePayeeFunctions.push(() => {
+            this.setState({
+                unreads: Globals.unreadMessages
+            })
+        });
+
+        Globals.updateGroupsFunctions.push(() => {
+            this.setState({
+                unreads: Globals.unreadMessages
+            })
+        });
+
 
     }
+
+
 
     async componentDidMount() {
        const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
 
+
        this.setState({
            unlockedBalance,
-           lockedBalance,
+           lockedBalance
        });
+
+
    }
 
     async updateBalance() {
@@ -335,6 +368,7 @@ export class MainScreen extends React.PureComponent {
             }
         }
 
+        const unreads = await getUnreadMessages();
 
         const [unlockedBalance, lockedBalance] = await Globals.wallet.getBalance();
 
@@ -346,6 +380,7 @@ export class MainScreen extends React.PureComponent {
             unlockedBalance,
             lockedBalance,
             coinValue,
+            unreads: unreads
         });
     }
 
@@ -439,6 +474,38 @@ export class MainScreen extends React.PureComponent {
 
       const { t, i18n } = this.props;
 
+          const cardStyle = {
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            borderWidth: 0,
+            borderColor: 'transparent',
+            borderRadius: 15,
+            margin: 4,
+            marginRight: 10,
+            padding: 10,
+            flexDirection: 'row',
+            flex: 1,
+            width: '25%',
+            alignContent: 'center'
+          }
+
+          const unread_counter_style = {
+            borderRadius: 15,
+            minWidth: 28,
+            height: 28,
+            backgroundColor: 'red',
+            color: 'white',
+            padding: 4,
+            borderWidth: 5
+          };
+
+          const unread_counter_text_style = {
+            fontSize: 14,
+            lineHeight: 14,
+            fontFamily: 'Montserrat-Bold',
+            color: 'white',
+            textAlign: 'center'
+          };
+
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
            want to display your balance. */
@@ -447,6 +514,10 @@ export class MainScreen extends React.PureComponent {
            inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
            outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
            })
+
+           const unreadBoardsMessages = this.state.unreads.boards;
+           const unreadGroupsMessages = this.state.unreads.groups;
+           const unreadPrivateMessages = this.state.unreads.pms;
 
         return(
             <ScrollView
@@ -482,7 +553,86 @@ export class MainScreen extends React.PureComponent {
                     </View>
 
                     <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
+                    <View style={{ alignItems: 'center' }}>
+
+                        <View style={{ minWidth: '80%', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                        <Image
+                          style={{width: 112, height: 112}}
+                          source={{uri: get_avatar(this.state.address, 112)}}
+                        />
+
+                        <CopyButton
+                            style={{position: "absolute", top: 25, right: 20}}
+                            data={this.state.address + Buffer.from(getKeyPair().publicKey).toString('hex')}
+                            name='Address'
+                            {...this.props}
+                        />
+
+                        <Text style={[Styles.centeredText, {
+                            color: this.props.screenProps.theme.primaryColour,
+                            textAlign: 'left',
+                            fontSize: 10,
+                            marginTop: 0,
+                            marginRight: 20,
+                            marginLeft: 20,
+                            fontFamily: 'Montserrat-Bold'
+                        }]}>
+                        <Translation>
+                        {
+                          (t, { i18n }) => <Text>{t('nickname')}</Text>
+                        }
+                        </Translation>
+                        </Text>
+                        <View
+                        style={{
+                            // width: this.state.messageHasLength ? '80%' : '100%',
+                              backgroundColor: 'rgba(0,0,0,0.2)',
+                              borderWidth: 0,
+                              borderColor: 'transparent',
+                              borderRadius: 15,
+                              height: 50,
+                              margin: '5%',
+                              marginTop: 0
+                          }}
+                        >
+                        <TextInput
+                            multiline={false}
+                            textAlignVertical={'top'}
+                            ref={input => { this.input = input }}
+                            style={{
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontFamily: 'Montserrat-Regular',
+                                fontSize: 15,
+                                width: '100%',
+                                height: '100%',
+                                padding: 15,
+
+                            }}
+                            maxLength={24}
+                            placeholder={Globals.preferences.nickname}
+                            placeholderTextColor={'#ffffff'}
+                            onSubmitEditing={async (e) => {
+                              savePreferencesToDatabase(Globals.preferences);
+                                // return;
+                                // submitMessage(this.state.message);
+                                // this.setState({message: '', messageHasLength: false});
+                            }}
+                            onChangeText={(text) => {
+                                if (this.props.onChange) {
+                                    this.props.onChange(text);
+                                }
+                                Globals.preferences.nickname = text;
+                            }}
+                            errorMessage={this.props.error}
+                        />
+                        </View>
+                      {this.state.addressOnly &&
                         <AddressComponentWithTranslation {...this.props}/>
+                      }
+
+                      </View>
+                      </View>
+
                       <View style={{ display: this.state.addressOnly ? 'flex' : 'none', borderRadius: 5, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 0, marginTop: 10, backgroundColor: 'transparent', alignItems: "center" }}>
 
                           <QRCode
@@ -504,6 +654,102 @@ export class MainScreen extends React.PureComponent {
                         />
 
                     </View>
+
+                    {!this.state.addressOnly &&
+                      <View style={{flexDirection: 'row', marginTop: 45}}>
+
+                      <TouchableOpacity style={cardStyle}
+                      onPress={() => {
+                        console.log(this.props);
+                        this.props.navigation.navigate('Groups', this.props.navigation);
+                      }}>
+
+                      {unreadGroupsMessages ? <View style={[unread_counter_style, {position: 'absolute', top: -5, right: 5, borderColor: '#171416'}]}><Text style={unread_counter_text_style}>{unreadGroupsMessages}</Text></View> : <></>}
+
+                      <CustomIcon name='messages' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+
+                      <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 10,
+                        marginLeft: 10,
+                        fontFamily: 'Montserrat-Bold'
+                      }}>
+
+                      <Translation>
+                      {
+                        (t, { i18n }) => <Text>{t('groups')}</Text>
+                      }
+                      </Translation>
+
+                      {this.state.group_messages.length}
+
+                      </Text>
+
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={cardStyle}
+                      onPress={() => {
+                        console.log(this.props);
+                        this.props.navigation.navigate('Recipients', this.props.navigation);
+                      }}>
+
+                      {unreadPrivateMessages ? <View style={[unread_counter_style, {position: 'absolute', top: -5, right: 5, borderColor: '#171416'}]}><Text style={unread_counter_text_style}>{unreadPrivateMessages}</Text></View> : <></>}
+
+                      <CustomIcon name='message' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+
+                      <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 10,
+                        marginLeft: 10,
+                        fontFamily: 'Montserrat-Bold'
+                      }}>
+
+                      <Translation>
+                      {
+                        (t, { i18n }) => <Text>{t('messagesTitle')}</Text>
+                      }
+                      </Translation>
+
+                      {this.state.messages.length}
+
+                      </Text>
+
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={cardStyle}
+                      onPress={() => {
+                        console.log(this.props);
+                        this.props.navigation.navigate('Boards', this.props.navigation);
+                      }}>
+
+                      {unreadBoardsMessages ? <View style={[unread_counter_style, {position: 'absolute', top: -5, right: 5, borderColor: '#171416'}]}><Text style={unread_counter_text_style}>{unreadBoardsMessages}</Text></View> : <></>}
+
+                      <CustomIcon name='messages-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+
+                      <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 10,
+                        marginLeft: 10,
+                        fontFamily: 'Montserrat-Bold'
+                      }}>
+
+                      <Translation>
+                      {
+                        (t, { i18n }) => <Text>{t('boardsTitle')}</Text>
+                      }
+                      </Translation>
+
+                      {this.state.boards_messages.length}
+
+                      </Text>
+
+                      </TouchableOpacity>
+
+                      </View>
+                    }
 
                     <View style={{ opacity: this.state.addressOnly ? 0 : 100, flex: 1 }}>
                         <SyncComponent {...this.props}/>
@@ -529,75 +775,7 @@ class AddressComponent extends React.PureComponent {
       const { t } = this.props;
 
         return(
-            <View style={{ alignItems: 'center' }}>
-
-                <View style={{ borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                <Image
-                  style={{width: 112, height: 112}}
-                  source={{uri: get_avatar(this.state.address, 112)}}
-                />
-
-                <CopyButton
-                    style={{position: "absolute", top: 25, right: 20}}
-                    data={this.state.address + Buffer.from(getKeyPair().publicKey).toString('hex')}
-                    name='Address'
-                    {...this.props}
-                />
-
-                <Text style={[Styles.centeredText, {
-                    color: this.props.screenProps.theme.primaryColour,
-                    textAlign: 'left',
-                    fontSize: 10,
-                    marginTop: 0,
-                    marginRight: 20,
-                    marginLeft: 20,
-                    fontFamily: 'Montserrat-Bold'
-                }]}>
-                {t('nickname')}
-                </Text>
-                <View
-                style={{
-                    // width: this.state.messageHasLength ? '80%' : '100%',
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      borderWidth: 0,
-                      borderColor: 'transparent',
-                      borderRadius: 15,
-                      height: 50,
-                      margin: '5%',
-                      marginTop: 0
-                  }}
-                >
-                <TextInput
-                    multiline={false}
-                    textAlignVertical={'top'}
-                    ref={input => { this.input = input }}
-                    style={{
-                        color: this.props.screenProps.theme.primaryColour,
-                        fontFamily: 'Montserrat-Regular',
-                        fontSize: 15,
-                        width: '100%',
-                        height: '100%',
-                        padding: 15,
-
-                    }}
-                    maxLength={24}
-                    placeholder={Globals.preferences.nickname}
-                    placeholderTextColor={'#ffffff'}
-                    onSubmitEditing={async (e) => {
-                      savePreferencesToDatabase(Globals.preferences);
-                        // return;
-                        // submitMessage(this.state.message);
-                        // this.setState({message: '', messageHasLength: false});
-                    }}
-                    onChangeText={(text) => {
-                        if (this.props.onChange) {
-                            this.props.onChange(text);
-                        }
-                        Globals.preferences.nickname = text;
-                    }}
-                    errorMessage={this.props.error}
-                />
-                </View>
+                <View>
                 <Text style={[Styles.centeredText, {
                     color: this.props.screenProps.theme.primaryColour,
                     textAlign: 'left',
@@ -657,12 +835,6 @@ class AddressComponent extends React.PureComponent {
 
 
                 </View>
-
-
-
-
-
-            </View>
         );
     }
 }
@@ -815,6 +987,7 @@ class BalanceComponentNoTranslation extends React.Component {
 }
 
 const BalanceComponent = withTranslation()(BalanceComponentNoTranslation)
+
 
 /**
  * Sync status at bottom of screen
@@ -969,6 +1142,8 @@ async function backgroundSyncMessages() {
   //     }))
   // });
 
+  try {
+
   cacheSync(false);
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
@@ -993,6 +1168,7 @@ async function backgroundSyncMessages() {
 
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
                        Globals.knownTXs.push(thisHash);
                      } else {
@@ -1027,7 +1203,6 @@ async function backgroundSyncMessages() {
 
 
         } catch (err) {
-
           continue;
         }
 
@@ -1038,6 +1213,9 @@ async function backgroundSyncMessages() {
 
 
       });
-
+} catch (err) {
+  console.log('Message sync failed: ', err);
+  Globals.syncingMessages = false;
+}
 
 }
