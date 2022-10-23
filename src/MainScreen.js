@@ -323,19 +323,22 @@ export class MainScreen extends React.PureComponent {
             this.updateBalance();
         });
 
-        Globals.updateBoardsFunctions.push(() => {
+        Globals.updateBoardsFunctions.push(async () => {
+          Globals.unreadMessages = await getUnreadMessages();
             this.setState({
                 unreads: Globals.unreadMessages
             })
         });
 
-        Globals.updatePayeeFunctions.push(() => {
+        Globals.updatePayeeFunctions.push(async () => {
+          Globals.unreadMessages = await getUnreadMessages();
             this.setState({
                 unreads: Globals.unreadMessages
             })
         });
 
-        Globals.updateGroupsFunctions.push(() => {
+        Globals.updateGroupsFunctions.push(async () => {
+          Globals.unreadMessages = await getUnreadMessages();
             this.setState({
                 unreads: Globals.unreadMessages
             })
@@ -495,7 +498,9 @@ export class MainScreen extends React.PureComponent {
             backgroundColor: 'red',
             color: 'white',
             padding: 4,
-            borderWidth: 5
+            borderWidth: 5,
+            marginTop: -10,
+            marginRight: -10
           };
 
           const unread_counter_text_style = {

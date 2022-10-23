@@ -622,6 +622,8 @@ export async function markConversationAsRead(conversation) {
 
 });
 
+Globals.unreadMessages = await getUnreadMessages();
+
 }
 
 
@@ -641,6 +643,8 @@ export async function markGroupConversationAsRead(group) {
   );
 
 });
+
+Globals.unreadMessages = await getUnreadMessages();
 
 }
 
@@ -662,6 +666,8 @@ export async function markBoardsMessageAsRead(hash) {
   );
 
 });
+
+Globals.unreadMessages = await getUnreadMessages();
 
 }
 
@@ -1355,7 +1361,7 @@ export async function getUnreadMessages() {
   if (data_pms && data_pms.rows && data_pms.rows.length) {
     unread_messages.pms = data_pms.rows.item(0)['COUNT(*)'];
   }
-  
+
   return unread_messages;
 
 }
