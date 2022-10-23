@@ -1320,7 +1320,7 @@ export async function getUnreadMessages() {
       SELECT COUNT(*)
       FROM boards_message_db
       WHERE
-      read = "0"
+      read != "1"
       `
   );
 
@@ -1335,7 +1335,7 @@ export async function getUnreadMessages() {
       SELECT COUNT(*)
       FROM privateboards_messages_db
       WHERE
-      read = "0"
+      read != "1"
       `
   );
 
@@ -1348,14 +1348,14 @@ export async function getUnreadMessages() {
       SELECT COUNT(*)
       FROM message_db
       WHERE
-      read = "0"
+      read != "1"
       `
   );
 
   if (data_pms && data_pms.rows && data_pms.rows.length) {
     unread_messages.pms = data_pms.rows.item(0)['COUNT(*)'];
   }
-
+  
   return unread_messages;
 
 }
