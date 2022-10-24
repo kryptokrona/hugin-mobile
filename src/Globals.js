@@ -12,7 +12,7 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+import { getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 
@@ -290,6 +290,8 @@ export async function initGlobals() {
     if (payees !== undefined) {
         Globals.payees = payees;
     }
+
+    Globals.knownTXs = await getKnownTransactions();
 
     const groups = await loadGroupsDataFromDatabase();
 

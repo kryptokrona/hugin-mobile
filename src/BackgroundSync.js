@@ -217,6 +217,8 @@ export async function backgroundSync() {
     /* Run for 25 seconds or until the app comes back to the foreground */
     while (!State.shouldStop && secsRunning < allowedRunTime) {
 
+        cacheSync(false);
+
 
         // Globals.updatePayeeFunctions.push(() => {
         //     this.setState(prevState => ({
@@ -342,8 +344,6 @@ export async function backgroundSync() {
 
         /* Save the wallet */
         saveToDatabase(Globals.wallet);
-
-        cacheSync(false);
 
         /* Update our running time */
         secsRunning = (new Date() - startTime) / 1000;

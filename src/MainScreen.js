@@ -33,7 +33,7 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
 import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
@@ -1152,6 +1152,7 @@ async function backgroundSyncMessages() {
   cacheSync(false);
 
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
+
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
@@ -1163,16 +1164,27 @@ async function backgroundSyncMessages() {
       .then((response) => response.json())
       .then(async (json) => {
 
+
+        for (transaction in json.deletedTxsIds) {
+          deleteKnownTransaction(json.deletedTxsIds[transaction]);
+        }
         let addedTxs = json.addedTxs;
 
         let transactions = addedTxs;
+
+        console.log(`Found ${addedTxs.length} new transactions.`);
 
         for (transaction in transactions) {
 
           try {
 
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
+
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+
+          console.log(`Checking tx with hash ${thisHash}`);
+
+          saveKnownTransaction(thisHash);
 
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
                        Globals.knownTXs.push(thisHash);
@@ -1184,6 +1196,9 @@ async function backgroundSyncMessages() {
 
 
             let message = await getMessage(thisExtra, thisHash);
+
+            console.log(`Message was found:`);
+            console.log(message);
 
             if (!message) {
               continue;

@@ -259,9 +259,7 @@ async function createTables(DB) {
         );
 
 
-        //   tx.executeSql(
-        //     `DROP TABLE boards_subscriptions`
-        // );
+
 
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS boards_subscriptions (
@@ -272,8 +270,16 @@ async function createTables(DB) {
         );
 
 
+        //   tx.executeSql(
+        //     `DROP TABLE known_transactions`
+        // );
 
-
+        tx.executeSql(
+          `CREATE TABLE IF NOT EXISTS knownTXs (
+               hash TEXT,
+               UNIQUE (hash)
+          )`
+      );
 
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS transactiondetails (
@@ -496,6 +502,68 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 }
 
+export async function saveKnownTransaction(txhash) {
+
+  console.log('Saving known pool tx ', txhash);
+
+  await database.transaction((tx) => {
+      tx.executeSql(
+          `REPLACE INTO knownTXs
+              (hash)
+          VALUES
+              (?)`,
+          [
+              txhash
+          ]
+      );
+  });
+
+  console.log('wtfffs', await getKnownTransactions());
+
+}
+
+export async function getKnownTransactions() {
+
+  console.log('Getting known pool txs..');
+
+  const [data] = await database.executeSql(
+    `SELECT * FROM knownTXs`
+  );
+
+  if (data && data.rows && data.rows.length) {
+
+      const knownTXs = [];
+
+      for (let i = 0; i < data.rows.length; i++) {
+
+        knownTXs.push(data.rows.item(i).hash);
+
+      }
+
+      return knownTXs;
+
+  } else {
+    return [];
+  }
+
+}
+
+export async function deleteKnownTransaction(txhash) {
+
+  console.log('Deleting known pool tx ', txhash);
+
+  await database.transaction((tx) => {
+    tx.executeSql(
+      `DELETE FROM
+          knownTXs
+      WHERE
+          hash = ?`,
+      [ txhash ]
+  );
+});
+
+}
+
 
 export async function saveGroupMessage(group, type, message, timestamp, nickname, address) {
 
@@ -643,6 +711,8 @@ export async function markGroupConversationAsRead(group) {
   );
 
 });
+
+await Globals.updateGroups();
 
 Globals.unreadMessages = await getUnreadMessages();
 
