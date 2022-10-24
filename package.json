@@ -1,6 +1,6 @@
 {
   "name": "hugin-messenger-mobile",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "private": true,
   "scripts": {
     "start": "react-native start",
@@ -9,11 +9,10 @@
     "lint": "eslint .",
     "postinstall": "./node_modules/.bin/rn-nodeify --install fs,dgram,process,path,console,crypto,buffer,stream,vm,http,https,url,zlib,net,assert,tls --hack --yarn; ./node_modules/.bin/jetify",
     "rnpm": {
-
-       "assets": [
-           "resources/fonts"
-       ]
-   }
+      "assets": [
+        "resources/fonts"
+      ]
+    }
   },
   "resolutions": {
     "**/pbkdf2": "3.1.1",
