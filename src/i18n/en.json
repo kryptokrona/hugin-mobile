@@ -167,5 +167,6 @@
   nickname: "Nickname",
   recoverWalletTitle: "Recover wallet?",
   recoverWalletDescr: "This will make all current funds unavailable (but recoverable with your private keys).",
-  boardsRecommendations: "Recommended boards"
+  boardsRecommendations: "Recommended boards",
+  groups: "Groups"
 }

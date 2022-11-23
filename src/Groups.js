@@ -214,7 +214,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                                 fontSize: 24,
                                 fontFamily: "Montserrat-SemiBold"
                             }}>
-                                {'Groups'}
+                                {t('groups')}
                             </Text>
 
                             <View style={{
