@@ -650,6 +650,10 @@ export class MainScreen extends React.PureComponent {
                     </TouchableOpacity>
 
                     <View style={{display: this.state.addressOnly ? 'none' : 'flex', flex: 1}}>
+                    <TouchableOpacity
+                    onPress={() => {
+                      this.props.navigation.navigate('ChoosePayee', this.props.navigation);
+                    }}>
                         <BalanceComponent
                             unlockedBalance={this.state.unlockedBalance}
                             lockedBalance={this.state.lockedBalance}
@@ -657,7 +661,7 @@ export class MainScreen extends React.PureComponent {
                             address={this.state.address}
                             {...this.props}
                         />
-
+                        </TouchableOpacity>
                     </View>
 
                     {!this.state.addressOnly &&
