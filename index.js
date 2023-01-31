@@ -11,7 +11,6 @@ import BackgroundFetch from 'react-native-background-fetch';
 import { name as appName } from './app.json';
 
 import App from './src/App';
-import { initSentry } from './src/Sentry';
 import { Globals } from './src/Globals';
 import { backgroundSync } from './src/BackgroundSync';
 
@@ -27,7 +26,5 @@ BackgroundFetch.registerHeadlessTask(async () => {
         Globals.logger.addLogMessage("[js] RNBackgroundFetch failed to start: " + error.toString());
     }
 });
-
-initSentry();
 
 AppRegistry.registerComponent(appName, () => App);

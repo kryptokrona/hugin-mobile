@@ -24,8 +24,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.android.gms.security.ProviderInstaller.ProviderInstallListener;
 
-import io.sentry.RNSentryPackage;
-
 import java.util.List;
 import java.io.IOException;
 

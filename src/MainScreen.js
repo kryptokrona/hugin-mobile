@@ -34,7 +34,6 @@ import { getKeyPair, getMessage, getExtra, optimizeMessages } from './HuginUtili
 import { ProgressBar } from './ProgressBar';
 import { saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
-import { reportCaughtException } from './Sentry';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
@@ -718,7 +717,6 @@ async function backgroundSave() {
         await saveToDatabase(Globals.wallet);
         Globals.logger.addLogMessage('Save complete.');
     } catch (err) {
-        reportCaughtException(err);
         Globals.logger.addLogMessage('Failed to background save: ' + err);
     }
 }
