@@ -727,35 +727,6 @@ export class MainScreen extends React.PureComponent {
 
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={cardStyle}
-                      onPress={() => {
-                        console.log(this.props);
-                        this.props.navigation.navigate('Boards', this.props.navigation);
-                      }}>
-
-                      {unreadBoardsMessages ? <View style={[unread_counter_style, {position: 'absolute', top: -5, right: 5, borderColor: '#171416'}]}><Text style={unread_counter_text_style}>{unreadBoardsMessages}</Text></View> : <></>}
-
-                      <CustomIcon name='messages-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-
-                      <Text style={{
-                        color: this.props.screenProps.theme.primaryColour,
-                        textAlign: 'left',
-                        fontSize: 10,
-                        marginLeft: 10,
-                        fontFamily: 'Montserrat-Bold'
-                      }}>
-
-                      <Translation>
-                      {
-                        (t, { i18n }) => <Text>{t('boardsTitle')}</Text>
-                      }
-                      </Translation>
-
-                      {this.state.boards_messages.length}
-
-                      </Text>
-
-                      </TouchableOpacity>
 
                       </View>
                     }
