@@ -5,9 +5,10 @@
 import React from 'react';
 import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+const runes = require('runes');
 
 import {
-    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import { StackActions } from 'react-navigation';
@@ -38,7 +39,7 @@ import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
 
-import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup} from './HuginUtilities';
+import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoardColors} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
@@ -82,6 +83,80 @@ export class GroupsScreenNoTranslation extends React.Component {
     render() {
         const { t } = this.props;
         const groups = this.state.groups;
+        const standardGroups = [
+            { name: 'Hugin',           key: '20b4821b90b2ea7355cb7ed7fa60823016eedef0e3541376888f8adc55df75f8' },
+            { name: 'Programming',     key: '613d2331b9b4305a78275fbce193c3818948980cae43e86b53e85d55e01ad0d0' },
+            { name: 'Gaming',          key: 'aab2b5493d95074e03090501a1cbc34955c29d4f0bfe5eed76445b2f049031b2' },
+            { name: 'Cryptocurrency',  key: 'f28311919d9516831d79bc7ca68d108ba53f8432c639445e565cd2b1ecd70510' },
+            { name: 'Privacy',         key: '437f28724fc65df4bb81d0ffd938871607ae0c2ea96cdb13d374c2f76630161a' },
+            { name: 'Politics',        key: '8330283b1323038a6fb60165e1ef7fabb2ec60ae5dd5c66ab0fcc41511fd99fc' },
+            { name: 'Sweden',          key: '08fcbb782f8c3304a0bcd5ab946f347de0514ec983f54536a47edd9753eaad47' },
+            { name: 'Norway',          key: 'c70fb6179cecf1c3438d5789b2bac13e8231a97717ac0c16f9d0039a314dfb0c' },
+            { name: 'Denmark',         key: '1ca321697271265b2ce80f4dd70632682915aef8fc6bbd8be0492673e9ffda72' },
+            { name: 'Finland',         key: '6e0861b7e3bcb3c83040d6003f2cd407bb249959f5c6c0959ac1de4f91f6e756' },
+        ];
+
+        const storyStyle = {
+            borderRadius: 25,
+            width: 60,
+            height: 60,
+            backgroundColor: 'white',
+            marginRight: 10,
+            flexDirection:'row'
+          };
+
+          const storyTextStyle = [Styles.centeredText, {
+              fontSize: 30,
+              lineHeight: 58,
+              width: 60,
+              fontFamily: 'Montserrat-Bold',
+              color: 'white',
+              flex: 1,
+              flexWrap: 'wrap'
+          }];
+
+          const addGroup = (g) => {
+            const group = {
+                group: g.name,
+                key: g.key
+            };
+
+            console.log(g);
+
+            /* Add payee to global payee store */
+            Globals.addGroup(group);
+
+              this.props.navigation.dispatch(StackActions.popToTop());
+              this.props.navigation.navigate(
+                  'GroupChatScreen', {
+                      group: group,
+                  });
+
+
+    
+          }
+
+        const boardsRecommendations =
+        <View style={{height:142}}>
+          <Text style={{fontFamily: 'Montserrat-Regular', marginBottom: 5}}>{t('boardsRecommendations')}</Text>
+            <ScrollView
+            showsHorizontalScrollIndicator={false}
+            horizontal={true}
+             style={{
+                // width: '116%',
+                marginBottom: 20,
+                borderWidth: 0,
+                borderColor: 'transparent',
+                backgroundColor: 'transparent',
+                // marginLeft: -29
+            }}>
+            {standardGroups != undefined && standardGroups.map(function(item, i){
+              return <View><TouchableOpacity onPress={async () => { addGroup(item) }} style={[storyStyle, {backgroundColor: getBoardColors(item.key)}]}><Text style={storyTextStyle}>{runes(item.name)[0].toUpperCase()}</Text></TouchableOpacity><Text style={{width: 64, textAlign: 'center', fontFamily: 'Montserrat-Regular'}}>{item.name}</Text></View>;
+            })
+            }
+            </ScrollView>
+            </View>;
+            
         const noGroupsComponent =
             <View style={{
                 width: '100%',
@@ -243,6 +318,8 @@ export class GroupsScreenNoTranslation extends React.Component {
                     }}>
 
                         {this.state.groups.length > 0 ? groupsComponent : noGroupsComponent}
+
+                        {boardsRecommendations}
 
                     </View>
                 </View>
