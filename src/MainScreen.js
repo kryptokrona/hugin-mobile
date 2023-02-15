@@ -299,7 +299,6 @@ export class MainScreen extends React.PureComponent {
             address: Globals.wallet.getPrimaryAddress(),
             messages: Globals.messages.length,
             group_messages: Globals.groupMessages.length,
-            boards_messages: Globals.boardsMessages.length,
             unreads: Globals.unreadMessages
 
         }
@@ -520,7 +519,6 @@ export class MainScreen extends React.PureComponent {
            outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
            })
 
-           const unreadBoardsMessages = this.state.unreads.boards;
            const unreadGroupsMessages = this.state.unreads.groups;
            const unreadPrivateMessages = this.state.unreads.pms;
 

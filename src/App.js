@@ -26,7 +26,6 @@ import { DisclaimerScreen } from './DisclaimerScreen';
 import { loadPreferencesFromDatabase, openDB } from './Database';
 import { ChatScreen, ModifyPayeeScreen, RecipientsScreen } from './Recipients';
 import { GroupChatScreen, ModifyGroupScreen, GroupsScreen, NewGroupScreen } from './Groups';
-import { BoardsHomeScreen } from './Boards';
 import { WalletOptionScreen, CreateWalletScreen } from './CreateScreen';
 import { TransactionsScreen, TransactionDetailsScreen } from './TransactionsScreen';
 
@@ -261,50 +260,12 @@ GroupsNavigator.navigationOptions = ({ navigation, screenProps }) => ({
     }
 });
 
-
-const BoardsNavigator = createStackNavigator(
-    {
-        BoardsHome: BoardsHomeScreen
-    },
-    {
-        initialRouteName: '',
-        headerLayoutPreset: 'center',
-        defaultNavigationOptions: {
-            headerTitleStyle: {
-                fontWeight: 'bold',
-                color: Themes.darkMode.primaryColour,
-            },
-            headerTransparent: true,
-            headerTintColor: Themes.darkMode.primaryColour,
-        },
-    }
-);
-
-BoardsNavigator.navigationOptions = ({ navigation, screenProps }) => ({
-    tabBarOptions: {
-        activeBackgroundColor: screenProps.theme.backgroundColour,
-        inactiveBackgroundColor: screenProps.theme.backgroundColour,
-        activeTintColor: screenProps.theme.primaryColour,
-        inactiveTintColor: screenProps.theme.slightlyMoreVisibleColour,
-        showLabel: false,
-        style: {
-          borderTopWidth: 0,
-          height: 46,
-          textAlignVertical: "bottom",
-          backgroundColor: "#FF00FF",
-          marginBottom: 5
-        }
-    }
-});
-
-
 /* Main screen for a logged in wallet */
 const HomeNavigator = createBottomTabNavigator(
     {
         Main: MainScreen,
         Transactions: TransactionNavigator,
         Transfer: TransferNavigator,
-        Boards: BoardsNavigator,
         Recipients: RecipientNavigator,
         Groups: GroupsNavigator,
         Settings: SettingsNavigator,
@@ -345,9 +306,6 @@ const HomeNavigator = createBottomTabNavigator(
                 } else if (routeName === 'Settings') {
                     IconComponent = CustomIcon;
                     iconName = 'setting-2';
-                  } else if (routeName === 'Boards') {
-                      IconComponent = CustomIcon;
-                      iconName = 'messages-2';
                 } else if (routeName === 'Groups') {
                       IconComponent = CustomIcon;
                       iconName = 'messages';
