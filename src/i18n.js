@@ -10,9 +10,9 @@ import ru from './i18n/ru.json';
 import fi from './i18n/fi.json';
 import pt from './i18n/pt.json';
 import { Globals } from './Globals';
-import i18nextReactNative from 'i18next-react-native-language-detector'
+import RNLanguageDetector from '@os-team/i18next-react-native-language-detector';
 
-Globals.language = i18nextReactNative.detect().substring(0,2);
+Globals.language = 'en'
 
 if (Globals.language == "zh") {
   Globals.language = 'zh-cn';
@@ -20,7 +20,7 @@ if (Globals.language == "zh") {
 
 i18next
   // .use(languageDetector)
-  .use(i18nextReactNative)
+  .use(RNLanguageDetector)
   .use(initReactI18next)
   .init({
     compatibilityJSON: 'v3',
