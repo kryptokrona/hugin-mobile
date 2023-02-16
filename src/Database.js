@@ -277,6 +277,7 @@ async function createTables(DB) {
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS knownTXs (
                hash TEXT,
+               timestamp TEXT,
                UNIQUE (hash)
           )`
       );
@@ -317,6 +318,18 @@ async function createTables(DB) {
                 latest_message INT default 0`);
 
         }
+
+        if (dbVersion === 5) {
+
+            const timestamp = Date.now();
+
+            tx.executeSql(
+              `ALTER TABLE
+                  knownTXs
+               ADD
+                  timestamp TEXT default ${timestamp}`);
+  
+          }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -383,7 +396,7 @@ async function createTables(DB) {
 
 
         tx.executeSql(
-            `PRAGMA user_version = 5`
+            `PRAGMA user_version = 6`
         );
     });
 }
@@ -509,11 +522,11 @@ export async function saveKnownTransaction(txhash) {
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO knownTXs
-              (hash)
+              (hash, timestamp)
           VALUES
-              (?)`,
+              (?, ?)`,
           [
-              txhash
+              txhash, Date.now()
           ]
       );
   });
@@ -536,6 +549,8 @@ export async function getKnownTransactions() {
 
       for (let i = 0; i < data.rows.length; i++) {
 
+        console.log(data.rows.item(i));
+
         knownTXs.push(data.rows.item(i).hash);
 
       }
@@ -552,13 +567,18 @@ export async function deleteKnownTransaction(txhash) {
 
   console.log('Deleting known pool tx ', txhash);
 
+  const oldest_timestamp_allowed = Date.now() - (60*60*24*1000);
+
   await database.transaction((tx) => {
     tx.executeSql(
       `DELETE FROM
           knownTXs
       WHERE
-          hash = ?`,
-      [ txhash ]
+          hash = ?
+      OR
+          timestamp < ?
+      `,
+      [ txhash, oldest_timestamp_allowed ]
   );
 });
 

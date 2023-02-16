@@ -33,7 +33,7 @@ import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
 import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
-import { deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
+import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
@@ -1159,6 +1159,7 @@ async function backgroundSyncMessages() {
 
           saveKnownTransaction(thisHash);
 
+
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
                        Globals.knownTXs.push(thisHash);
                      } else {
@@ -1202,6 +1203,7 @@ async function backgroundSyncMessages() {
         }
 
         Globals.syncingMessages = false;
+        Globals.knownTXs = await getKnownTransactions();
 
 
 
