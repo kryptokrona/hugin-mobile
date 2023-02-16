@@ -167,5 +167,5 @@
     nickname: "прозвище",
     recoverWalletTitle: "Восстановить кошелек?",
     recoverWalletDescr: "Это сделает все текущие средства недоступными (но их можно будет восстановить с помощью ваших личных ключей)",
-    boardsRecommendations: "Рекомендуется"
+    groupsRecommendations: "Рекомендуется"
 }

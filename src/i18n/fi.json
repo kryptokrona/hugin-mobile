@@ -167,5 +167,5 @@
     nickname: "Lempinimi",
     recoverWalletTitle: "Palauta lompakko?",
     recoverWalletDescr: "Tämä tekee kaikki nykyiset varat saatamattomaksi (mutta ovat palautettavissa sinun yksityis avaimilla).",
-    boardsRecommendations: "Suositellut taulut"
+    groupsRecommendations: "Suositellut taulut"
   }

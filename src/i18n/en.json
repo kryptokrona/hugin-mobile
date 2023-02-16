@@ -3,7 +3,7 @@
   messageKey: "Message key",
   copy: "Copy",
   copied: " copied",
-  noTxMessage: "You don\"t have any transactions yet 😥",
+  noTxMessage: "You don\'t have any transactions yet 😥",
   notSyncedMessage: "\n\n Your wallet is still syncing, please wait..",
   emptyAddressBook: "Your address book is empty! Add a new recipient above to populate it.",
   messagesTitle: "Private Messages",
@@ -167,6 +167,6 @@
   nickname: "Nickname",
   recoverWalletTitle: "Recover wallet?",
   recoverWalletDescr: "This will make all current funds unavailable (but recoverable with your private keys).",
-  boardsRecommendations: "Recommended boards",
+  groupsRecommendations: "Recommended groups",
   groups: "Groups"
 }

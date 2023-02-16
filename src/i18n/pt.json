@@ -167,5 +167,5 @@
   nickname: "Apelido",
   recoverWalletTitle: "Recuperar Carteira?",
   recoverWalletDescr: "Isso tornará todos os fundos atuais indisponíveis (mas recuperável com suas chaves privadas).",
-  boardsRecommendations: "Boards recomendados"
+  groupsRecommendations: "Boards recomendados"
 }

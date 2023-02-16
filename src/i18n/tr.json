@@ -167,5 +167,5 @@
   nickname: "Takma ad",
   recoverWalletTitle: "Cüzdan kurtarılsın mı?",
   recoverWalletDescr: "Bu, mevcut tüm fonları kullanılamaz hale getirecek (ancak özel anahtarlarınızla kurtarılabilir).",
-  boardsRecommendations: "Önerilen"
+  groupsRecommendations: "Önerilen"
 }

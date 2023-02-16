@@ -166,5 +166,7 @@
   optimizationComplete: "优化完成",
   nickname: "昵称",
   recoverWalletTitle: "恢复钱包?",
-  recoverWalletDescr: "推荐"
+  recoverWalletDescr: "推荐",
+  groupsRecommendations: "建议",
+  groups: "团体"
 }
