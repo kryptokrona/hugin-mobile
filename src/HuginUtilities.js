@@ -57,15 +57,6 @@ import {
     toastPopUp,
 } from './Utilities';
 
-export function getKeyPair() {
-    // return new Promise((resolve) => setTimeout(resolve, ms));
-    const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
-    let secretKey = naclUtil.decodeUTF8(privateSpendKey.substring(1, 33));
-    let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
-    return keyPair;
-
-
-}
 
 function tryNode(this_node) {
     return new Promise((resolve) => {
@@ -322,8 +313,18 @@ export function nonceFromTimestamp(tmstmp) {
   return nonce;
   }
 
-  export function hexToUint(hexString) {
-  return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+export function hexToUint(hexString) {
+return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+}
+
+
+export function getKeyPair() {
+  // return new Promise((resolve) => setTimeout(resolve, ms));
+  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+  let secretKey = hexToUint(privateSpendKey);
+  let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
+  return keyPair;
+
 }
 
 export function toHex(str,hex){
