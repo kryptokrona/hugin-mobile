@@ -138,7 +138,7 @@ export class GroupsScreenNoTranslation extends React.Component {
 
         const boardsRecommendations =
         <View style={{height:142}}>
-          <Text style={{fontFamily: 'Montserrat-Regular', marginBottom: 5}}>{t('boardsRecommendations')}</Text>
+          <Text style={{fontFamily: 'Montserrat-Regular', marginBottom: 5}}>{t('groupsRecommendations')}</Text>
             <ScrollView
             showsHorizontalScrollIndicator={false}
             horizontal={true}
