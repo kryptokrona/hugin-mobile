@@ -955,7 +955,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
             <OpenURLButton></OpenURLButton>
 <Text>
-            {this.props.unlockedBalance &&
+            {hasBalance &&
             <Text>{this.props.coinValue}</Text>
             }
             </Text>
