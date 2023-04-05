@@ -23,6 +23,19 @@ import { getBestNode } from './HuginUtilities';
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
+let changeNode = async () => {
+                        
+    const node = await getBestNode();
+                        
+    Globals.preferences.node = node.url + ':' + node.port + ':' + node.ssl;
+                       
+    await savePreferencesToDatabase(Globals.preferences);
+                    
+    Globals.wallet.swapNode(Globals.getDaemon());
+   
+}
+
+
 /**
  * Create or import a wallet
  */
@@ -105,6 +118,8 @@ class CreateWalletScreenNoTranslation extends React.Component {
         Globals.wallet = await WalletBackend.createWallet(Globals.getDaemon(), Config);
 
         const [ seed ] = await Globals.wallet.getMnemonicSeed();
+
+        changeNode();
 
         this.setState({
             seed,
