@@ -144,7 +144,6 @@ function trimExtra (extra) {
     return fromHex(extra.substring(66))
 
   } catch (e) {
-
     return fromHex(Buffer.from(extra.substring(78)).toString())
 
   }
@@ -324,6 +323,15 @@ export function getKeyPair() {
   let secretKey = hexToUint(privateSpendKey);
   let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
   return keyPair;
+
+}
+export function getKeyPairOld() {
+    // return new Promise((resolve) => setTimeout(resolve, ms));
+    const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+    let secretKey = naclUtil.decodeUTF8(privateSpendKey.substring(1, 33));
+    let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
+    return keyPair;
+
 
 }
 
@@ -882,7 +890,6 @@ export async function getMessage(extra, hash){
   return new Promise(async (resolve, reject) => {
 
     let data = trimExtra(extra);
-
     Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
@@ -929,7 +936,23 @@ export async function getMessage(extra, hash){
            getKeyPair().secretKey);
            createNewPayee = true;
          } catch (err) {
+          Globals.logger.addLogMessage('Error: ' + err);
          }
+         if(!decryptBox) {
+          try {
+            decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
+            nonceFromTimestamp(timestamp),
+            getKeyPairOld().secretKey);
+            let message_dec_temp = naclUtil.encodeUTF8(decryptBox);
+            let payload_json_temp = JSON.parse(message_dec_temp);
+            let from_temp = payload_json_temp.from;
+            let payee = Globals.payees.filter(item => item.address == from_temp)[0];
+            Globals.removePayee(payee.nickname, false);
+            createNewPayee = true;
+          } catch (err) {
+            console.log(err);
+          }
+        }
 
         let i = 0;
 
