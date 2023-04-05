@@ -25,7 +25,8 @@
                     android:resource="@android:color/white"/>
 
         <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver">
+        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver"
+        android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -40,6 +41,26 @@
             </intent-filter>
         </service>
 
+        <receiver 
+        android:name="com.transistorsoft.tsbackgroundfetch.BootReceiver" 
+        android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver 
+        android:name="com.transistorsoft.rnbackgroundfetch.HeadlessBroadcastReceiver"
+        android:exported="false" >
+            <intent-filter>
+                <action android:name="com.hugin.event.BACKGROUND_FETCH" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name="com.facebook.react.devsupport.DevSettingsActivity"
+        android:exported="false" />
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -47,6 +68,7 @@
         android:screenOrientation="portrait"
         android:windowSoftInputMode="adjustResize"
         android:launchMode="singleTask"
+        android:exported="true"
         >
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -59,7 +81,6 @@
           <data android:scheme="xkr"/>
         </intent-filter>
       </activity>
-      <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
     </application>
 
 </manifest>
