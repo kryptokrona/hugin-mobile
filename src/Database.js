@@ -271,7 +271,7 @@ async function createTables(DB) {
 
 
         //   tx.executeSql(
-        //     `DROP TABLE known_transactions`
+        //     `DROP TABLE knownTXs`
         // );
 
         tx.executeSql(
@@ -318,18 +318,6 @@ async function createTables(DB) {
                 latest_message INT default 0`);
 
         }
-
-        if (dbVersion === 5) {
-
-            const timestamp = Date.now();
-
-            tx.executeSql(
-              `ALTER TABLE
-                  knownTXs
-               ADD
-                  timestamp TEXT default ${timestamp}`);
-  
-          }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -519,6 +507,8 @@ export async function saveKnownTransaction(txhash) {
 
   console.log('Saving known pool tx ', txhash);
 
+  const timestamp = Date.now();
+
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO knownTXs
@@ -526,7 +516,7 @@ export async function saveKnownTransaction(txhash) {
           VALUES
               (?, ?)`,
           [
-              txhash, Date.now()
+              txhash, timestamp
           ]
       );
   });
@@ -1184,7 +1174,7 @@ export async function getHistory(conversation) {
       // This block should be removed in the future.
       // It's only used for users who have not yet sent a message to all their
       // contacts at v1.1.2 or later.
-      if (data.rows.item(0).timestamp < 1660687886749) {
+      if (data.rows.item(0).timestamp < 1677888438000) {
         return false;
       }
       //
