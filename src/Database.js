@@ -720,7 +720,6 @@ export async function markGroupConversationAsRead(group) {
 
 });
 
-await Globals.updateGroups();
 
 Globals.unreadMessages = await getUnreadMessages();
 
