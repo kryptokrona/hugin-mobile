@@ -1098,27 +1098,14 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages() {
 
-
-  if (Globals.syncingMessagesCount > 3) {
-    Globals.syncingMessages = false;
-    Globals.syncingMessagesCount = 0;
-  }
-
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
-    Globals.syncingMessagesCount += 1;
     return;
   } else {
     console.log('Commencing message sync.');
   }
   Globals.syncingMessages = true;
 
-  // Globals.updatePayeeFunctions.push(() => {
-  //     this.setState(prevState => ({
-  //         payees: Globals.payees,
-  //         index: prevState.index + 1,
-  //     }))
-  // });
 
   try {
 
@@ -1168,31 +1155,10 @@ async function backgroundSyncMessages() {
 
           if (thisExtra.length > 66) {
 
-
             let message = await getMessage(thisExtra, thisHash);
 
-            console.log(`Message was found:`);
-            console.log(message);
-
-            if (!message) {
-              continue;
-            }
-
-            let from = message.from;
-
-            let payees = await loadPayeeDataFromDatabase();
-                    for (payee in payees) {
-
-                      if (payees[payee].address == from) {
-                        from = payees[payee].nickname;
-                      }
-
-                    }
-
-
-
           } else {
-
+            continue;
           }
 
 
