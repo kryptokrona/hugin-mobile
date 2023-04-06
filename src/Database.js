@@ -539,8 +539,6 @@ export async function getKnownTransactions() {
 
       for (let i = 0; i < data.rows.length; i++) {
 
-        console.log(data.rows.item(i));
-
         knownTXs.push(data.rows.item(i).hash);
 
       }
