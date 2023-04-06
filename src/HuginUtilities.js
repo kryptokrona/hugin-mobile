@@ -840,6 +840,7 @@ async function getGroupMessage(tx) {
   }
 
   if (!decryptBox) {
+    console.log('Cannot decrypt group message!');
     return false;
   }
 
@@ -894,25 +895,21 @@ export async function getMessage(extra, hash){
 
     let tx = JSON.parse(data);
         if (tx.m || tx.b || tx.brd) {
-          // reject();
+          reject();
           tx.hash = hash;
           if (await boardsMessageExists(hash)) {
             reject();
-            return;
           }
           getBoardsMessage(tx);
-          return;
         }
 
         if (tx.sb) {
 
           if (await groupMessageExists(tx.t)) {
             reject();
-            return;
           }
-          getGroupMessage(tx);
-          return;
-
+          let groupMessage = await getGroupMessage(tx);
+          resolve(groupMessage);
         }
 
         // If no key is appended to message we need to try the keys in our payload_keychain
@@ -976,6 +973,11 @@ export async function getMessage(extra, hash){
            continue;
           }
 
+        }
+        
+        if (!decryptBox) {
+          console.log('No encrypted message found.. Sad!')
+          reject();
         }
 
 
