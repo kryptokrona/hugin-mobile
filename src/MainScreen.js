@@ -12,13 +12,6 @@ import QRCode from 'react-native-qrcode-svg';
 import NativeLinking from "react-native/Libraries/Linking/NativeLinking";
 import PushNotification from 'react-native-push-notification';
 import { NavigationActions, NavigationEvents, NavigationState } from 'react-navigation';
-import {
-  mediaDevices,
-  RTCPeerConnection,
-  RTCView,
-  RTCIceCandidate,
-  RTCSessionDescription,
-} from 'react-native-webrtc';
 
 // import { useNavigation } from '@react-navigation/native';
 
@@ -38,8 +31,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
-import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
-import { parse_sdp } from './SDPParser';
+import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -53,6 +45,7 @@ import i18next from './i18n'
 import { GroupsScreen } from './Groups';
 
 import CustomIcon from './CustomIcon.js'
+import { Input } from "react-native-elements/src";
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -298,62 +291,6 @@ export class MainScreen extends React.PureComponent {
         this.handleNetInfoChange = this.handleNetInfoChange.bind(this);
         this.unsubscribe = () => {};
 
-        let isFront = false;
-        let videoSourceId;
-  mediaDevices.enumerateDevices().then(sourceInfos => {
-    
-    for (let i = 0; i < sourceInfos.length; i++) {
-      console.log('Checking for cam..');
-      const sourceInfo = sourceInfos[i];
-      console.log(sourceInfo);
-      if (
-        sourceInfo.kind == 'videoinput' &&
-        sourceInfo.facing == (isFront ? 'user' : 'environment')
-      ) {
-        videoSourceId = sourceInfo.deviceId;
-      }
-      console.log(videoSourceId);
-    }
-    });
-
-    mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: true,
-        })
-        .then(stream => {
-          console.log('We have stream')
-          // Get local stream!
-          let new_peer = new RTCPeerConnection( {
-            iceServers: [
-            {
-              urls: [
-                'stun:stun.l.google.com:19302',
-                'stun:global.stun.twilio.com:3478'
-              ]
-            }
-          ],
-          iceTransportPolicy: "all",
-          sdpSemantics: 'unified-plan'
-        });
-        
-          this.setState({stream: stream, peer: new_peer});    
-          console.log(this.state.stream);    
-          console.log(this.state.peer);    
-          this.state.peer.addStream(this.state.stream);
-          // setup stream listening
-          
-
-          console.log(sessionDescription);
-
-        })
-        .catch(error => {
-          // Log error
-        });
-
-
-
-
         this.state = {
             addressOnly: false,
             unlockedBalance: 0,
@@ -419,17 +356,6 @@ export class MainScreen extends React.PureComponent {
        });
 
 
-   }
-
-   async startCall() {
-    const sessionDescription = await this.state.peer.createOffer();
-
-    await this.state.peer.setLocalDescription(sessionDescription);
-
-
-    console.log(sessionDescription);
-    let parsed_sdp = parse_sdp(sessionDescription);
-    console.log(parsed_sdp);
    }
 
     async updateBalance() {
@@ -610,23 +536,6 @@ export class MainScreen extends React.PureComponent {
                     flex: 1,
                 }}
             >
-              { this.state.stream &&
-              <View style={{
-                height: 200,
-                width: 200
-              }}>
-                
-                <RTCView
-                  objectFit={"cover"}
-                  style={{ flex: 1, backgroundColor: "#050A0E" }}
-                  streamURL={this.state.stream.toURL()} /><Text>{this.state.stream.toURL()}</Text>
-                  <TouchableOpacity onPress={() =>{this.startCall()}}>
-                    <View>
-                      <Text>WTF DUDE CALL ME BRO</Text>
-                    </View>
-                  </TouchableOpacity>
-              </View>
-    }
                 <NavigationEvents
                     onWillFocus={(payload) => {
                         if (payload && payload.action && payload.action.params && payload.action.params.reloadBalance) {

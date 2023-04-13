@@ -18,6 +18,8 @@ import { Globals } from './Globals';
 
 import { addFee, toAtomic } from './Fee';
 
+import { parse_sdp, expand_sdp_offer } from './SDPParser';
+
 import nacl from 'tweetnacl';
 import naclUtil from 'tweetnacl-util';
 
@@ -1043,6 +1045,24 @@ export async function getMessage(extra, hash){
           }
 
           saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+
+          if (payload_json.msg.substring(0,1) == 'Δ') {
+            console.log('Call received!');
+
+            console.log(from_payee);
+            let sdp_expanded = expand_sdp_offer(message.msg);
+            Globals.activeCalls[from_payee.paymentID] = 'sdp_expanded';
+
+            PushNotification.localNotification({
+              title: from,//'Incoming transaction received!',
+              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+              message: 'Call received',
+              data: payload_json.t,
+              userInfo: from_payee,
+              largeIconUrl: get_avatar(payload_json.from, 64),
+          });
+
+          } 
 
           if (Globals.activeChat != payload_json.from && !from_myself) {
             PushNotification.localNotification({

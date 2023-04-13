@@ -95,6 +95,8 @@ class globals {
 
         this.unreadMessages = {boards: 0, groups: 0, pms: 0};
 
+        this.activeCalls = {};
+
     }
 
     reset() {

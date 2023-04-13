@@ -7,9 +7,16 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
 } from 'react-native';
 
+import {
+    mediaDevices,
+    RTCPeerConnection,
+    RTCView,
+    RTCIceCandidate,
+    RTCSessionDescription,
+  } from 'react-native-webrtc';
 
 import {
     validateAddresses, WalletErrorCode, validatePaymentID,
@@ -37,6 +44,8 @@ import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
 import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
+
+import { parse_sdp, expand_sdp_offer } from './SDPParser';
 
 import {toastPopUp} from './Utilities';
 
@@ -422,6 +431,8 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
         super(props);
 
         const { address, nickname, paymentID } = this.props.navigation.state.params.payee;
+
+        console.log(address, paymentID);
 
         this.state = {
             address,
@@ -817,27 +828,6 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
 
 export const ModifyPayeeScreen = withTranslation()(ModifyPayeeScreenNoTranslation)
 
-//
-// export class MessageBubble extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         // this.animation = new Animated.Value(0);
-//     }
-//
-//
-//     componentWillMount() {
-//       // this.animatedValue = new Animated.Value(0);
-//     }
-//
-//     componentDidMount() {
-//
-//     }
-//
-//     render() {
-//
-//     }
-// }
-
 
 export class ChatScreenNoTranslation extends React.Component {
     constructor(props) {
@@ -995,6 +985,18 @@ export class ChatScreenNoTranslation extends React.Component {
                         }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
                             {this.state.nickname}
                         </Text>
+                        <View style={{flex: 1}}>
+                        <Text onPress={() => {
+                            this.props.navigation.navigate(
+                                'CallScreen', {
+                                    payee: this.props.navigation.state.params.payee,
+                                }
+                            );
+                        }} style={{ textAlign: 'right', fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {'Call'}
+                        </Text>
+                        </View>
+
                     </View>
                 </View>
 
@@ -1094,3 +1096,272 @@ export class ChatScreenNoTranslation extends React.Component {
 }
 
 export const ChatScreen = withTranslation()(ChatScreenNoTranslation)
+
+export class CallScreenNoTranslation extends React.Component {
+    constructor(props) {
+        super(props);
+
+        const { address, nickname, paymentID } = this.props.navigation.state.params.payee;
+
+
+        let isFront = false;
+        let videoSourceId;
+  mediaDevices.enumerateDevices().then(sourceInfos => {
+    
+    for (let i = 0; i < sourceInfos.length; i++) {
+      console.log('Checking for cam..');
+      const sourceInfo = sourceInfos[i];
+      console.log(sourceInfo);
+      if (
+        sourceInfo.kind == 'videoinput' &&
+        sourceInfo.facing == (isFront ? 'user' : 'environment')
+      ) {
+        videoSourceId = sourceInfo.deviceId;
+      }
+      console.log(videoSourceId);
+    }
+    });
+
+    mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: true,
+        })
+        .then(stream => {
+          console.log('We have stream')
+          // Get local stream!
+          let new_peer = new RTCPeerConnection( {
+            iceServers: [
+            {
+              urls: [
+                'stun:stun.l.google.com:19302',
+                'stun:global.stun.twilio.com:3478'
+              ]
+            }
+          ],
+          iceTransportPolicy: "all",
+          sdpSemantics: 'unified-plan'
+        });
+        
+          this.setState({stream: stream, peer: new_peer});    
+          console.log(this.state.stream);    
+          console.log(this.state.peer);    
+          this.state.peer.addStream(this.state.stream);
+          // setup stream listening
+          
+
+          console.log(sessionDescription);
+
+        })
+        .catch(error => {
+          // Log error
+        });
+
+
+
+
+        this.state = {
+            address,
+            nickname,
+            paymentID,
+
+            initialAddress: address,
+            initialNickname: nickname,
+            initialPaymentID: paymentID,
+
+            modifyAddress: false,
+            modifyNickname: false,
+            modifyPaymentID: false,
+
+            newAddress: address,
+            newNickname: nickname,
+            newPaymentID: paymentID,
+
+            addressError: '',
+            nicknameError: '',
+            paymentIDError: '',
+
+            paymentIDEnabled: address.length !== Config.integratedAddressLength,
+            input: React.createRef(),
+            addressValid: true,
+            nicknameValid: true,
+            paymentIDValid: true,
+
+            messages: [],
+            message: "",
+            messageHasLength: false
+        }
+
+
+        Globals.updateChatFunctions.push(() => {
+            this.setState({
+                messages: Globals.messages
+            })
+        });
+
+    }
+
+    async componentDidMount() {
+
+        const messages = await getMessages(this.state.address);
+
+        this.setState({
+          messages: messages
+        });
+
+        Globals.activeChat = this.state.address;
+
+    }
+
+    async componentWillUnmount() {
+
+        Globals.activeChat = '';
+
+    }
+
+    async startCall() {
+        const sessionDescription = await this.state.peer.createOffer();
+    
+        await this.state.peer.setLocalDescription(sessionDescription);
+    
+        let parsed_sdp = parse_sdp(sessionDescription);
+    
+        let parsed_data = 'Δ' + parsed_sdp;
+    
+        // console.log(parsed_data);
+    
+        // let expanded_data = expand_sdp_offer(parsed_data);
+    
+        // console.log(expanded_data);
+    
+        let receiver = this.state.address;
+    
+        let messageKey = this.state.paymentID;
+    
+        sendMessage(parsed_data, receiver, messageKey);    
+    
+       }
+
+    render() {
+
+      markConversationAsRead(this.state.address);
+
+       const { t } = this.props;
+
+       const items = [];
+
+       for (message in this.state.messages) {
+         if (this.state.address == this.state.messages[message].conversation){
+           let timestamp = this.state.messages[message].timestamp / 1000;
+           if (this.state.messages[message].type == 'received'){
+              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           } else {
+             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           }
+
+       }
+       }
+
+
+           const submitMessage = async (text) => {
+
+             Keyboard.dismiss();
+
+             let updated_messages = await getMessages();
+             if (!updated_messages) {
+               updated_messages = [];
+             }
+             let temp_timestamp = Date.now();
+             updated_messages.push({
+                 conversation: this.state.address,
+                 type: 'sent',
+                 message: checkText(text),
+                 timestamp: temp_timestamp
+             });
+
+             this.setState({
+               messages: updated_messages,
+               messageHasLength: false
+             });
+
+             this.state.input.current._textInput.clear();
+
+             this.setState({messageHasLength: this.state.message.length > 0});
+
+             let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+             await removeMessage(temp_timestamp);
+             if (success) {
+             let updated_messages = await getMessages();
+
+               this.setState({
+                 messages: updated_messages,
+                 messageHasLength: false
+               })
+               // this.state.input.current.clear();
+             }
+           }
+
+
+        return(
+            <View style={{
+                flex: 1,
+                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                alignItems: 'center',
+                paddingLeft: 10
+            }}>
+
+                <View style={{
+                    alignItems: 'center',
+                    marginHorizontal: 30,
+                }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 5,
+                        marginLeft: 'auto'
+                    }}>
+                        <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: get_avatar(this.state.address)}}
+                        />
+                        <Text onPress={() => {
+                            this.props.navigation.navigate(
+                                'ModifyPayee', {
+                                    payee: this.props.navigation.state.params.payee,
+                                }
+                            );
+                        }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {this.state.nickname}
+                        </Text>
+                    </View>
+                </View>
+
+                <View style={{
+                    width: '100%',
+                    alignItems: 'center',
+                }}>
+
+                </View>
+                { this.state.stream &&
+              <View style={{
+                height: 200,
+                width: 200
+              }}>
+                
+                <RTCView
+                  objectFit={"cover"}
+                  style={{ flex: 1, backgroundColor: "#050A0E" }}
+                  streamURL={this.state.stream.toURL()} /><Text>{this.state.stream.toURL()}</Text>
+                  <TouchableOpacity onPress={() =>{this.startCall()}}>
+                    <View>
+                      <Text>WTF DUDE CALL ME BRO</Text>
+                    </View>
+                  </TouchableOpacity>
+              </View>
+    }
+            </View>
+        );
+    }
+}
+
+export const CallScreen = withTranslation()(CallScreenNoTranslation)
