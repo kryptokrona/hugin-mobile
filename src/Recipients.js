@@ -18,6 +18,8 @@ import {
     RTCSessionDescription,
   } from 'react-native-webrtc';
 
+import { parse_sdp, expand_sdp_offer, expand_sdp_answer } from './SDPParser';
+
 import {
     validateAddresses, WalletErrorCode, validatePaymentID,
 } from 'kryptokrona-wallet-backend-js';
@@ -44,8 +46,6 @@ import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
 import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
-
-import { parse_sdp, expand_sdp_offer } from './SDPParser';
 
 import {toastPopUp} from './Utilities';
 
@@ -990,6 +990,7 @@ export class ChatScreenNoTranslation extends React.Component {
                             this.props.navigation.navigate(
                                 'CallScreen', {
                                     payee: this.props.navigation.state.params.payee,
+                                    // sdp: 'wtfdoe'
                                 }
                             );
                         }} style={{ textAlign: 'right', fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
@@ -1103,10 +1104,12 @@ export class CallScreenNoTranslation extends React.Component {
 
         const { address, nickname, paymentID } = this.props.navigation.state.params.payee;
 
+        const sdp  = this.props.navigation.state.params.sdp ? this.props.navigation.state.params.sdp : undefined;
+
 
         let isFront = false;
         let videoSourceId;
-  mediaDevices.enumerateDevices().then(sourceInfos => {
+        mediaDevices.enumerateDevices().then(sourceInfos => {
     
     for (let i = 0; i < sourceInfos.length; i++) {
       console.log('Checking for cam..');
@@ -1140,15 +1143,35 @@ export class CallScreenNoTranslation extends React.Component {
             }
           ],
           iceTransportPolicy: "all",
-          sdpSemantics: 'unified-plan'
+          sdpSemantics: 'unified-plan',
+        //   trickle: false
         });
         
           this.setState({stream: stream, peer: new_peer});    
           console.log(this.state.stream);    
           console.log(this.state.peer);    
+
+          this.state.peer.onicecandidate = event => {
+
+            // Add event handlers for ice candidate event
+
+          };
+
+          this.state.peer.onaddstream = event => {
+            // Got stream
+            this.setState({remoteStream: event.stream});
+          };
+
+          this.state.peer.onconnectionstatechange = (ev) => {
+
+            console.log('Connection change');
+            console.log(this.state.peer);
+
+          }
+
           this.state.peer.addStream(this.state.stream);
+
           // setup stream listening
-          
 
           console.log(sessionDescription);
 
@@ -1164,71 +1187,81 @@ export class CallScreenNoTranslation extends React.Component {
             address,
             nickname,
             paymentID,
-
-            initialAddress: address,
-            initialNickname: nickname,
-            initialPaymentID: paymentID,
-
-            modifyAddress: false,
-            modifyNickname: false,
-            modifyPaymentID: false,
-
-            newAddress: address,
-            newNickname: nickname,
-            newPaymentID: paymentID,
-
-            addressError: '',
-            nicknameError: '',
-            paymentIDError: '',
-
-            paymentIDEnabled: address.length !== Config.integratedAddressLength,
-            input: React.createRef(),
-            addressValid: true,
-            nicknameValid: true,
-            paymentIDValid: true,
-
-            messages: [],
-            message: "",
-            messageHasLength: false
+            sdp
         }
 
+        Globals.updateCallFunctions.push(() => {
 
-        Globals.updateChatFunctions.push(() => {
-            this.setState({
-                messages: Globals.messages
-            })
+            console.log('Globals.sdp_answer', Globals.sdp_answer);
+
+            this.setState({sdp_answer: Globals.sdp_answer});
+
+            this.addAnswer();
+
         });
 
     }
 
+    addAnswer() {
+        console.log('this.state.sdp_answer', Globals.sdp_answer);
+        const expanded_answer = expand_sdp_answer(Globals.sdp_answer);
+        console.log('expanded_answer',expanded_answer);
+        this.state.peer.setRemoteDescription(expanded_answer);
+    }
+
     async componentDidMount() {
 
-        const messages = await getMessages(this.state.address);
+        // const messages = await getMessages(this.state.address);
 
-        this.setState({
-          messages: messages
-        });
+        // this.setState({
+        //   messages: messages
+        // });
 
-        Globals.activeChat = this.state.address;
+        // Globals.activeChat = this.state.address;
 
     }
 
     async componentWillUnmount() {
 
-        Globals.activeChat = '';
+        // Globals.activeChat = '';
 
     }
 
     async startCall() {
-        const sessionDescription = await this.state.peer.createOffer();
+
+        await this.state.peer.createDataChannel('HuginDataChannel');
+
+        let sessionDescription = await this.state.peer.createOffer();
     
         await this.state.peer.setLocalDescription(sessionDescription);
+
+        await new Promise((resolve) => {
+            if (this.state.peer.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              this.state.peer.addEventListener('icegatheringstatechange', () => {
+                if (this.state.peer.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+
+        sessionDescription = await this.state.peer.createOffer();
+    
+        await this.state.peer.setLocalDescription(sessionDescription);
+
+        console.log(sessionDescription);
     
         let parsed_sdp = parse_sdp(sessionDescription);
     
         let parsed_data = 'Δ' + parsed_sdp;
     
-        // console.log(parsed_data);
+        console.log(parsed_data);
+
+        const reparsed_sdp = expand_sdp_offer(parsed_data);
+
+        console.log(reparsed_sdp);
     
         // let expanded_data = expand_sdp_offer(parsed_data);
     
@@ -1241,6 +1274,63 @@ export class CallScreenNoTranslation extends React.Component {
         sendMessage(parsed_data, receiver, messageKey);    
     
        }
+
+    async answerCall() {
+
+        console.log(this.state.sdp);
+        
+        const parsed_sdp = expand_sdp_offer(this.state.sdp);
+
+        console.log(parsed_sdp);
+
+        await this.state.peer.setRemoteDescription(parsed_sdp);
+
+        let answer = await this.state.peer.createAnswer();
+
+        await this.state.peer.setLocalDescription(answer);
+
+        await new Promise((resolve) => {
+            console.log(this.state.peer.iceGatheringState);
+            console.log(this.state.peer);
+            if (this.state.peer.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              this.state.peer.addEventListener('icegatheringstatechange', () => {
+                if (this.state.peer.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+          console.log('Ice candidates is working, yay!', this.state.peer)
+        // SEND VARIABLE 'answer' TO CALLER
+
+        await this.state.peer.setRemoteDescription(parsed_sdp);
+
+        answer = await this.state.peer.createAnswer();
+        
+        console.log(answer);
+
+        await this.state.peer.setLocalDescription(answer);
+          console.log('Parsing sdp..')
+        const parsed_answer = 'δ' + parse_sdp(answer, true);
+
+        console.log(parsed_answer);
+        
+        const reparsed_answer = expand_sdp_answer(parsed_answer);
+
+        console.log(reparsed_answer);
+
+        const receiver = this.state.address;
+    
+        const messageKey = this.state.paymentID;
+        
+        sendMessage(parsed_answer, receiver, messageKey);    
+
+
+          
+
+    }
 
     render() {
 
@@ -1352,13 +1442,38 @@ export class CallScreenNoTranslation extends React.Component {
                   objectFit={"cover"}
                   style={{ flex: 1, backgroundColor: "#050A0E" }}
                   streamURL={this.state.stream.toURL()} /><Text>{this.state.stream.toURL()}</Text>
-                  <TouchableOpacity onPress={() =>{this.startCall()}}>
-                    <View>
-                      <Text>WTF DUDE CALL ME BRO</Text>
-                    </View>
-                  </TouchableOpacity>
+                  
               </View>
     }
+
+{ this.state.remoteStream &&
+              <View style={{
+                height: 200,
+                width: 200
+              }}>
+                
+                <RTCView
+                  objectFit={"cover"}
+                  style={{ flex: 1, backgroundColor: "#050A0E" }}
+                  streamURL={this.state.remoteStream.toURL()} /><Text>{this.state.remoteStream.toURL()}</Text>
+                  
+              </View>
+    }
+
+        {this.state.sdp == undefined &&
+        <TouchableOpacity onPress={() =>{this.startCall()}}>
+        <View>
+          <Text>CALL CONTACT</Text>
+        </View>
+      </TouchableOpacity>
+      }
+        { this.state.sdp &&
+             <TouchableOpacity onPress={() =>{this.answerCall()}}>
+             <View>
+               <Text>ANSWER CALL</Text>
+             </View>
+           </TouchableOpacity>
+        }
             </View>
         );
     }
