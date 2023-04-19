@@ -114,7 +114,9 @@ async function init(navigation) {
     }
 
     if (Globals.backgroundSyncMessagesTimer === undefined) {
-        Globals.backgroundSyncMessagesTimer = setInterval(backgroundSyncMessages, 5000);
+      Globals.backgroundSyncMessagesTimer = setInterval(function() {
+        backgroundSyncMessages(navigation);
+      }, 5000);
     }
 
     if (Globals.checkIfStuck === undefined) {
@@ -1094,7 +1096,7 @@ async function checkIfStuck() {
 
 }
 
-async function backgroundSyncMessages() {
+async function backgroundSyncMessages(navigation) {
 
 
   if (Globals.syncingMessagesCount > 3) {
@@ -1160,7 +1162,7 @@ async function backgroundSyncMessages() {
 
           if (thisExtra.length > 66) {
 
-            let message = await getMessage(thisExtra, thisHash);
+            let message = await getMessage(thisExtra, thisHash, navigation);
 
           } else {
             continue;
