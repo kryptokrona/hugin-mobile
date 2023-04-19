@@ -885,7 +885,7 @@ async function getGroupMessage(tx) {
 
 }
 
-export async function getMessage(extra, hash){
+export async function getMessage(extra, hash, navigation){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -1050,8 +1050,21 @@ export async function getMessage(extra, hash){
             console.log('Call received!');
 
             console.log(from_payee);
-            let sdp_expanded = expand_sdp_offer(message.msg);
-            Globals.activeCalls[from_payee.paymentID] = 'sdp_expanded';
+            let sdp_expanded = expand_sdp_offer(payload_json.msg);
+            // Globals.activeCalls[from_payee.paymentID] = 'sdp_expanded';
+
+            navigation.navigate(
+              'ChatScreen', {
+                  payee: from_payee,
+              });
+
+            navigation.navigate(
+              'CallScreen', {
+                  payee: from_payee,
+                  sdp: payload_json.msg,
+              });
+
+              
 
             PushNotification.localNotification({
               title: from,//'Incoming transaction received!',
@@ -1062,7 +1075,14 @@ export async function getMessage(extra, hash){
               largeIconUrl: get_avatar(payload_json.from, 64),
           });
 
+          resolve(payload_json);
+
           } 
+          if (payload_json.msg.substring(0,1) == 'δ') {
+            Globals.sdp_answer = payload_json.msg;
+            Globals.updateCall(); // pass sdp data to some gangstah
+            resolve(payload_json);
+          }
 
           if (Globals.activeChat != payload_json.from && !from_myself) {
             PushNotification.localNotification({

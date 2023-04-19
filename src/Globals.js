@@ -68,6 +68,8 @@ class globals {
 
         this.updateChatFunctions = [];
 
+        this.updateCallFunctions = [];
+
         this.updateBoardsFunctions = [];
 
         /* Mapping of tx hash to address sent, payee name, memo */
@@ -95,7 +97,7 @@ class globals {
 
         this.unreadMessages = {boards: 0, groups: 0, pms: 0};
 
-        this.activeCalls = {};
+        this.sdp_answer = '';
 
     }
 
@@ -201,6 +203,13 @@ class globals {
           f();
       });
     }
+
+    updateCall() {
+        console.log('updateCall');
+        Globals.updateCallFunctions.forEach((f) => {
+            f();
+        });
+      }
 
     updateBoards() {
       console.log('updateChat');
