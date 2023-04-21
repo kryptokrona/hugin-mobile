@@ -96,8 +96,6 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
             prio = parseInt(prio * 0.8)
         }
 
-        external_ip = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
-
         if (i == prts.length / 3) {
             i = 0
             j += 1
@@ -107,9 +105,7 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
         i += 1
     })
 
-    if (external_ip.length == 0) {
-        external_id = ips[0].substring(1)
-    }
+    let external_ip_out = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
 
     console.log(external_ports.length / 3)
     console.log((external_ports.length / 3) * 2)
@@ -131,7 +127,7 @@ m=audio ` +
         external_ports[0] +
         ` UDP/TLS/RTP/SAVPF 111 103 
 ` +
-        external_ip +
+        external_ip_out +
 `
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
@@ -176,7 +172,7 @@ a=ssrc:` +
 m=video ` +
         external_ports[external_ports.length / 3] +
         ` UDP/TLS/RTP/SAVPF 96 97
-` + external_ip +
+` + external_ip_out +
 `
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
@@ -261,7 +257,7 @@ ${
         external_ports[(external_ports.length / 3) * 2] +
         ` UDP/DTLS/SCTP webrtc-datachannel
 ` +
-        external_ip +
+        external_ip_out +
         `
 ` +
         candidates[3] +
@@ -388,7 +384,7 @@ export function expand_sdp_answer (compressed_string) {
             ' typ host generation 0 network-id 3 network-cost 10\r\n'
     }
 
-    external_ip = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
+    let external_ip_out = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
 
     if (!external_port) {
         external_port = '9'
@@ -406,7 +402,7 @@ a=msid-semantic: WMS ` +
 m=audio ` +
         external_port +
         ` UDP/TLS/RTP/SAVPF 111 103
-` + external_ip + `
+` + external_ip_out + `
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates +
