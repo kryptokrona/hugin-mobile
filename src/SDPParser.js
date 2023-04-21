@@ -1,8 +1,9 @@
 const en = require('int-encoder')
-const settings = {incoming: {ipv6: false}};
 import {decode as atob, encode as btoa} from 'base-64'
 
-
+function ipv6(ip) {
+    return ip.split(':').length == 8
+}
 
 export function expand_sdp_offer (compressed_string, incoming = false) {
 
@@ -57,11 +58,6 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
         if (i == 1) {
             current_internal = port.substring(0, port.length - 1)
         }
-        if (ips[ip_index].length > 20 && incoming) {
-            
-            settings.incoming = {ipv6: true};
-
-        }
         if (ips[ip_index].substring(0, 1) == '!') {
             external_ip = ips[ip_index].substring(1)
             external_ports = external_ports.concat(
@@ -100,7 +96,7 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
             prio = parseInt(prio * 0.8)
         }
 
-        external_ip = ipv6(external_ip) ? 'c=IN IP4 ' : 'c=IN IPV6 ';
+        external_ip = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
 
         if (i == prts.length / 3) {
             i = 0
@@ -136,7 +132,8 @@ m=audio ` +
         ` UDP/TLS/RTP/SAVPF 111 103 
 ` +
         external_ip +
-`a=rtcp:9 IN IP4 0.0.0.0
+`
+a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates[1] +
         `a=ice-ufrag:` +
@@ -263,7 +260,7 @@ ${
 }m=application ` +
         external_ports[(external_ports.length / 3) * 2] +
         ` UDP/DTLS/SCTP webrtc-datachannel
-c=IN IP4 ` +
+` +
         external_ip +
         `
 ` +
@@ -287,12 +284,7 @@ a=max-message-size:262144
     return { type: 'offer', sdp: sdp }
 }
 
-function ipv6(ip) {
-    const ipv6 = ips.some(item => {
-        return item.split(':').length == 8
-    });
-    return ipv6;
-}
+
 
 export function expand_sdp_answer (compressed_string) {
     let split = compressed_string.split(',')
@@ -396,7 +388,7 @@ export function expand_sdp_answer (compressed_string) {
             ' typ host generation 0 network-id 3 network-cost 10\r\n'
     }
 
-    external_ip = ipv6(external_ip) ? 'c=IN IP6 ' : 'c=IN IP4 ';
+    external_ip = ipv6(external_ip) ? 'c=IN IP6 ' + external_ip : 'c=IN IP4 ' + external_ip;
 
     if (!external_port) {
         external_port = '9'
@@ -414,8 +406,7 @@ a=msid-semantic: WMS ` +
 m=audio ` +
         external_port +
         ` UDP/TLS/RTP/SAVPF 111 103
-` + external_ip +
-`
+` + external_ip + `
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates +
@@ -618,9 +609,6 @@ export function parse_sdp (sdp, answr = false) {
             console.log('msid', msid)
         }
     })
-
-    //Reset incoming ipv6 settings
-    settings.incoming = {ipv6: false};
 
     return (
         ice_ufrag +
