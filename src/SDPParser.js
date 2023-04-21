@@ -100,6 +100,8 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
             prio = parseInt(prio * 0.8)
         }
 
+        external_ip = ipv6(external_ip) ? 'c=IN IP4 ' : 'c=IN IPV6 ';
+
         if (i == prts.length / 3) {
             i = 0
             j += 1
@@ -131,11 +133,10 @@ a=msid-semantic: WMS ` +
         `
 m=audio ` +
         external_ports[0] +
-        ` UDP/TLS/RTP/SAVPF 111 103
-c=IN IP4 ` +
+        ` UDP/TLS/RTP/SAVPF 111 103 
+` +
         external_ip +
-        `
-a=rtcp:9 IN IP4 0.0.0.0
+`a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates[1] +
         `a=ice-ufrag:` +
@@ -178,9 +179,8 @@ a=ssrc:` +
 m=video ` +
         external_ports[external_ports.length / 3] +
         ` UDP/TLS/RTP/SAVPF 96 97
-c=IN IP4 ` +
-        external_ip +
-        `
+` + external_ip +
+`
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates[2] +
@@ -287,7 +287,12 @@ a=max-message-size:262144
     return { type: 'offer', sdp: sdp }
 }
 
-
+function ipv6(ip) {
+    const ipv6 = ips.some(item => {
+        return item.split(':').length == 8
+    });
+    return ipv6;
+}
 
 export function expand_sdp_answer (compressed_string) {
     let split = compressed_string.split(',')
@@ -391,6 +396,8 @@ export function expand_sdp_answer (compressed_string) {
             ' typ host generation 0 network-id 3 network-cost 10\r\n'
     }
 
+    external_ip = ipv6(external_ip) ? 'c=IN IP6 ' : 'c=IN IP4 ';
+
     if (!external_port) {
         external_port = '9'
     }
@@ -407,9 +414,8 @@ a=msid-semantic: WMS ` +
 m=audio ` +
         external_port +
         ` UDP/TLS/RTP/SAVPF 111 103
-c=IN IP4 ` +
-        external_ip +
-        `
+` + external_ip +
+`
 a=rtcp:9 IN IP4 0.0.0.0
 ` +
         candidates +
@@ -562,7 +568,6 @@ export function parse_sdp (sdp, answr = false) {
     let msid = ''
     let ip
     let port
-    let ipv6 = false
 
     let lines = sdp.sdp.split('\n').map((l) => l.trim()) // split and remove trailing CR
     lines.forEach(function (line) {
@@ -593,14 +598,6 @@ export function parse_sdp (sdp, answr = false) {
                 ip = '!' + ip
             } else {
                 ip = '?' + ip
-            }
-        
-            if (ip.length > 20 && answr) {
-                ipv6 = true
-            }
-
-            if (settings.incoming.ipv6 && answr && ip.length < 20 && ipv6) {
-              return
             }
 
             if (!ips.includes(ip)) {
