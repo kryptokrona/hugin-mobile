@@ -1055,12 +1055,12 @@ export async function getMessage(extra, hash, navigation){
 
             navigation.navigate(
               'ChatScreen', {
-                  payee: from_payee,
+                  payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
               });
 
             navigation.navigate(
               'CallScreen', {
-                  payee: from_payee,
+                  payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
                   sdp: payload_json.msg,
               });
 
@@ -1071,7 +1071,7 @@ export async function getMessage(extra, hash, navigation){
               //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
               message: 'Call received',
               data: payload_json.t,
-              userInfo: from_payee,
+              userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
               largeIconUrl: get_avatar(payload_json.from, 64),
           });
 
