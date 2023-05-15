@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
+    Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
 } from 'react-native';
 
 import {
@@ -55,6 +55,8 @@ import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
+
+import CustomIcon from './CustomIcon.js'
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -1166,6 +1168,11 @@ export class CallScreenNoTranslation extends React.Component {
 
             console.log('Connection change');
             console.log(this.state.peer);
+            this.setState({callStatus: this.state.peer.connectionState});
+
+            if(this.state.peer.connectionState == 'disconnected') {
+                this.disconnectCall();
+            }
 
           }
 
@@ -1180,15 +1187,23 @@ export class CallScreenNoTranslation extends React.Component {
           // Log error
         });
 
+        const callStatus = 'disconnected';
 
+        const localWebcamOn = true;
 
+        const localMicOn = true;
 
         this.state = {
             address,
             nickname,
             paymentID,
-            sdp
+            sdp,
+            callStatus,
+            localMicOn,
+            localWebcamOn
         }
+
+        this.setState({selectedValue: 'video'})
 
         Globals.updateCallFunctions.push(() => {
 
@@ -1229,6 +1244,8 @@ export class CallScreenNoTranslation extends React.Component {
 
     async startCall() {
 
+        this.setState({callStatus: 'waiting'});
+
         await this.state.peer.createDataChannel('HuginDataChannel');
 
         let sessionDescription = await this.state.peer.createOffer();
@@ -1262,6 +1279,8 @@ export class CallScreenNoTranslation extends React.Component {
         const reparsed_sdp = expand_sdp_offer(parsed_data);
 
         console.log(reparsed_sdp);
+
+        // await this.state.peer.setLocalDescription(reparsed_sdp);
     
         // let expanded_data = expand_sdp_offer(parsed_data);
     
@@ -1330,6 +1349,40 @@ export class CallScreenNoTranslation extends React.Component {
 
           
 
+    }
+
+    async disconnectCall() {
+
+        this.state.peer.close();
+        this.props.navigation.navigate(
+            'ChatScreen', {
+                payee: this.props.navigation.state.params.payee,
+            });
+        toastPopUp('Call terminated..')
+
+    }
+
+      // Switch Camera
+  switchCamera() {
+    this.state.stream.getVideoTracks().forEach((track) => {
+      track._switchCamera();
+    });
+  }
+
+  // Enable/Disable Camera
+  toggleCamera() {
+    this.state.localWebcamOn ? this.setState({localWebcamOn: false}) : this.setState({localWebcamOn: true});
+    this.state.stream.getVideoTracks().forEach((track) => {
+      this.state.localWebcamOn ? (track.enabled = false) : (track.enabled = true);
+    });
+  }
+
+  // Enable/Disable Mic
+    toggleMic() {
+    this.state.localMicOn ? this.setState({localMicOn: false}) : this.setState({localMicOn: true});
+    this.state.stream.getAudioTracks().forEach((track) => {
+        this.state.localMicOn ? (track.enabled = false) : (track.enabled = true);
+    });
     }
 
     render() {
@@ -1432,48 +1485,132 @@ export class CallScreenNoTranslation extends React.Component {
                 }}>
 
                 </View>
-                { this.state.stream &&
-              <View style={{
-                height: 200,
-                width: 200
-              }}>
                 
+              <View style={{
+                width: 300,
+                height: 220,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 5,
+                overflow: 'hidden',
+                borderwidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderStyle: 'solid'
+              }}>
+                { this.state.stream && this.state.localWebcamOn &&
                 <RTCView
                   objectFit={"cover"}
                   style={{ flex: 1, backgroundColor: "#050A0E" }}
-                  streamURL={this.state.stream.toURL()} /><Text>{this.state.stream.toURL()}</Text>
-                  
+                  streamURL={this.state.stream.toURL()} />
+                }
+                 <View style={{
+                    position: 'absolute',
+                    bottom: 5,
+                    left: 5,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    padding: 3
+                }}>
+                   <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+                </View>
               </View>
-    }
+    
+              { this.state.stream && this.state.callStatus != 'disconnected' &&
 
-{ this.state.remoteStream &&
               <View style={{
-                height: 200,
-                width: 200
+                marginTop: 10,
+                width: 300,
+                height: 220,
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 5,
+                overflow: 'hidden',
+                borderwidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderStyle: 'solid'
               }}>
-                
-                <RTCView
-                  objectFit={"cover"}
-                  style={{ flex: 1, backgroundColor: "#050A0E" }}
-                  streamURL={this.state.remoteStream.toURL()} /><Text>{this.state.remoteStream.toURL()}</Text>
-                  
-              </View>
-    }
+                <Image
+                          style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
+                          source={{uri: get_avatar(this.state.address, 150)}}
+                        />
+                    { this.state.remoteStream &&
+                    <RTCView
+                    objectFit={"cover"}
+                    style={{ flex: 1, backgroundColor: "#050A0E" }}
+                    streamURL={this.state.remoteStream.toURL()} />
+                    } 
+                 <View style={{
+                    position: 'absolute',
+                    bottom: 5,
+                    left: 5,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    padding: 3
+                 }}>
+                    <Text style={{color: 'black'}}>{this.state.nickname}</Text>
+                </View>
+                </View>
+    
+        }
 
-        {this.state.sdp == undefined &&
-        <TouchableOpacity onPress={() =>{this.startCall()}}>
-        <View>
-          <Text>CALL CONTACT</Text>
-        </View>
-      </TouchableOpacity>
-      }
-        { this.state.sdp &&
+      <View
+      style={{
+        position: 'absolute',
+        bottom: 20,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 5,
+        overflow: 'hidden',
+        padding: 5,
+        flexDirection: 'row',
+      }}>
+
+        {this.state.localWebcamOn ? 
+            <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+            <CustomIcon name='camera-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+            </TouchableOpacity>
+             :
+             <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+            <CustomIcon name='camera' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+            </TouchableOpacity>
+        }
+
+        {this.state.localMicOn ? 
+            <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+            <CustomIcon name='microphone-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+            </TouchableOpacity>
+             :
+             <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+            <CustomIcon name='microphone-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+            </TouchableOpacity>
+        }
+
+        {this.state.callStatus == 'disconnected' && !this.state.sdp &&
+            <TouchableOpacity onPress={() =>{this.startCall()}}>
+                
+                <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+                
+            </TouchableOpacity>
+        }
+
+        { this.state.sdp && this.state.callStatus == 'disconnected' &&
              <TouchableOpacity onPress={() =>{this.answerCall()}}>
-             <View>
-               <Text>ANSWER CALL</Text>
-             </View>
+                <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
            </TouchableOpacity>
         }
+
+        { this.state.callStatus != 'disconnected' && this.state.callStatus != 'failed' &&
+
+            <TouchableOpacity onPress={() =>{this.disconnectCall()}}>
+            <CustomIcon name='call-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+            </TouchableOpacity>
+
+        }
+
+    </View>
+
+        <Text>{this.state.callStatus + JSON.stringify(this.state.payee)}</Text>
+
+
             </View>
         );
     }
