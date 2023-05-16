@@ -1354,6 +1354,9 @@ export class CallScreenNoTranslation extends React.Component {
     async disconnectCall() {
 
         this.state.peer.close();
+        this.state.stream.getTracks().forEach(function(track) {
+            track.stop();
+          });
         this.props.navigation.navigate(
             'ChatScreen', {
                 payee: this.props.navigation.state.params.payee,
@@ -1384,6 +1387,13 @@ export class CallScreenNoTranslation extends React.Component {
         this.state.localMicOn ? (track.enabled = false) : (track.enabled = true);
     });
     }
+
+    // Switch Camera
+  switchCamera() {
+    this.state.stream.getVideoTracks().forEach((track) => {
+      track._switchCamera();
+    });
+  }
 
     render() {
 
@@ -1496,6 +1506,10 @@ export class CallScreenNoTranslation extends React.Component {
                 borderColor: 'rgba(255,255,255,0.1)',
                 borderStyle: 'solid'
               }}>
+            <Image
+                    style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
+                    source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 150)}}
+                />
                 { this.state.stream && this.state.localWebcamOn &&
                 <RTCView
                   objectFit={"cover"}
@@ -1557,10 +1571,12 @@ export class CallScreenNoTranslation extends React.Component {
       style={{
         position: 'absolute',
         bottom: 20,
+        width: 300,
+        justifyContent: 'space-between',
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 5,
         overflow: 'hidden',
-        padding: 5,
+        padding: 10,
         flexDirection: 'row',
       }}>
 
@@ -1573,6 +1589,10 @@ export class CallScreenNoTranslation extends React.Component {
             <CustomIcon name='camera' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
             </TouchableOpacity>
         }
+
+        <TouchableOpacity onPress={() =>{this.switchCamera()}}>
+            <CustomIcon name='repeate-music' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+        </TouchableOpacity>
 
         {this.state.localMicOn ? 
             <TouchableOpacity onPress={() =>{this.toggleMic()}}>
