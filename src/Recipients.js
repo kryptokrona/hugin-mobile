@@ -246,7 +246,6 @@ export class RecipientsScreenNoTranslation extends React.Component {
                     <View style={{
                         backgroundColor: this.props.screenProps.theme.backgroundColour,
                         flex: 1,
-                        marginRight: 15,
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                     }}>
@@ -1164,6 +1163,7 @@ export class CallScreenNoTranslation extends React.Component {
             this.setState({remoteStream: event.stream});
           };
 
+
           this.state.peer.onconnectionstatechange = (ev) => {
 
             console.log('Connection change');
@@ -1246,7 +1246,9 @@ export class CallScreenNoTranslation extends React.Component {
 
         this.setState({callStatus: 'waiting'});
 
-        await this.state.peer.createDataChannel('HuginDataChannel');
+        let data_channel = await this.state.peer.createDataChannel('HuginDataChannel');
+
+        data_channel.addEventListener("message", (event) => {console.log("Data", event.data)});
 
         let sessionDescription = await this.state.peer.createOffer();
     
@@ -1589,7 +1591,7 @@ export class CallScreenNoTranslation extends React.Component {
                     { this.state.remoteStream &&
                     <RTCView
                     objectFit={"cover"}
-                    style={{ flex: 1, backgroundColor: "#050A0E" }}
+                    style={[(this.state.remoteStream.getVideoTracks().length ? {opacity: 1} : {opacity: 0}),{ flex: 1, backgroundColor: "#050A0E" }]}
                     streamURL={this.state.remoteStream.toURL()} />
                     } 
                  <View style={{
@@ -1741,13 +1743,10 @@ export class CallScreenNoTranslation extends React.Component {
         borderColor:  '#252525',
         position: 'absolute',
         top: 40,
-        width: '85%',
-        justifyContent: 'space-between',
         borderRadius: 5,
-        overflow: 'hidden',
         padding: 10,
-        flexDirection: 'row',
-        color: 'black'
+        color: 'black',
+        textAlign: 'center'
     }}>
     { this.state.sdp && this.state.callStatus == 'disconnected' &&
     <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>

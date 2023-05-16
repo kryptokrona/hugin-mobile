@@ -481,12 +481,9 @@ export class MainScreen extends React.PureComponent {
             borderWidth: 1,
             borderColor: this.props.screenProps.theme.borderColour,
             borderRadius: 15,
-            margin: 4,
-            marginRight: 10,
             padding: 10,
             flexDirection: 'row',
             flex: 1,
-            width: '25%',
             alignContent: 'center'
           }
 
@@ -663,11 +660,10 @@ export class MainScreen extends React.PureComponent {
                     </View>
 
                     {!this.state.addressOnly &&
-                      <View style={{flexDirection: 'row', marginTop: 45}}>
+                      <View style={{paddingLeft: '10%', paddingRight: '10%', flexDirection: 'row', marginTop: 45}}>
 
                       <TouchableOpacity style={cardStyle}
                       onPress={() => {
-                        console.log(this.props);
                         this.props.navigation.navigate('Groups', this.props.navigation);
                       }}>
 
@@ -680,6 +676,7 @@ export class MainScreen extends React.PureComponent {
                         textAlign: 'left',
                         fontSize: 10,
                         marginLeft: 10,
+                        marginTop: 5,
                         fontFamily: 'Montserrat-Bold'
                       }}>
 
@@ -695,9 +692,10 @@ export class MainScreen extends React.PureComponent {
 
                       </TouchableOpacity>
 
+                      <View style={{width: 10}}></View>
+
                       <TouchableOpacity style={cardStyle}
                       onPress={() => {
-                        console.log(this.props);
                         this.props.navigation.navigate('Recipients', this.props.navigation);
                       }}>
 
@@ -710,6 +708,7 @@ export class MainScreen extends React.PureComponent {
                         textAlign: 'left',
                         fontSize: 10,
                         marginLeft: 10,
+                        marginTop: 5,
                         fontFamily: 'Montserrat-Bold'
                       }}>
 
@@ -935,7 +934,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
         return(
             <View style={{alignItems: 'center'}}>
-            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
+            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, minWidth: '80%'}}>
                     <Text style={{
                         color: 'black',
                         fontSize: 64,

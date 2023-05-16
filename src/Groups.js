@@ -312,7 +312,6 @@ export class GroupsScreenNoTranslation extends React.Component {
                     <View style={{
                         backgroundColor: this.props.screenProps.theme.backgroundColour,
                         flex: 1,
-                        marginRight: 15,
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                     }}>
