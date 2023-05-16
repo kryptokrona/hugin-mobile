@@ -1052,22 +1052,11 @@ export async function getMessage(extra, hash, navigation){
           if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
             console.log('Call received!');
 
-            console.log(from_payee);
-            let sdp_expanded = expand_sdp_offer(payload_json.msg);
-            // Globals.activeCalls[from_payee.paymentID] = 'sdp_expanded';
-
-            navigation.navigate(
-              'ChatScreen', {
-                  payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
-              });
-
             navigation.navigate(
               'CallScreen', {
                   payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
                   sdp: payload_json.msg,
               });
-
-              
 
             PushNotification.localNotification({
               title: from,//'Incoming transaction received!',
