@@ -689,7 +689,12 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     }
 
     if (result.success) {
-
+      if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
+        message = 'Call started';
+      }
+      if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
+        message = 'Call answered';
+      }
       saveMessage(receiver, 'sent', message, timestamp);
       backgroundSave();
 
@@ -1044,9 +1049,7 @@ export async function getMessage(extra, hash, navigation){
             received = 'sent';
           }
 
-          saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
-
-          if (payload_json.msg.substring(0,1) == 'Δ') {
+          if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
             console.log('Call received!');
 
             console.log(from_payee);
@@ -1074,15 +1077,23 @@ export async function getMessage(extra, hash, navigation){
               userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
               largeIconUrl: get_avatar(payload_json.from, 64),
           });
+          payload_json.msg = 'Call received';
+          saveMessage(payload_json.from, received, 'Call received', payload_json.t);
 
           resolve(payload_json);
 
           } 
-          if (payload_json.msg.substring(0,1) == 'δ') {
+          if (payload_json.msg.substring(0,1) == 'δ' || payload_json.msg.substring(0,1) == 'λ') {
             Globals.sdp_answer = payload_json.msg;
-            Globals.updateCall(); // pass sdp data to some gangstah
+            Globals.updateCall(); 
+            saveMessage(payload_json.from, received, 'Call answered', payload_json.t);
+            payload_json.msg = 'Call answered';
             resolve(payload_json);
           }
+
+          saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+
+          
 
           if (Globals.activeChat != payload_json.from && !from_myself) {
             PushNotification.localNotification({
