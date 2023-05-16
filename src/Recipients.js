@@ -1174,8 +1174,7 @@ export class CallScreenNoTranslation extends React.Component {
                 this.disconnectCall();
             }
 
-          }
-
+        }
           this.state.peer.addStream(this.state.stream);
 
           // setup stream listening
@@ -1216,6 +1215,7 @@ export class CallScreenNoTranslation extends React.Component {
         });
 
     }
+
 
     addAnswer() {
         console.log('this.state.sdp_answer', Globals.sdp_answer);
@@ -1403,6 +1403,21 @@ export class CallScreenNoTranslation extends React.Component {
 
        const items = [];
 
+
+        const preCallStyleUser = {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+        }
+        const postCallStyleUser = {
+            position: 'absolute',
+            width: 150,
+            height: 110,
+            bottom: 90,
+            left: '7.5%'
+        }
+        
+
        for (message in this.state.messages) {
          if (this.state.address == this.state.messages[message].conversation){
            let timestamp = this.state.messages[message].timestamp / 1000;
@@ -1496,76 +1511,77 @@ export class CallScreenNoTranslation extends React.Component {
 
                 </View>
                 
-              <View style={{
-                width: 300,
-                height: 220,
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                borderRadius: 5,
-                overflow: 'hidden',
-                borderWidth: 1,
-                borderStyle: 'solid',
-                borderColor:  '#252525',
-              }}>
-            <Image
-                    style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
-                    source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 150)}}
-                />
-                { this.state.stream && this.state.localWebcamOn &&
-                <RTCView
-                  objectFit={"cover"}
-                  style={{ flex: 1, backgroundColor: "#050A0E" }}
-                  streamURL={this.state.stream.toURL()} />
-                }
-                 <View style={{
-                    position: 'absolute',
-                    bottom: 5,
-                    left: 5,
-                    backgroundColor: 'rgba(255,255,255,0.4)',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    padding: 3
-                }}>
-                   <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+              {(this.state.callStatus != 'connected') &&
+              
+              <View style={ [preCallStyleUser,
+                {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 5,
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                  borderColor:  '#252525'
+                }]
+                }>
+              <Image
+                      style={{width: 150, height: 150, position: 'absolute', alignSelf: 'center', top: '40%'}}
+                      source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 150)}}
+                  />
+                  { this.state.stream && this.state.localWebcamOn &&
+                  <RTCView
+                    objectFit={"cover"}
+                    style={{ flex: 1, backgroundColor: "#050A0E" }}
+                    streamURL={this.state.stream.toURL()} />
+                  }
+                   <View style={{
+                      position: 'absolute',
+                      bottom: 5,
+                      left: 5,
+                      backgroundColor: 'rgba(255,255,255,0.4)',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      padding: 3
+                  }}>
+                     <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+                  </View>
+                  {(!this.state.localMicOn || !this.state.localWebcamOn) &&
+                  <View style={{
+                      justifyContent: 'space-between',
+                      flexDirection: 'row',
+                      position: 'absolute',
+                      bottom: 5,
+                      right: 5,
+                      backgroundColor: 'rgba(255,255,255,0.4)',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      padding: 3
+                  }}>
+                      {!this.state.localMicOn &&
+                      <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                      }
+                      {!this.state.localMicOn && !this.state.localWebcamOn &&
+                      <View style={{width: 5}}></View>
+                      }
+                      {!this.state.localWebcamOn &&
+                      <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                      }
+                  </View>
+                  }
+  
                 </View>
-                {(!this.state.localMicOn || !this.state.localWebcamOn) &&
-                <View style={{
-                    justifyContent: 'space-between',
-                    flexDirection: 'row',
-                    position: 'absolute',
-                    bottom: 5,
-                    right: 5,
-                    backgroundColor: 'rgba(255,255,255,0.4)',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    padding: 3
-                }}>
-                    {!this.state.localMicOn &&
-                    <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
-                    }
-                    {!this.state.localMicOn && !this.state.localWebcamOn &&
-                    <View style={{width: 5}}></View>
-                    }
-                    {!this.state.localWebcamOn &&
-                    <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
-                    }
-                </View>
-                }
 
-              </View>
+              }
     
-              { this.state.stream && this.state.callStatus != 'disconnected' &&
-
-              <View style={{
-                marginTop: 10,
-                width: 300,
-                height: 220,
+              { this.state.callStatus == 'connected' &&
+            <>
+              <View style={[preCallStyleUser, {
                 backgroundColor: 'rgba(255,255,255,0.1)',
                 borderRadius: 5,
                 overflow: 'hidden',
                 borderWidth: 1,
                 borderStyle: 'solid',
                 borderColor:  '#252525',
-              }}>
+              }]}>
                 <Image
                           style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
                           source={{uri: get_avatar(this.state.address, 150)}}
@@ -1588,8 +1604,68 @@ export class CallScreenNoTranslation extends React.Component {
                     <Text style={{color: 'black'}}>{this.state.nickname}</Text>
                 </View>
                 </View>
+
+<View style={ [postCallStyleUser,
+    {
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: 5,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor:  '#252525',
+    }]
+    }>
+  <Image
+          style={{width: 50, height: 50, position: 'absolute', left: 50, top: 30}}
+          source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 50)}}
+      />
+      { this.state.stream && this.state.localWebcamOn &&
+      <RTCView
+        objectFit={"cover"}
+        style={{ flex: 1, backgroundColor: "#050A0E" }}
+        streamURL={this.state.stream.toURL()} />
+      }
+       <View style={{
+          position: 'absolute',
+          bottom: 5,
+          left: 5,
+          backgroundColor: 'rgba(255,255,255,0.4)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          padding: 3
+      }}>
+         <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+      </View>
+      {(!this.state.localMicOn || !this.state.localWebcamOn) &&
+      <View style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          position: 'absolute',
+          bottom: 5,
+          right: 5,
+          backgroundColor: 'rgba(255,255,255,0.4)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          padding: 3
+      }}>
+          {!this.state.localMicOn &&
+          <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+          }
+          {!this.state.localMicOn && !this.state.localWebcamOn &&
+          <View style={{width: 5}}></View>
+          }
+          {!this.state.localWebcamOn &&
+          <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+          }
+      </View>
+      }
+
+    </View>
+    </>
     
         }
+
+
         
         {this.state.stream &&
         <View
@@ -1599,8 +1675,8 @@ export class CallScreenNoTranslation extends React.Component {
           borderStyle: 'solid',
           borderColor:  '#252525',
           position: 'absolute',
-          bottom: 20,
-          width: 300,
+          bottom: 40,
+          width: '85%',
           justifyContent: 'space-between',
           borderRadius: 5,
           overflow: 'hidden',
@@ -1635,21 +1711,21 @@ export class CallScreenNoTranslation extends React.Component {
           {this.state.callStatus == 'disconnected' && !this.state.sdp &&
               <TouchableOpacity onPress={() =>{this.startCall()}}>
                   
-                  <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
                   
               </TouchableOpacity>
           }
   
           { this.state.sdp && this.state.callStatus == 'disconnected' &&
                <TouchableOpacity onPress={() =>{this.answerCall()}}>
-                  <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
              </TouchableOpacity>
           }
   
           { this.state.callStatus != 'disconnected' && this.state.callStatus != 'failed' &&
   
               <TouchableOpacity onPress={() =>{this.disconnectCall()}}>
-              <CustomIcon name='call-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              <CustomIcon name='call-slash' size={24} style={{color: '#EA3323'}} />
               </TouchableOpacity>
   
           }
@@ -1657,7 +1733,22 @@ export class CallScreenNoTranslation extends React.Component {
       </View>
         }
       
-    <View style={{width: 200}}>
+    { this.state.callStatus != 'connected' && 
+    <View style={{
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor:  '#252525',
+        position: 'absolute',
+        top: 40,
+        width: '85%',
+        justifyContent: 'space-between',
+        borderRadius: 5,
+        overflow: 'hidden',
+        padding: 10,
+        flexDirection: 'row',
+        color: 'black'
+    }}>
     { this.state.sdp && this.state.callStatus == 'disconnected' &&
     <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>
     }
@@ -1667,10 +1758,16 @@ export class CallScreenNoTranslation extends React.Component {
     { !this.state.stream &&
     <Text>{"No access to camera and/or microphone. Please allow them in your phone's settings to make calls."}</Text>
     }
-    </View>
-
-        {/* <Text>{this.state.callStatus)}</Text> */}
-
+    { this.state.callStatus == 'waiting' &&
+    <Text>{"Waiting for answer.."}</Text>
+    }
+    { this.state.callStatus == 'connecting' &&
+    <Text>{"Connecting.."}</Text>
+    }
+    {/* { this.state.callStatus == 'connected' &&
+        <Text>{"Connected"}</Text>
+    } */}
+    </View>}
 
             </View>
         );
