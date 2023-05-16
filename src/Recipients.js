@@ -1527,6 +1527,30 @@ export class CallScreenNoTranslation extends React.Component {
                 }}>
                    <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
                 </View>
+                {(!this.state.localMicOn || !this.state.localWebcamOn) &&
+                <View style={{
+                    justifyContent: 'space-between',
+                    flexDirection: 'row',
+                    position: 'absolute',
+                    bottom: 5,
+                    right: 5,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    padding: 3
+                }}>
+                    {!this.state.localMicOn &&
+                    <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                    }
+                    {!this.state.localMicOn && !this.state.localWebcamOn &&
+                    <View style={{width: 5}}></View>
+                    }
+                    {!this.state.localWebcamOn &&
+                    <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                    }
+                </View>
+                }
+
               </View>
     
               { this.state.stream && this.state.callStatus != 'disconnected' &&
@@ -1566,76 +1590,82 @@ export class CallScreenNoTranslation extends React.Component {
                 </View>
     
         }
-
-      <View
-      style={{
-        backgroundColor: '#171717',
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor:  '#252525',
-        position: 'absolute',
-        bottom: 20,
-        width: 300,
-        justifyContent: 'space-between',
-        borderRadius: 5,
-        overflow: 'hidden',
-        padding: 10,
-        flexDirection: 'row',
-      }}>
-
-        {this.state.localWebcamOn ? 
-            <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
-            <CustomIcon name='camera-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-            </TouchableOpacity>
-             :
-             <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
-            <CustomIcon name='camera' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-            </TouchableOpacity>
+        
+        {this.state.stream &&
+        <View
+        style={{
+          backgroundColor: '#171717',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor:  '#252525',
+          position: 'absolute',
+          bottom: 20,
+          width: 300,
+          justifyContent: 'space-between',
+          borderRadius: 5,
+          overflow: 'hidden',
+          padding: 10,
+          flexDirection: 'row',
+        }}>
+  
+          {this.state.localWebcamOn ? 
+              <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+              <CustomIcon name='camera-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+               :
+               <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+              <CustomIcon name='camera' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+          }
+  
+          <TouchableOpacity onPress={() =>{this.switchCamera()}}>
+              <CustomIcon name='repeate-music' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+          </TouchableOpacity>
+  
+          {this.state.localMicOn ? 
+              <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+              <CustomIcon name='microphone-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+               :
+               <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+              <CustomIcon name='microphone-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+          }
+  
+          {this.state.callStatus == 'disconnected' && !this.state.sdp &&
+              <TouchableOpacity onPress={() =>{this.startCall()}}>
+                  
+                  <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+                  
+              </TouchableOpacity>
+          }
+  
+          { this.state.sdp && this.state.callStatus == 'disconnected' &&
+               <TouchableOpacity onPress={() =>{this.answerCall()}}>
+                  <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+             </TouchableOpacity>
+          }
+  
+          { this.state.callStatus != 'disconnected' && this.state.callStatus != 'failed' &&
+  
+              <TouchableOpacity onPress={() =>{this.disconnectCall()}}>
+              <CustomIcon name='call-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+  
+          }
+  
+      </View>
         }
-
-        <TouchableOpacity onPress={() =>{this.switchCamera()}}>
-            <CustomIcon name='repeate-music' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-        </TouchableOpacity>
-
-        {this.state.localMicOn ? 
-            <TouchableOpacity onPress={() =>{this.toggleMic()}}>
-            <CustomIcon name='microphone-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-            </TouchableOpacity>
-             :
-             <TouchableOpacity onPress={() =>{this.toggleMic()}}>
-            <CustomIcon name='microphone-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-            </TouchableOpacity>
-        }
-
-        {this.state.callStatus == 'disconnected' && !this.state.sdp &&
-            <TouchableOpacity onPress={() =>{this.startCall()}}>
-                
-                <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-                
-            </TouchableOpacity>
-        }
-
-        { this.state.sdp && this.state.callStatus == 'disconnected' &&
-             <TouchableOpacity onPress={() =>{this.answerCall()}}>
-                <CustomIcon name='call' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-           </TouchableOpacity>
-        }
-
-        { this.state.callStatus != 'disconnected' && this.state.callStatus != 'failed' &&
-
-            <TouchableOpacity onPress={() =>{this.disconnectCall()}}>
-            <CustomIcon name='call-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
-            </TouchableOpacity>
-
-        }
-
-    </View>
+      
     <View style={{width: 200}}>
     { this.state.sdp && this.state.callStatus == 'disconnected' &&
     <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>
     }
-    { !this.state.sdp && this.state.callStatus == 'disconnected' &&
+    { this.state.stream && !this.state.sdp && this.state.callStatus == 'disconnected' &&
     <Text>{'Tap the phone icon to call ' + this.state.nickname + '.'}</Text>
+    }
+    { !this.state.stream &&
+    <Text>{"No access to camera and/or microphone. Please allow them in your phone's settings to make calls."}</Text>
     }
     </View>
 
