@@ -672,7 +672,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         inputContainerStyle={{
                             borderWidth: 0,
                             borderRadius: 15,
-                            backgroundColor: "rgba(0,0,0,0.2)",
+                            backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                             borderColor: 'transparent'
                         }}
                         labelStyle={{
@@ -707,7 +707,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                     inputContainerStyle={{
                         borderWidth: 0,
                         borderRadius: 15,
-                        backgroundColor: "rgba(0,0,0,0.2)",
+                        backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                         borderColor: 'transparent'
                     }}
                     labelStyle={{
@@ -743,7 +743,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                     inputContainerStyle={{
                         borderWidth: 0,
                         borderRadius: 15,
-                        backgroundColor: "rgba(0,0,0,0.2)",
+                        backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                         borderColor: 'transparent'
                     }}
                     labelStyle={{

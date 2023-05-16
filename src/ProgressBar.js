@@ -34,7 +34,7 @@ export class ProgressBar extends React.Component {
         return(
             <View style={[
                 {
-                    backgroundColor: 'rgba(0,0,0,0.2)',
+                    backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                     height: 5,
                     overflow: 'hidden',
                     alignItems: 'left',

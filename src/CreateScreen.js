@@ -52,7 +52,7 @@ class WalletOptionScreenNoTranslation extends React.Component {
       const { t } = this.props;
         return(
             <View style={{ flex: 1, justifyContent: 'flex-start', backgroundColor: this.props.screenProps.theme.backgroundColour }}>
-                <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 150}}>
+                <View style={{justifyContent: 'center', alignItems: 'center', marginTop: 50}}>
                     <XKRLogo />
                     <Text style={{
                         fontSize: 28,

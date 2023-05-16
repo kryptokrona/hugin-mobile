@@ -7,9 +7,18 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, Image
+    Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
 } from 'react-native';
 
+import {
+    mediaDevices,
+    RTCPeerConnection,
+    RTCView,
+    RTCIceCandidate,
+    RTCSessionDescription,
+  } from 'react-native-webrtc';
+
+import { parse_sdp, expand_sdp_offer, expand_sdp_answer } from './SDPParser';
 
 import {
     validateAddresses, WalletErrorCode, validatePaymentID,
@@ -46,6 +55,8 @@ import './i18n.js';
 import { withTranslation } from 'react-i18next';
 
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
+
+import CustomIcon from './CustomIcon.js'
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -235,7 +246,6 @@ export class RecipientsScreenNoTranslation extends React.Component {
                     <View style={{
                         backgroundColor: this.props.screenProps.theme.backgroundColour,
                         flex: 1,
-                        marginRight: 15,
                         alignItems: 'flex-start',
                         justifyContent: 'flex-start',
                     }}>
@@ -422,6 +432,8 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
         super(props);
 
         const { address, nickname, paymentID } = this.props.navigation.state.params.payee;
+
+        console.log(address, paymentID);
 
         this.state = {
             address,
@@ -817,27 +829,6 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
 
 export const ModifyPayeeScreen = withTranslation()(ModifyPayeeScreenNoTranslation)
 
-//
-// export class MessageBubble extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         // this.animation = new Animated.Value(0);
-//     }
-//
-//
-//     componentWillMount() {
-//       // this.animatedValue = new Animated.Value(0);
-//     }
-//
-//     componentDidMount() {
-//
-//     }
-//
-//     render() {
-//
-//     }
-// }
-
 
 export class ChatScreenNoTranslation extends React.Component {
     constructor(props) {
@@ -995,6 +986,19 @@ export class ChatScreenNoTranslation extends React.Component {
                         }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
                             {this.state.nickname}
                         </Text>
+                        <View style={{flex: 1}}>
+                        <Text onPress={() => {
+                            this.props.navigation.navigate(
+                                'CallScreen', {
+                                    payee: this.props.navigation.state.params.payee,
+                                    // sdp: 'wtfdoe'
+                                }
+                            );
+                        }} style={{ textAlign: 'right', fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {'Call'}
+                        </Text>
+                        </View>
+
                     </View>
                 </View>
 
@@ -1031,7 +1035,7 @@ export class ChatScreenNoTranslation extends React.Component {
                 <View
                 style={{
                     width: this.state.messageHasLength ? '80%' : '100%',
-                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                       borderWidth: 0,
                       borderColor: 'transparent',
                       borderRadius: 15
@@ -1094,3 +1098,679 @@ export class ChatScreenNoTranslation extends React.Component {
 }
 
 export const ChatScreen = withTranslation()(ChatScreenNoTranslation)
+
+export class CallScreenNoTranslation extends React.Component {
+    constructor(props) {
+        super(props);
+
+        const { address, nickname, paymentID } = this.props.navigation.state.params.payee;
+
+        const sdp  = this.props.navigation.state.params.sdp ? this.props.navigation.state.params.sdp : undefined;
+
+
+        let isFront = false;
+        let videoSourceId;
+        mediaDevices.enumerateDevices().then(sourceInfos => {
+    
+    for (let i = 0; i < sourceInfos.length; i++) {
+      console.log('Checking for cam..');
+      const sourceInfo = sourceInfos[i];
+      console.log(sourceInfo);
+      if (
+        sourceInfo.kind == 'videoinput' &&
+        sourceInfo.facing == (isFront ? 'user' : 'environment')
+      ) {
+        videoSourceId = sourceInfo.deviceId;
+      }
+      console.log(videoSourceId);
+    }
+    });
+
+    mediaDevices
+        .getUserMedia({
+          audio: true,
+          video: true,
+        })
+        .then(stream => {
+          console.log('We have stream')
+          // Get local stream!
+          let new_peer = new RTCPeerConnection( {
+            iceServers: [
+            {
+              urls: [
+                'stun:stun.l.google.com:19302',
+                'stun:global.stun.twilio.com:3478'
+              ]
+            }
+          ],
+          iceTransportPolicy: "all",
+          sdpSemantics: 'unified-plan',
+        //   trickle: false
+        });
+        
+          this.setState({stream: stream, peer: new_peer});    
+          console.log(this.state.stream);    
+          console.log(this.state.peer);    
+
+          this.state.peer.onicecandidate = event => {
+
+            // Add event handlers for ice candidate event
+
+          };
+
+          this.state.peer.onaddstream = event => {
+            // Got stream
+            this.setState({remoteStream: event.stream});
+          };
+
+
+          this.state.peer.onconnectionstatechange = (ev) => {
+
+            console.log('Connection change');
+            console.log(this.state.peer);
+            this.setState({callStatus: this.state.peer.connectionState});
+
+            if(this.state.peer.connectionState == 'disconnected') {
+                this.disconnectCall();
+            }
+
+        }
+          this.state.peer.addStream(this.state.stream);
+
+          // setup stream listening
+
+          console.log(sessionDescription);
+
+        })
+        .catch(error => {
+          // Log error
+        });
+
+        const callStatus = 'disconnected';
+
+        const localWebcamOn = true;
+
+        const localMicOn = true;
+
+        this.state = {
+            address,
+            nickname,
+            paymentID,
+            sdp,
+            callStatus,
+            localMicOn,
+            localWebcamOn
+        }
+
+        this.setState({selectedValue: 'video'})
+
+        Globals.updateCallFunctions.push(() => {
+
+            console.log('Globals.sdp_answer', Globals.sdp_answer);
+
+            this.setState({sdp_answer: Globals.sdp_answer});
+
+            this.addAnswer();
+
+        });
+
+    }
+
+
+    addAnswer() {
+        console.log('this.state.sdp_answer', Globals.sdp_answer);
+        const expanded_answer = expand_sdp_answer(Globals.sdp_answer);
+        console.log('expanded_answer',expanded_answer);
+        this.state.peer.setRemoteDescription(expanded_answer);
+    }
+
+    async componentDidMount() {
+
+        // const messages = await getMessages(this.state.address);
+
+        // this.setState({
+        //   messages: messages
+        // });
+
+        // Globals.activeChat = this.state.address;
+
+    }
+
+    async componentWillUnmount() {
+
+        // Globals.activeChat = '';
+
+    }
+
+    async startCall() {
+
+        this.setState({callStatus: 'waiting'});
+
+        let data_channel = await this.state.peer.createDataChannel('HuginDataChannel');
+
+        data_channel.addEventListener("message", (event) => {console.log("Data", event.data)});
+
+        let sessionDescription = await this.state.peer.createOffer();
+    
+        await this.state.peer.setLocalDescription(sessionDescription);
+
+        await new Promise((resolve) => {
+            if (this.state.peer.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              this.state.peer.addEventListener('icegatheringstatechange', () => {
+                if (this.state.peer.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+
+        sessionDescription = await this.state.peer.createOffer();
+    
+        await this.state.peer.setLocalDescription(sessionDescription);
+
+        console.log(sessionDescription);
+    
+        let parsed_sdp = parse_sdp(sessionDescription);
+    
+        let parsed_data = 'Δ' + parsed_sdp;
+    
+        console.log(parsed_data);
+
+        const reparsed_sdp = expand_sdp_offer(parsed_data);
+
+        console.log(reparsed_sdp);
+
+        // await this.state.peer.setLocalDescription(reparsed_sdp);
+    
+        // let expanded_data = expand_sdp_offer(parsed_data);
+    
+        // console.log(expanded_data);
+    
+        let receiver = this.state.address;
+    
+        let messageKey = this.state.paymentID;
+    
+        sendMessage(parsed_data, receiver, messageKey);    
+    
+       }
+
+    async answerCall() {
+
+        console.log(this.state.sdp);
+        
+        const parsed_sdp = expand_sdp_offer(this.state.sdp);
+
+        console.log(parsed_sdp);
+
+        await this.state.peer.setRemoteDescription(parsed_sdp);
+
+        let answer = await this.state.peer.createAnswer();
+
+        await this.state.peer.setLocalDescription(answer);
+
+        await new Promise((resolve) => {
+            console.log(this.state.peer.iceGatheringState);
+            console.log(this.state.peer);
+            if (this.state.peer.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              this.state.peer.addEventListener('icegatheringstatechange', () => {
+                if (this.state.peer.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+          console.log('Ice candidates is working, yay!', this.state.peer)
+        // SEND VARIABLE 'answer' TO CALLER
+
+        await this.state.peer.setRemoteDescription(parsed_sdp);
+
+        answer = await this.state.peer.createAnswer();
+        
+        console.log(answer);
+
+        await this.state.peer.setLocalDescription(answer);
+          console.log('Parsing sdp..')
+        const parsed_answer = 'δ' + parse_sdp(answer, true);
+
+        console.log(parsed_answer);
+        
+        const reparsed_answer = expand_sdp_answer(parsed_answer);
+
+        console.log(reparsed_answer);
+
+        const receiver = this.state.address;
+    
+        const messageKey = this.state.paymentID;
+        
+        sendMessage(parsed_answer, receiver, messageKey);    
+
+
+          
+
+    }
+
+    async disconnectCall() {
+
+        this.state.peer.close();
+        this.state.stream.getTracks().forEach(function(track) {
+            track.stop();
+          });
+        this.props.navigation.navigate(
+            'ChatScreen', {
+                payee: this.props.navigation.state.params.payee,
+            });
+        toastPopUp('Call terminated..')
+
+    }
+
+      // Switch Camera
+  switchCamera() {
+    this.state.stream.getVideoTracks().forEach((track) => {
+      track._switchCamera();
+    });
+  }
+
+  // Enable/Disable Camera
+  toggleCamera() {
+    this.state.localWebcamOn ? this.setState({localWebcamOn: false}) : this.setState({localWebcamOn: true});
+    this.state.stream.getVideoTracks().forEach((track) => {
+      this.state.localWebcamOn ? (track.enabled = false) : (track.enabled = true);
+    });
+  }
+
+  // Enable/Disable Mic
+    toggleMic() {
+    this.state.localMicOn ? this.setState({localMicOn: false}) : this.setState({localMicOn: true});
+    this.state.stream.getAudioTracks().forEach((track) => {
+        this.state.localMicOn ? (track.enabled = false) : (track.enabled = true);
+    });
+    }
+
+    // Switch Camera
+  switchCamera() {
+    this.state.stream.getVideoTracks().forEach((track) => {
+      track._switchCamera();
+    });
+  }
+
+    render() {
+
+      markConversationAsRead(this.state.address);
+
+       const { t } = this.props;
+
+       const items = [];
+
+
+        const preCallStyleUser = {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+        }
+        const postCallStyleUser = {
+            position: 'absolute',
+            width: 150,
+            height: 110,
+            bottom: 90,
+            left: '7.5%'
+        }
+        
+
+       for (message in this.state.messages) {
+         if (this.state.address == this.state.messages[message].conversation){
+           let timestamp = this.state.messages[message].timestamp / 1000;
+           if (this.state.messages[message].type == 'received'){
+              items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           } else {
+             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+           }
+
+       }
+       }
+
+
+           const submitMessage = async (text) => {
+
+             Keyboard.dismiss();
+
+             let updated_messages = await getMessages();
+             if (!updated_messages) {
+               updated_messages = [];
+             }
+             let temp_timestamp = Date.now();
+             updated_messages.push({
+                 conversation: this.state.address,
+                 type: 'sent',
+                 message: checkText(text),
+                 timestamp: temp_timestamp
+             });
+
+             this.setState({
+               messages: updated_messages,
+               messageHasLength: false
+             });
+
+             this.state.input.current._textInput.clear();
+
+             this.setState({messageHasLength: this.state.message.length > 0});
+
+             let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+             await removeMessage(temp_timestamp);
+             if (success) {
+             let updated_messages = await getMessages();
+
+               this.setState({
+                 messages: updated_messages,
+                 messageHasLength: false
+               })
+               // this.state.input.current.clear();
+             }
+           }
+
+
+        return(
+            <View style={{
+                flex: 1,
+                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                alignItems: 'center',
+                paddingLeft: 10
+            }}>
+
+                <View style={{
+                    alignItems: 'center',
+                    marginHorizontal: 30,
+                }}>
+                    <View style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 5,
+                        marginLeft: 'auto'
+                    }}>
+                        <Image
+                          style={{width: 50, height: 50}}
+                          source={{uri: get_avatar(this.state.address)}}
+                        />
+                        <Text onPress={() => {
+                            this.props.navigation.navigate(
+                                'ModifyPayee', {
+                                    payee: this.props.navigation.state.params.payee,
+                                }
+                            );
+                        }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {this.state.nickname}
+                        </Text>
+                    </View>
+                </View>
+
+                <View style={{
+                    width: '100%',
+                    alignItems: 'center',
+                }}>
+
+                </View>
+                
+              {(this.state.callStatus != 'connected') &&
+              
+              <View style={ [preCallStyleUser,
+                {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderRadius: 5,
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderStyle: 'solid',
+                  borderColor:  '#252525'
+                }]
+                }>
+              <Image
+                      style={{width: 150, height: 150, position: 'absolute', alignSelf: 'center', top: '40%'}}
+                      source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 150)}}
+                  />
+                  { this.state.stream && this.state.localWebcamOn &&
+                  <RTCView
+                    objectFit={"cover"}
+                    style={{ flex: 1, backgroundColor: "#050A0E" }}
+                    streamURL={this.state.stream.toURL()} />
+                  }
+                   <View style={{
+                      position: 'absolute',
+                      bottom: 5,
+                      left: 5,
+                      backgroundColor: 'rgba(255,255,255,0.4)',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      padding: 3
+                  }}>
+                     <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+                  </View>
+                  {(!this.state.localMicOn || !this.state.localWebcamOn) &&
+                  <View style={{
+                      justifyContent: 'space-between',
+                      flexDirection: 'row',
+                      position: 'absolute',
+                      bottom: 5,
+                      right: 5,
+                      backgroundColor: 'rgba(255,255,255,0.4)',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      padding: 3
+                  }}>
+                      {!this.state.localMicOn &&
+                      <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                      }
+                      {!this.state.localMicOn && !this.state.localWebcamOn &&
+                      <View style={{width: 5}}></View>
+                      }
+                      {!this.state.localWebcamOn &&
+                      <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+                      }
+                  </View>
+                  }
+  
+                </View>
+
+              }
+    
+              { this.state.callStatus == 'connected' &&
+            <>
+              <View style={[preCallStyleUser, {
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                borderRadius: 5,
+                overflow: 'hidden',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor:  '#252525',
+              }]}>
+                <Image
+                          style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
+                          source={{uri: get_avatar(this.state.address, 150)}}
+                        />
+                    { this.state.remoteStream &&
+                    <RTCView
+                    objectFit={"cover"}
+                    style={[(this.state.remoteStream.getVideoTracks().length ? {opacity: 1} : {opacity: 0}),{ flex: 1, backgroundColor: "#050A0E" }]}
+                    streamURL={this.state.remoteStream.toURL()} />
+                    } 
+                 <View style={{
+                    position: 'absolute',
+                    bottom: 5,
+                    left: 5,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    padding: 3
+                 }}>
+                    <Text style={{color: 'black'}}>{this.state.nickname}</Text>
+                </View>
+                </View>
+
+<View style={ [postCallStyleUser,
+    {
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: 5,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor:  '#252525',
+    }]
+    }>
+  <Image
+          style={{width: 50, height: 50, position: 'absolute', left: 50, top: 30}}
+          source={{uri: get_avatar(Globals.wallet.getPrimaryAddress(), 50)}}
+      />
+      { this.state.stream && this.state.localWebcamOn &&
+      <RTCView
+        objectFit={"cover"}
+        style={{ flex: 1, backgroundColor: "#050A0E" }}
+        streamURL={this.state.stream.toURL()} />
+      }
+       <View style={{
+          position: 'absolute',
+          bottom: 5,
+          left: 5,
+          backgroundColor: 'rgba(255,255,255,0.4)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          padding: 3
+      }}>
+         <Text style={{color: 'black'}}>{Globals.preferences.nickname}</Text>
+      </View>
+      {(!this.state.localMicOn || !this.state.localWebcamOn) &&
+      <View style={{
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          position: 'absolute',
+          bottom: 5,
+          right: 5,
+          backgroundColor: 'rgba(255,255,255,0.4)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          padding: 3
+      }}>
+          {!this.state.localMicOn &&
+          <CustomIcon name='microphone-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+          }
+          {!this.state.localMicOn && !this.state.localWebcamOn &&
+          <View style={{width: 5}}></View>
+          }
+          {!this.state.localWebcamOn &&
+          <CustomIcon name='camera-slash' size={18} style={{color: 'rgba(0,0,0,0.8)'}} />
+          }
+      </View>
+      }
+
+    </View>
+    </>
+    
+        }
+
+
+        
+        {this.state.stream &&
+        <View
+        style={{
+          backgroundColor: '#171717',
+          borderWidth: 1,
+          borderStyle: 'solid',
+          borderColor:  '#252525',
+          position: 'absolute',
+          bottom: 40,
+          width: '85%',
+          justifyContent: 'space-between',
+          borderRadius: 5,
+          overflow: 'hidden',
+          padding: 10,
+          flexDirection: 'row',
+        }}>
+  
+          {this.state.localWebcamOn ? 
+              <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+              <CustomIcon name='camera-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+               :
+               <TouchableOpacity onPress={() =>{this.toggleCamera()}}>
+              <CustomIcon name='camera' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+          }
+  
+          <TouchableOpacity onPress={() =>{this.switchCamera()}}>
+              <CustomIcon name='repeate-music' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+          </TouchableOpacity>
+  
+          {this.state.localMicOn ? 
+              <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+              <CustomIcon name='microphone-slash' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+               :
+               <TouchableOpacity onPress={() =>{this.toggleMic()}}>
+              <CustomIcon name='microphone-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+          }
+  
+          {this.state.callStatus == 'disconnected' && !this.state.sdp &&
+              <TouchableOpacity onPress={() =>{this.startCall()}}>
+                  
+                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
+                  
+              </TouchableOpacity>
+          }
+  
+          { this.state.sdp && this.state.callStatus == 'disconnected' &&
+               <TouchableOpacity onPress={() =>{this.answerCall()}}>
+                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
+             </TouchableOpacity>
+          }
+  
+          { this.state.callStatus != 'disconnected' && this.state.callStatus != 'failed' &&
+  
+              <TouchableOpacity onPress={() =>{this.disconnectCall()}}>
+              <CustomIcon name='call-slash' size={24} style={{color: '#EA3323'}} />
+              </TouchableOpacity>
+  
+          }
+  
+      </View>
+        }
+      
+    { this.state.callStatus != 'connected' && 
+    <View style={{
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor:  '#252525',
+        position: 'absolute',
+        top: 40,
+        borderRadius: 5,
+        padding: 10,
+        color: 'black',
+        textAlign: 'center'
+    }}>
+    { this.state.sdp && this.state.callStatus == 'disconnected' &&
+    <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>
+    }
+    { this.state.stream && !this.state.sdp && this.state.callStatus == 'disconnected' &&
+    <Text>{'Tap the phone icon to call ' + this.state.nickname + '.'}</Text>
+    }
+    { !this.state.stream &&
+    <Text>{"No access to camera and/or microphone. Please allow them in your phone's settings to make calls."}</Text>
+    }
+    { this.state.callStatus == 'waiting' &&
+    <Text>{"Waiting for answer.."}</Text>
+    }
+    { this.state.callStatus == 'connecting' &&
+    <Text>{"Connecting.."}</Text>
+    }
+    {/* { this.state.callStatus == 'connected' &&
+        <Text>{"Connected"}</Text>
+    } */}
+    </View>}
+
+            </View>
+        );
+    }
+}
+
+export const CallScreen = withTranslation()(CallScreenNoTranslation)

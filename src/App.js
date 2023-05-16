@@ -13,8 +13,9 @@ import { View, StatusBar } from 'react-native';
 
 import {
     createStackNavigator, createAppContainer, createBottomTabNavigator,
-    createSwitchNavigator,
+    createSwitchNavigator
 } from 'react-navigation';
+
 
 import Config from './Config';
 
@@ -24,7 +25,7 @@ import { MainScreen } from './MainScreen';
 import { SplashScreen } from './SplashScreen';
 import { DisclaimerScreen } from './DisclaimerScreen';
 import { loadPreferencesFromDatabase, openDB } from './Database';
-import { ChatScreen, ModifyPayeeScreen, RecipientsScreen } from './Recipients';
+import { ChatScreen, ModifyPayeeScreen, RecipientsScreen, CallScreen } from './Recipients';
 import { GroupChatScreen, ModifyGroupScreen, GroupsScreen, NewGroupScreen } from './Groups';
 import { WalletOptionScreen, CreateWalletScreen } from './CreateScreen';
 import { TransactionsScreen, TransactionDetailsScreen } from './TransactionsScreen';
@@ -189,6 +190,7 @@ const RecipientNavigator = createStackNavigator(
         ModifyPayee: ModifyPayeeScreen,
         ChatScreen: ChatScreen,
         NewPayee: NewPayeeScreen,
+        CallScreen: CallScreen
     },
     {
         initialRouteName: '',

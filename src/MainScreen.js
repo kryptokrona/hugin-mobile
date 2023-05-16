@@ -31,7 +31,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
-import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar } from './HuginUtilities';
+import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -45,6 +45,7 @@ import i18next from './i18n'
 import { GroupsScreen } from './Groups';
 
 import CustomIcon from './CustomIcon.js'
+import { Input } from "react-native-elements/src";
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -60,7 +61,7 @@ String.prototype.hashCode = function() {
 }
 
 async function init(navigation) {
-
+  
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
     Globals.wallet.enableAutoOptimization(false);
 
@@ -113,7 +114,9 @@ async function init(navigation) {
     }
 
     if (Globals.backgroundSyncMessagesTimer === undefined) {
-        Globals.backgroundSyncMessagesTimer = setInterval(backgroundSyncMessages, 5000);
+      Globals.backgroundSyncMessagesTimer = setInterval(function() {
+        backgroundSyncMessages(navigation);
+      }, 5000);
     }
 
     if (Globals.checkIfStuck === undefined) {
@@ -290,8 +293,6 @@ export class MainScreen extends React.PureComponent {
         this.handleNetInfoChange = this.handleNetInfoChange.bind(this);
         this.unsubscribe = () => {};
 
-
-
         this.state = {
             addressOnly: false,
             unlockedBalance: 0,
@@ -345,7 +346,6 @@ export class MainScreen extends React.PureComponent {
 
 
     }
-
 
 
     async componentDidMount() {
@@ -477,16 +477,13 @@ export class MainScreen extends React.PureComponent {
       const { t, i18n } = this.props;
 
           const cardStyle = {
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            borderWidth: 0,
-            borderColor: 'transparent',
+            backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+            borderWidth: 1,
+            borderColor: this.props.screenProps.theme.borderColour,
             borderRadius: 15,
-            margin: 4,
-            marginRight: 10,
             padding: 10,
             flexDirection: 'row',
             flex: 1,
-            width: '25%',
             alignContent: 'center'
           }
 
@@ -558,7 +555,7 @@ export class MainScreen extends React.PureComponent {
                     <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
                     <View style={{ alignItems: 'center' }}>
 
-                        <View style={{ minWidth: '80%', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                        <View style={{ minWidth: '80%', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: this.props.screenProps.theme.backgroundEmphasis }}>
                         <Image
                           style={{width: 112, height: 112}}
                           source={{uri: get_avatar(this.state.address, 112)}}
@@ -589,9 +586,9 @@ export class MainScreen extends React.PureComponent {
                         <View
                         style={{
                             // width: this.state.messageHasLength ? '80%' : '100%',
-                              backgroundColor: 'rgba(0,0,0,0.2)',
-                              borderWidth: 0,
-                              borderColor: 'transparent',
+                              backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+                              borderWidth: 1,
+                              borderColor: this.props.screenProps.theme.borderColour,
                               borderRadius: 15,
                               height: 50,
                               margin: '5%',
@@ -663,11 +660,10 @@ export class MainScreen extends React.PureComponent {
                     </View>
 
                     {!this.state.addressOnly &&
-                      <View style={{flexDirection: 'row', marginTop: 45}}>
+                      <View style={{paddingLeft: '10%', paddingRight: '10%', flexDirection: 'row', marginTop: 45}}>
 
                       <TouchableOpacity style={cardStyle}
                       onPress={() => {
-                        console.log(this.props);
                         this.props.navigation.navigate('Groups', this.props.navigation);
                       }}>
 
@@ -680,6 +676,7 @@ export class MainScreen extends React.PureComponent {
                         textAlign: 'left',
                         fontSize: 10,
                         marginLeft: 10,
+                        marginTop: 5,
                         fontFamily: 'Montserrat-Bold'
                       }}>
 
@@ -695,9 +692,10 @@ export class MainScreen extends React.PureComponent {
 
                       </TouchableOpacity>
 
+                      <View style={{width: 10}}></View>
+
                       <TouchableOpacity style={cardStyle}
                       onPress={() => {
-                        console.log(this.props);
                         this.props.navigation.navigate('Recipients', this.props.navigation);
                       }}>
 
@@ -710,6 +708,7 @@ export class MainScreen extends React.PureComponent {
                         textAlign: 'left',
                         fontSize: 10,
                         marginLeft: 10,
+                        marginTop: 5,
                         fontFamily: 'Montserrat-Bold'
                       }}>
 
@@ -935,7 +934,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
         return(
             <View style={{alignItems: 'center'}}>
-            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, width: 255}}>
+            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, minWidth: '80%'}}>
                     <Text style={{
                         color: 'black',
                         fontSize: 64,
@@ -1096,7 +1095,7 @@ async function checkIfStuck() {
 
 }
 
-async function backgroundSyncMessages() {
+async function backgroundSyncMessages(navigation) {
 
 
   if (Globals.syncingMessagesCount > 3) {
@@ -1162,7 +1161,7 @@ async function backgroundSyncMessages() {
 
           if (thisExtra.length > 66) {
 
-            let message = await getMessage(thisExtra, thisHash);
+            let message = await getMessage(thisExtra, thisHash, navigation);
 
           } else {
             continue;

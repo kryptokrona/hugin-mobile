@@ -18,6 +18,8 @@ import { Globals } from './Globals';
 
 import { addFee, toAtomic } from './Fee';
 
+import { parse_sdp, expand_sdp_offer } from './SDPParser';
+
 import nacl from 'tweetnacl';
 import naclUtil from 'tweetnacl-util';
 
@@ -687,7 +689,12 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     }
 
     if (result.success) {
-
+      if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
+        message = 'Call started';
+      }
+      if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
+        message = 'Call answered';
+      }
       saveMessage(receiver, 'sent', message, timestamp);
       backgroundSave();
 
@@ -883,7 +890,7 @@ async function getGroupMessage(tx) {
 
 }
 
-export async function getMessage(extra, hash){
+export async function getMessage(extra, hash, navigation){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -1042,7 +1049,40 @@ export async function getMessage(extra, hash){
             received = 'sent';
           }
 
+          if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
+            console.log('Call received!');
+
+            navigation.navigate(
+              'CallScreen', {
+                  payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
+                  sdp: payload_json.msg,
+              });
+
+            PushNotification.localNotification({
+              title: from,//'Incoming transaction received!',
+              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+              message: 'Call received',
+              data: payload_json.t,
+              userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
+              largeIconUrl: get_avatar(payload_json.from, 64),
+          });
+          payload_json.msg = 'Call received';
+          saveMessage(payload_json.from, received, 'Call received', payload_json.t);
+
+          resolve(payload_json);
+
+          } 
+          if (payload_json.msg.substring(0,1) == 'δ' || payload_json.msg.substring(0,1) == 'λ') {
+            Globals.sdp_answer = payload_json.msg;
+            Globals.updateCall(); 
+            saveMessage(payload_json.from, received, 'Call answered', payload_json.t);
+            payload_json.msg = 'Call answered';
+            resolve(payload_json);
+          }
+
           saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+
+          
 
           if (Globals.activeChat != payload_json.from && !from_myself) {
             PushNotification.localNotification({
