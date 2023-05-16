@@ -477,9 +477,9 @@ export class MainScreen extends React.PureComponent {
       const { t, i18n } = this.props;
 
           const cardStyle = {
-            backgroundColor: 'rgba(0,0,0,0.2)',
-            borderWidth: 0,
-            borderColor: 'transparent',
+            backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+            borderWidth: 1,
+            borderColor: this.props.screenProps.theme.borderColour,
             borderRadius: 15,
             margin: 4,
             marginRight: 10,
@@ -558,7 +558,7 @@ export class MainScreen extends React.PureComponent {
                     <TouchableOpacity onPress={() => this.setState({ addressOnly: !this.state.addressOnly })}>
                     <View style={{ alignItems: 'center' }}>
 
-                        <View style={{ minWidth: '80%', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                        <View style={{ minWidth: '80%', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 3, backgroundColor: this.props.screenProps.theme.backgroundEmphasis }}>
                         <Image
                           style={{width: 112, height: 112}}
                           source={{uri: get_avatar(this.state.address, 112)}}
@@ -589,9 +589,9 @@ export class MainScreen extends React.PureComponent {
                         <View
                         style={{
                             // width: this.state.messageHasLength ? '80%' : '100%',
-                              backgroundColor: 'rgba(0,0,0,0.2)',
-                              borderWidth: 0,
-                              borderColor: 'transparent',
+                              backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+                              borderWidth: 1,
+                              borderColor: this.props.screenProps.theme.borderColour,
                               borderRadius: 15,
                               height: 50,
                               margin: '5%',

@@ -1036,7 +1036,7 @@ export class ChatScreenNoTranslation extends React.Component {
                 <View
                 style={{
                     width: this.state.messageHasLength ? '80%' : '100%',
-                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                       borderWidth: 0,
                       borderColor: 'transparent',
                       borderRadius: 15
@@ -1502,9 +1502,9 @@ export class CallScreenNoTranslation extends React.Component {
                 backgroundColor: 'rgba(255,255,255,0.1)',
                 borderRadius: 5,
                 overflow: 'hidden',
-                borderwidth: 1,
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderStyle: 'solid'
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor:  '#252525',
               }}>
             <Image
                     style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
@@ -1538,9 +1538,9 @@ export class CallScreenNoTranslation extends React.Component {
                 backgroundColor: 'rgba(255,255,255,0.1)',
                 borderRadius: 5,
                 overflow: 'hidden',
-                borderwidth: 1,
-                borderColor: 'rgba(255,255,255,0.1)',
-                borderStyle: 'solid'
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor:  '#252525',
               }}>
                 <Image
                           style={{width: 150, height: 150, position: 'absolute', left: 75, top: 35}}
@@ -1569,11 +1569,14 @@ export class CallScreenNoTranslation extends React.Component {
 
       <View
       style={{
+        backgroundColor: '#171717',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor:  '#252525',
         position: 'absolute',
         bottom: 20,
         width: 300,
         justifyContent: 'space-between',
-        backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 5,
         overflow: 'hidden',
         padding: 10,
@@ -1627,8 +1630,16 @@ export class CallScreenNoTranslation extends React.Component {
         }
 
     </View>
+    <View style={{width: 200}}>
+    { this.state.sdp && this.state.callStatus == 'disconnected' &&
+    <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>
+    }
+    { !this.state.sdp && this.state.callStatus == 'disconnected' &&
+    <Text>{'Tap the phone icon to call ' + this.state.nickname + '.'}</Text>
+    }
+    </View>
 
-        <Text>{this.state.callStatus + JSON.stringify(this.state.payee)}</Text>
+        {/* <Text>{this.state.callStatus)}</Text> */}
 
 
             </View>

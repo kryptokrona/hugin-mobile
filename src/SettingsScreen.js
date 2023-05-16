@@ -729,7 +729,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
                         width: '100%',
                     }}
                     inputContainerStyle={{
-                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
                         borderWidth: 0,
                         borderColor: 'transparent',
                         borderRadius: 15,
