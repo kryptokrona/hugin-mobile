@@ -551,7 +551,11 @@ export async function sendGroupsMessage(message, group) {
 
 
   if (!result.success) {
-    result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+    try {
+      result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+    } catch (err) {
+      console.log('Failed to send with Hugin API..')
+    }
   }
 
   if (result.success == true) {
@@ -607,18 +611,37 @@ export async function sendBoardsMessage(message, board, reply=false) {
     const result_api = await sendMessageWithHuginAPI(payload_hex);
     return result_api;
   }
+  optimizeWallet();
   return result;
 
 }
 
+async function optimizeWallet() {
+  const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
+      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+      let message_inputs = 0;
+      for (input in inputs) {
+        try {
+          let this_amount = inputs[input].input.amount;
+          if (this_amount == 10000) {
+            message_inputs++;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+      if (message_inputs < 2) {
+        optimizeMessages(10);
+      }
+}
+
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
+  if (message.length == 0) {
+    return;
+  }
+
   let has_history = await getHistory(receiver);
-
-    if (message.length == 0) {
-      return;
-    }
-
 
     let my_address = Globals.wallet.getPrimaryAddress();
 
@@ -631,7 +654,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       if (munlockedBalance < 11 && mlockedBalance > 0) {
 
         toastPopUp('Please wait for more funds to unlock!');
-        return;
+        return {success: false};
 
       }
     } catch (err) {
@@ -685,7 +708,11 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
-      result = await sendMessageWithHuginAPI(payload_hex);
+      try {
+        result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+      } catch (err) {
+        console.log('Failed to send with Hugin API..')
+      }
     }
 
     if (result.success) {
@@ -698,29 +725,11 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       saveMessage(receiver, 'sent', message, timestamp);
       backgroundSave();
 
-      const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-      let message_inputs = 0;
-      for (input in inputs) {
-        try {
-          let this_amount = inputs[input].input.amount;
-          if (this_amount == 10000) {
-            message_inputs++;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-      if (message_inputs < 2) {
-        optimizeMessages(10);
-      }
-    } else {
+      optimizeWallet();
+      
+    } 
 
-      toastPopUp('Message failed to send..');
-      return false;
-
-
-    }
+    return result;
 
     Globals.logger.addLogMessage(JSON.stringify(result));
 

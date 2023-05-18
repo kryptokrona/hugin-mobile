@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
+    ActivityIndicator, Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
 } from 'react-native';
 
 import {
@@ -901,6 +901,59 @@ export class ChatScreenNoTranslation extends React.Component {
 
        const { t } = this.props;
 
+       const submitMessage = async (text) => {
+
+        Keyboard.dismiss();
+        this.state.input.current._textInput.clear();
+
+        let updated_messages = await getMessages();
+        if (!updated_messages) {
+          updated_messages = [];
+        }
+        let temp_timestamp = Date.now();
+        updated_messages.push({
+            conversation: this.state.address,
+            type: 'processing',
+            message: checkText(text),
+            timestamp: temp_timestamp
+        });
+
+        this.setState({
+          messages: updated_messages,
+          messageHasLength: false
+        });
+
+        this.setState({messageHasLength: this.state.message.length > 0});
+
+        let result = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+
+        console.log('wtf', result)
+        
+        if (result.success) {
+           await removeMessage(temp_timestamp);
+           let updated_messages = await getMessages(); 
+
+          this.setState({
+            messages: updated_messages,
+            messageHasLength: false
+          })
+          // this.state.input.current.clear();
+        } else {
+           let updated_messages = await getMessages();
+           updated_messages.push({
+               conversation: this.state.address,
+               type: 'failed',
+               message: checkText(text),
+               timestamp: temp_timestamp
+           });
+           console.log(updated_messages);
+           this.setState({
+               messages: updated_messages,
+               messageHasLength: false
+             })
+        }
+      } 
+
        const items = [];
 
        for (message in this.state.messages) {
@@ -909,50 +962,22 @@ export class ChatScreenNoTranslation extends React.Component {
            if (this.state.messages[message].type == 'received'){
               items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            } else {
-             items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+             items.push(
+             <View  key={message} style={[{ backgroundColor: '#006BA7' } ,{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, padding: 15, borderRadius: 15}]}>
+                
+                    {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
+                    {this.state.messages[message].type == 'failed' && <TouchableOpacity onPress={() => submitMessage(this.state.messages[message].message)}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >
+                    {this.state.messages[message].message}
+                </Text>
+                <Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>
+                    {timestamp}
+                </Moment>
+            </View>)
            }
 
        }
        }
-
-
-           const submitMessage = async (text) => {
-
-             Keyboard.dismiss();
-
-             let updated_messages = await getMessages();
-             if (!updated_messages) {
-               updated_messages = [];
-             }
-             let temp_timestamp = Date.now();
-             updated_messages.push({
-                 conversation: this.state.address,
-                 type: 'sent',
-                 message: checkText(text),
-                 timestamp: temp_timestamp
-             });
-
-             this.setState({
-               messages: updated_messages,
-               messageHasLength: false
-             });
-
-             this.state.input.current._textInput.clear();
-
-             this.setState({messageHasLength: this.state.message.length > 0});
-
-             let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-             await removeMessage(temp_timestamp);
-             if (success) {
-             let updated_messages = await getMessages();
-
-               this.setState({
-                 messages: updated_messages,
-                 messageHasLength: false
-               })
-               // this.state.input.current.clear();
-             }
-           }
 
 
         return(
@@ -995,7 +1020,7 @@ export class ChatScreenNoTranslation extends React.Component {
                                 }
                             );
                         }} style={{ textAlign: 'right', fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
-                            {'Call'}
+                            {t('call')}
                         </Text>
                         </View>
 
@@ -1216,6 +1241,9 @@ export class CallScreenNoTranslation extends React.Component {
 
     }
 
+    componentWillUnmount() {
+
+    }
 
     addAnswer() {
         console.log('this.state.sdp_answer', Globals.sdp_answer);
@@ -1239,6 +1267,10 @@ export class CallScreenNoTranslation extends React.Component {
     async componentWillUnmount() {
 
         // Globals.activeChat = '';
+        this.state.peer.close();
+        this.state.stream.getTracks().forEach(function(track) {
+            track.stop();
+          });
 
     }
 
@@ -1431,45 +1463,6 @@ export class CallScreenNoTranslation extends React.Component {
 
        }
        }
-
-
-           const submitMessage = async (text) => {
-
-             Keyboard.dismiss();
-
-             let updated_messages = await getMessages();
-             if (!updated_messages) {
-               updated_messages = [];
-             }
-             let temp_timestamp = Date.now();
-             updated_messages.push({
-                 conversation: this.state.address,
-                 type: 'sent',
-                 message: checkText(text),
-                 timestamp: temp_timestamp
-             });
-
-             this.setState({
-               messages: updated_messages,
-               messageHasLength: false
-             });
-
-             this.state.input.current._textInput.clear();
-
-             this.setState({messageHasLength: this.state.message.length > 0});
-
-             let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-             await removeMessage(temp_timestamp);
-             if (success) {
-             let updated_messages = await getMessages();
-
-               this.setState({
-                 messages: updated_messages,
-                 messageHasLength: false
-               })
-               // this.state.input.current.clear();
-             }
-           }
 
 
         return(
@@ -1742,20 +1735,20 @@ export class CallScreenNoTranslation extends React.Component {
         borderStyle: 'solid',
         borderColor:  '#252525',
         position: 'absolute',
-        top: 40,
+        top: 50,
         borderRadius: 5,
         padding: 10,
         color: 'black',
         textAlign: 'center'
     }}>
     { this.state.sdp && this.state.callStatus == 'disconnected' &&
-    <Text>{this.state.nickname + ' is calling. Tap the phone icon to answer.'}</Text>
+    <Text>{this.state.nickname + t('isCalling')}</Text>
     }
     { this.state.stream && !this.state.sdp && this.state.callStatus == 'disconnected' &&
-    <Text>{'Tap the phone icon to call ' + this.state.nickname + '.'}</Text>
+    <Text>{t('tapToCall') + ' ' + this.state.nickname + '.'}</Text>
     }
     { !this.state.stream &&
-    <Text>{"No access to camera and/or microphone. Please allow them in your phone's settings to make calls."}</Text>
+    <Text>{t('noRecordAccess')}</Text>
     }
     { this.state.callStatus == 'waiting' &&
     <Text>{"Waiting for answer.."}</Text>

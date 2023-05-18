@@ -8,7 +8,7 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 const runes = require('runes');
 
 import {
-    Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, TouchableWithoutFeedback, Image
+    ActivityIndicator, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import { StackActions } from 'react-navigation';
@@ -872,10 +872,16 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
            let timestamp = this.state.messages[message].timestamp / 1000;
            // if (this.state.messages[message].type == 'received'){
-              items.push(<View  key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}><View style={{flexDirection:"row", marginBottom: 10}}><Image
-                style={{width: 30, height: 30, marginTop: -5}}
-                source={{uri: get_avatar(this.state.messages[message].address)}}
-              /><View style={{width: 150, overflow: 'hidden'}}>
+              items.push(
+              <View  key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}>
+                
+                {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
+                    {this.state.messages[message].type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {console.log(this.state.messages, message); submitMessage(this.state.messages[message].message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                    <View style={{flexDirection:"row", marginBottom: 10}}>
+                        <Image
+                        style={{width: 30, height: 30, marginTop: -5}}
+                        source={{uri: get_avatar(this.state.messages[message].address)}}/>
+              <View style={{width: 150, overflow: 'hidden'}}>
                 <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
                     color: '#ffffff',
                     fontSize: 15,
@@ -894,17 +900,18 @@ export class GroupChatScreenNoTranslation extends React.Component {
            const submitMessage = async (text) => {
 
              Keyboard.dismiss();
+             this.state.input.current._textInput.clear();
 
              let updated_messages = await getGroupMessages(this.state.key);
              if (!updated_messages) {
                updated_messages = [];
              }
              let temp_timestamp = Date.now();
-             updated_messages.push({
+             let message_indice = updated_messages.push({
                  address: Globals.wallet.getPrimaryAddress(),
                  nickname: Globals.preferences.nickname,
                  group: this.state.key,
-                 type: 'sent',
+                 type: 'processing',
                  message: checkText(text),
                  timestamp: temp_timestamp,
                  read: 1
@@ -917,23 +924,36 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              this.setState({messageHasLength: this.state.message.length > 0});
 
-             let success = await sendGroupsMessage(checkText(text), this.state.key);
+             let result = await sendGroupsMessage(checkText(text), this.state.key);
 
-             if (success.success == true) {
+            console.log('wtfdood', result)
 
-             this.state.input.current._textInput.clear();
+             if (result.success) {
+
+                    updated_messages[message_indice].type = 'sent';
+                    this.setState({
+                        messages: updated_messages,
+                        messageHasLength: false
+                      });
+
 
              } else {
-
-               toastPopUp('Message failed to send..');
-
-               this.state.input = text;
-
-               let updated_messages = await getGroupMessages(this.state.key);
-                 this.setState({
-                   messages: updated_messages,
-                   messageHasLength: false
-                 })
+                updated_messages = await getGroupMessages();
+                updated_messages.push({
+                    address: Globals.wallet.getPrimaryAddress(),
+                    nickname: Globals.preferences.nickname,
+                    group: this.state.key,
+                    type: 'failed',
+                    message: checkText(text),
+                    timestamp: temp_timestamp,
+                    read: 1
+                });
+                console.log('Push messages')
+                this.setState({
+                    messages: updated_messages,
+                    messageHasLength: false
+                  });
+                  console.log('State set')
 
              }
            }
