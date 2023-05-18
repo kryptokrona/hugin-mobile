@@ -168,5 +168,9 @@
   recoverWalletTitle: "Recover wallet?",
   recoverWalletDescr: "This will make all current funds unavailable (but recoverable with your private keys).",
   groupsRecommendations: "Recommended groups",
-  groups: "Groups"
+  groups: "Groups",
+  call: "Call",
+  tapToCall: "Tap the phone icon to call",
+  isCalling: /* Alice */ "is calling. Tap the phone icon to answer.",
+  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls."
 }

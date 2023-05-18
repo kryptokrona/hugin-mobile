@@ -167,5 +167,9 @@
   nickname: "Visningsnamn",
   recoverWalletTitle: "Rädda konto?",
   recoverWalletDescr: "Detta gör dina XKR otillgängliga tills du synkar om från 0 med dina privata nycklar.",
-  groupsRecommendations: "Rekommendationer"
+  groupsRecommendations: "Rekommendationer",
+  groups: "Grupper",
+  call: "Ring",
+  tapToCall: "Tryck på telefonikonen för att ringa",
+  isCalling: "ringer dig. Tryck på telefonikonen för att svara."
 }
