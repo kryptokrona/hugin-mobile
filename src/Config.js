@@ -237,7 +237,7 @@ const Config = new function() {
      * A url to fetch node info from. Should follow the turtlepay format
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
-    this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-nodes-list/master/nodes.json';
+    this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json';
 
     /**
     * A Url to fetch Hugin Caches from.
