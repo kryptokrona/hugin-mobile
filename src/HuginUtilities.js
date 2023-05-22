@@ -18,7 +18,7 @@ import { Globals } from './Globals';
 
 import { addFee, toAtomic } from './Fee';
 
-import { parse_sdp, expand_sdp_offer } from './SDPParser';
+import { expand_sdp_answer } from './SDPParser';
 
 import nacl from 'tweetnacl';
 import naclUtil from 'tweetnacl-util';
@@ -1083,7 +1083,8 @@ export async function getMessage(extra, hash, navigation){
           } 
           if (payload_json.msg.substring(0,1) == 'δ' || payload_json.msg.substring(0,1) == 'λ') {
             Globals.sdp_answer = payload_json.msg;
-            Globals.updateCall(); 
+            const expanded_answer = expand_sdp_answer(payload_json.msg);
+            Globals.calls.find(call => call.contact == from_payee.paymentID).peer.setRemoteDescription(expanded_answer);
             saveMessage(payload_json.from, received, 'Call answered', payload_json.t);
             payload_json.msg = 'Call answered';
             resolve(payload_json);
