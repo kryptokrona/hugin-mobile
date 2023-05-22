@@ -99,6 +99,10 @@ class globals {
 
         this.sdp_answer = '';
 
+        this.calls = [];
+
+        this.stream = false;
+
     }
 
     reset() {

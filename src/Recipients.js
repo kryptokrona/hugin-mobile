@@ -1124,6 +1124,84 @@ export class ChatScreenNoTranslation extends React.Component {
 
 export const ChatScreen = withTranslation()(ChatScreenNoTranslation)
 
+function startPeer() {
+    const peer = new RTCPeerConnection( {
+        iceServers: [
+        {
+        urls: [
+            'stun:stun.l.google.com:19302',
+            'stun:global.stun.twilio.com:3478'
+        ]
+        }
+    ],
+    iceTransportPolicy: "all",
+    sdpSemantics: 'unified-plan',
+    //   trickle: false
+    });
+
+    return peer;
+}
+
+async function initWebRTC(contactKey) {
+
+
+    let isFront = false;
+    let videoSourceId;
+
+    return new Promise((resolve, reject) => { 
+
+    let new_peer;
+    console.log('Globals.stream', Globals.stream);
+    if (!Globals.stream) {
+
+    mediaDevices.enumerateDevices().then(sourceInfos => {
+
+    for (let i = 0; i < sourceInfos.length; i++) {
+    console.log('Checking for cam..');
+    const sourceInfo = sourceInfos[i];
+    console.log(sourceInfo);
+    if (
+        sourceInfo.kind == 'videoinput' &&
+        sourceInfo.facing == (isFront ? 'user' : 'environment')
+    ) {
+        videoSourceId = sourceInfo.deviceId;
+    }
+    console.log(videoSourceId);
+    }
+    });
+
+    mediaDevices
+        .getUserMedia({
+        audio: true,
+        video: true,
+        })
+        .then(stream => {
+        
+        Globals.stream = stream;
+        new_peer = startPeer();
+        new_peer.addStream(Globals.stream);
+        Globals.calls[contactKey] = {peer: new_peer, status: 'disconnected'};
+        resolve(true);
+
+        })
+        .catch(error => {
+        // Log error
+        console.log(error);
+        reject(false);
+        });
+    } else {
+
+        new_peer = startPeer();
+        new_peer.addStream(Globals.stream);
+        Globals.calls[contactKey] = {peer: new_peer}
+        resolve(true);
+
+    }
+
+
+});
+}
+
 export class CallScreenNoTranslation extends React.Component {
     constructor(props) {
         super(props);
@@ -1132,102 +1210,110 @@ export class CallScreenNoTranslation extends React.Component {
 
         const sdp  = this.props.navigation.state.params.sdp ? this.props.navigation.state.params.sdp : undefined;
 
+        this.state = {
+            address,
+            nickname,
+            paymentID,
+            sdp}
+            ;
 
-        let isFront = false;
-        let videoSourceId;
-        mediaDevices.enumerateDevices().then(sourceInfos => {
-    
-    for (let i = 0; i < sourceInfos.length; i++) {
-      console.log('Checking for cam..');
-      const sourceInfo = sourceInfos[i];
-      console.log(sourceInfo);
-      if (
-        sourceInfo.kind == 'videoinput' &&
-        sourceInfo.facing == (isFront ? 'user' : 'environment')
-      ) {
-        videoSourceId = sourceInfo.deviceId;
-      }
-      console.log(videoSourceId);
     }
-    });
 
-    mediaDevices
-        .getUserMedia({
-          audio: true,
-          video: true,
-        })
-        .then(stream => {
-          console.log('We have stream')
-          // Get local stream!
-          let new_peer = new RTCPeerConnection( {
-            iceServers: [
-            {
-              urls: [
-                'stun:stun.l.google.com:19302',
-                'stun:global.stun.twilio.com:3478'
-              ]
-            }
-          ],
-          iceTransportPolicy: "all",
-          sdpSemantics: 'unified-plan',
-        //   trickle: false
-        });
+    componentWillUnmount() {
+
+    }
+
+    addAnswer(contactKey) {
+        console.log('this.state.sdp_answer', Globals.sdp_answer);
+        const expanded_answer = expand_sdp_answer(Globals.sdp_answer);
+        console.log('expanded_answer',expanded_answer);
+        Globals.calls[this.state.paymentID].peer.setRemoteDescription(expanded_answer);
+    }
+
+    async componentDidMount() {
+
+        // const messages = await getMessages(this.state.address);
+
+        // this.setState({
+        //   messages: messages
+        // });
+
+        // Globals.activeChat = this.state.address;
+        console.log(Globals.calls);
+        if (!Globals.calls[this.state.paymentID]) {
+            console.log('Initating WebRTC');
+            const initiated = await initWebRTC(this.state.paymentID);
+
+            console.log(initiated);
+            console.log(this.state.paymentID);
+            console.log(Globals.calls);
+            console.log(Globals.calls[this.state.paymentID]);
+            
+
+            if (initiated) {
+                this.setState({stream: Globals.stream})
+                
+                console.log('set state!')
+                Globals.calls[this.state.paymentID].peer.onicecandidate = event => {
+
+                    // Add event handlers for ice candidate event
         
-          this.setState({stream: stream, peer: new_peer});    
-          console.log(this.state.stream);    
-          console.log(this.state.peer);    
+                };
+    
+            } else {
+                toastPopUp('Failed to start WebRTC');
+            }
 
-          this.state.peer.onicecandidate = event => {
+        } else {
 
-            // Add event handlers for ice candidate event
+            console.log('Pre initated');
+            console.log(this.state.paymentID);
+            console.log(Globals.calls);
+            console.log(Globals.calls[this.state.paymentID]);
 
-          };
+            await this.setState(
+                {
+                    callStatus: Globals.calls[this.state.paymentID].status, 
+                    remoteStream: Globals.calls[this.state.paymentID].remoteStream, 
+                    stream: Globals.stream
+                }
+            );
 
-          this.state.peer.onaddstream = event => {
+            console.log(this.state);
+        }
+
+        Globals.calls[this.state.paymentID].peer.onaddstream = event => {
             // Got stream
+            Globals.calls[this.state.paymentID].remoteStream = event.stream;
             this.setState({remoteStream: event.stream});
-          };
+        };
 
-
-          this.state.peer.onconnectionstatechange = (ev) => {
+        Globals.calls[this.state.paymentID].peer.onconnectionstatechange = (ev) => {
 
             console.log('Connection change');
-            console.log(this.state.peer);
-            this.setState({callStatus: this.state.peer.connectionState});
+            console.log(Globals.calls[this.state.paymentID].peer);
+            Globals.calls[this.state.paymentID].status = Globals.calls[this.state.paymentID].peer.connectionState;
+            this.setState({callStatus: Globals.calls[this.state.paymentID].peer.connectionState});
 
-            if(this.state.peer.connectionState == 'disconnected') {
+            if(Globals.calls[this.state.paymentID].peer.connectionState == 'disconnected') {
                 this.disconnectCall();
             }
 
         }
-          this.state.peer.addStream(this.state.stream);
+        
+        // setup stream listening
 
-          // setup stream listening
+        let callStatus = Globals.calls[this.state.paymentID].status;
 
-          console.log(sessionDescription);
-
-        })
-        .catch(error => {
-          // Log error
-        });
-
-        const callStatus = 'disconnected';
+        if (callStatus == 'new') {
+            callStatus = 'disconnected';
+        }
 
         const localWebcamOn = true;
 
         const localMicOn = true;
 
-        this.state = {
-            address,
-            nickname,
-            paymentID,
-            sdp,
-            callStatus,
-            localMicOn,
-            localWebcamOn
-        }
-
-        this.setState({selectedValue: 'video'})
+        this.setState({selectedValue: 'video', callStatus: callStatus, localMicOn: localMicOn, localWebcamOn: localWebcamOn})
 
         Globals.updateCallFunctions.push(() => {
 
@@ -1241,66 +1327,55 @@ export class CallScreenNoTranslation extends React.Component {
 
     }
 
-    componentWillUnmount() {
-
-    }
-
-    addAnswer() {
-        console.log('this.state.sdp_answer', Globals.sdp_answer);
-        const expanded_answer = expand_sdp_answer(Globals.sdp_answer);
-        console.log('expanded_answer',expanded_answer);
-        this.state.peer.setRemoteDescription(expanded_answer);
-    }
-
-    async componentDidMount() {
-
-        // const messages = await getMessages(this.state.address);
-
-        // this.setState({
-        //   messages: messages
-        // });
-
-        // Globals.activeChat = this.state.address;
-
-    }
-
     async componentWillUnmount() {
-
+        console.log('Am I alive?')
+        console.log(this.state.callStatus);
         // Globals.activeChat = '';
-        this.state.peer.close();
-        this.state.stream.getTracks().forEach(function(track) {
-            track.stop();
-          });
+        if (this.state.callStatus == 'disconnected') {
+        console.log('Doing stuff..')
+        Globals.calls[this.state.paymentID].peer.close();
+          console.log(Globals.calls[this.state.paymentID])
+          delete Globals.calls[this.state.paymentID];
+          if(Globals.calls.length == 0) {
+            Globals.stream.getTracks().forEach(function(track) {
+                track.stop();
+              });
+            Globals.stream = false;
+          }
+          console.log(Globals.calls[this.state.paymentID])
+        }
+        
 
     }
 
     async startCall() {
 
+        Globals.calls[this.state.paymentID].status = 'waiting';
         this.setState({callStatus: 'waiting'});
 
-        let data_channel = await this.state.peer.createDataChannel('HuginDataChannel');
+        let data_channel = await Globals.calls[this.state.paymentID].peer.createDataChannel('HuginDataChannel');
 
         data_channel.addEventListener("message", (event) => {console.log("Data", event.data)});
 
-        let sessionDescription = await this.state.peer.createOffer();
+        let sessionDescription = await Globals.calls[this.state.paymentID].peer.createOffer();
     
-        await this.state.peer.setLocalDescription(sessionDescription);
+        await Globals.calls[this.state.paymentID].peer.setLocalDescription(sessionDescription);
 
         await new Promise((resolve) => {
-            if (this.state.peer.iceGatheringState === 'complete') {
+            if (Globals.calls[this.state.paymentID].peer.iceGatheringState === 'complete') {
               resolve();
             } else {
-              this.state.peer.addEventListener('icegatheringstatechange', () => {
-                if (this.state.peer.iceGatheringState === 'complete') {
+              Globals.calls[this.state.paymentID].peer.addEventListener('icegatheringstatechange', () => {
+                if (Globals.calls[this.state.paymentID].peer.iceGatheringState === 'complete') {
                   resolve();
                 }
               });
             }
           });
 
-        sessionDescription = await this.state.peer.createOffer();
+        sessionDescription = await Globals.calls[this.state.paymentID].peer.createOffer();
     
-        await this.state.peer.setLocalDescription(sessionDescription);
+        await Globals.calls[this.state.paymentID].peer.setLocalDescription(sessionDescription);
 
         console.log(sessionDescription);
     
@@ -1336,35 +1411,35 @@ export class CallScreenNoTranslation extends React.Component {
 
         console.log(parsed_sdp);
 
-        await this.state.peer.setRemoteDescription(parsed_sdp);
+        await Globals.calls[this.state.paymentID].peer.setRemoteDescription(parsed_sdp);
 
-        let answer = await this.state.peer.createAnswer();
+        let answer = await Globals.calls[this.state.paymentID].peer.createAnswer();
 
-        await this.state.peer.setLocalDescription(answer);
+        await Globals.calls[this.state.paymentID].peer.setLocalDescription(answer);
 
         await new Promise((resolve) => {
-            console.log(this.state.peer.iceGatheringState);
-            console.log(this.state.peer);
-            if (this.state.peer.iceGatheringState === 'complete') {
+            console.log(Globals.calls[this.state.paymentID].peer.iceGatheringState);
+            console.log(Globals.calls[this.state.paymentID].peer);
+            if (Globals.calls[this.state.paymentID].peer.iceGatheringState === 'complete') {
               resolve();
             } else {
-              this.state.peer.addEventListener('icegatheringstatechange', () => {
-                if (this.state.peer.iceGatheringState === 'complete') {
+              Globals.calls[this.state.paymentID].peer.addEventListener('icegatheringstatechange', () => {
+                if (Globals.calls[this.state.paymentID].peer.iceGatheringState === 'complete') {
                   resolve();
                 }
               });
             }
           });
-          console.log('Ice candidates is working, yay!', this.state.peer)
+          console.log('Ice candidates is working, yay!', Globals.calls[this.state.paymentID].peer)
         // SEND VARIABLE 'answer' TO CALLER
 
-        await this.state.peer.setRemoteDescription(parsed_sdp);
+        await Globals.calls[this.state.paymentID].peer.setRemoteDescription(parsed_sdp);
 
-        answer = await this.state.peer.createAnswer();
+        answer = await Globals.calls[this.state.paymentID].peer.createAnswer();
         
         console.log(answer);
 
-        await this.state.peer.setLocalDescription(answer);
+        await Globals.calls[this.state.paymentID].peer.setLocalDescription(answer);
           console.log('Parsing sdp..')
         const parsed_answer = 'δ' + parse_sdp(answer, true);
 
@@ -1387,14 +1462,19 @@ export class CallScreenNoTranslation extends React.Component {
 
     async disconnectCall() {
 
-        this.state.peer.close();
-        this.state.stream.getTracks().forEach(function(track) {
-            track.stop();
-          });
+        Globals.calls[this.props.navigation.state.params.payee.paymentID].peer.close();
+    
         this.props.navigation.navigate(
             'ChatScreen', {
                 payee: this.props.navigation.state.params.payee,
             });
+        delete Globals.calls[this.props.navigation.state.params.payee.paymentID];
+        if(Globals.calls.length == 0) {
+            Globals.stream.getTracks().forEach(function(track) {
+                track.stop();
+              });
+            Globals.stream = false;
+        }
         toastPopUp('Call terminated..')
 
     }
