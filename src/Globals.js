@@ -103,6 +103,10 @@ class globals {
 
         this.stream = false;
 
+        this.localWebcamOn = false;
+        
+        this.localMicOn = false;
+
     }
 
     reset() {

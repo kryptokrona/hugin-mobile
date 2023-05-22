@@ -926,8 +926,6 @@ export class ChatScreenNoTranslation extends React.Component {
         this.setState({messageHasLength: this.state.message.length > 0});
 
         let result = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-
-        console.log('wtf', result)
         
         if (result.success) {
            await removeMessage(temp_timestamp);
@@ -1174,6 +1172,8 @@ async function initWebRTC(contactKey) {
         .then(stream => {
         
         Globals.stream = stream;
+        Globals.localWebcamOn = true;
+        Globals.localMicOn = true;
         new_peer = startPeer();
         new_peer.addStream(Globals.stream);
         Globals.calls.push({peer: new_peer, status: 'disconnected', contact: contactKey});
@@ -1217,13 +1217,6 @@ export class CallScreenNoTranslation extends React.Component {
 
     componentWillUnmount() {
 
-    }
-
-    addAnswer(contactKey) {
-        console.log('this.state.sdp_answer', Globals.sdp_answer);
-        const expanded_answer = expand_sdp_answer(Globals.sdp_answer);
-        console.log('expanded_answer',expanded_answer);
-        this.state.activeCall.peer.setRemoteDescription(expanded_answer);
     }
 
     async componentDidMount() {
@@ -1288,22 +1281,11 @@ export class CallScreenNoTranslation extends React.Component {
             callStatus = 'disconnected';
         }
 
-        const localWebcamOn = true;
+        const localWebcamOn = Globals.localWebcamOn;
 
-        const localMicOn = true;
+        const localMicOn = Globals.localMicOn;
 
         this.setState({selectedValue: 'video', callStatus: callStatus, localMicOn: localMicOn, localWebcamOn: localWebcamOn})
-
-        Globals.updateCallFunctions.push(() => {
-
-            console.log('Globals.sdp_answer', Globals.sdp_answer);
-            if (this.state.callStatus != 'disconnected') {
-                this.setState({sdp_answer: Globals.sdp_answer});
-
-                this.addAnswer();
-        }
-
-        });
 
     }
 
@@ -1409,7 +1391,7 @@ export class CallScreenNoTranslation extends React.Component {
         const messageKey = this.state.paymentID;
         
         sendMessage(parsed_answer, receiver, messageKey);    
-        
+
     }
 
     async disconnectCall() {
@@ -1440,6 +1422,7 @@ export class CallScreenNoTranslation extends React.Component {
 
   // Enable/Disable Camera
   toggleCamera() {
+    this.state.localWebcamOn ? Globals.localWebcamOn = false : Globals.localWebcamOn = true;
     this.state.localWebcamOn ? this.setState({localWebcamOn: false}) : this.setState({localWebcamOn: true});
     this.state.stream.getVideoTracks().forEach((track) => {
       this.state.localWebcamOn ? (track.enabled = false) : (track.enabled = true);
@@ -1448,7 +1431,9 @@ export class CallScreenNoTranslation extends React.Component {
 
   // Enable/Disable Mic
     toggleMic() {
+    this.state.localMicOn ? Globals.localMicOn = false : Globals.localMicOn = true;
     this.state.localMicOn ? this.setState({localMicOn: false}) : this.setState({localMicOn: true});
+
     this.state.stream.getAudioTracks().forEach((track) => {
         this.state.localMicOn ? (track.enabled = false) : (track.enabled = true);
     });
