@@ -170,6 +170,8 @@
   groupsRecommendations: "Rekommendationer",
   groups: "Grupper",
   call: "Ring",
+  inCall: "I samtal",
   tapToCall: "Tryck på telefonikonen för att ringa",
-  isCalling: "ringer dig. Tryck på telefonikonen för att svara."
+  isCalling: "ringer dig. Tryck på telefonikonen för att svara.",
+  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls."
 }

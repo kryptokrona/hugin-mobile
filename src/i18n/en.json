@@ -170,6 +170,7 @@
   groupsRecommendations: "Recommended groups",
   groups: "Groups",
   call: "Call",
+  inCall: "In call",
   tapToCall: "Tap the phone icon to call",
   isCalling: /* Alice */ "is calling. Tap the phone icon to answer.",
   noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls."

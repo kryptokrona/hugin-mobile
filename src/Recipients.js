@@ -160,6 +160,23 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                     //
                                     // </View>
                                 }
+                                rightIcon={
+                                    Globals.calls.find(call => call.contact == item.paymentID) ? 
+                                    <View style={{backgroundColor: '#5ff281', borderRadius: 5, padding: 5}}>
+                        <Text onPress={() => {
+                            this.props.navigation.navigate(
+                                'CallScreen', {
+                                    payee: this.props.navigation.state.params.payee,
+                                    // sdp: 'wtfdoe'
+                                }
+                            );
+                        }} style={{ textAlign: 'right', textTransform: 'uppercase', fontSize: 12, color: this.props.screenProps.theme.backgroundColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {t('inCall')}
+                        </Text>
+
+                        </View> :
+                                    <></>
+                                }
                                 titleStyle={{
                                     color: this.props.screenProps.theme.primaryColour,
                                     fontFamily: 'Montserrat-SemiBold'
@@ -996,6 +1013,7 @@ export class ChatScreenNoTranslation extends React.Component {
                         marginTop: 5,
                         marginLeft: 'auto'
                     }}>
+                        <View style={{flex: 1,flexDirection: 'row' }}>
                         <Image
                           style={{width: 50, height: 50}}
                           source={{uri: get_avatar(this.state.address)}}
@@ -1006,10 +1024,11 @@ export class ChatScreenNoTranslation extends React.Component {
                                     payee: this.props.navigation.state.params.payee,
                                 }
                             );
-                        }} style={{ fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
+                        }} style={{ marginTop: 10, fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
                             {this.state.nickname}
                         </Text>
-                        <View style={{flex: 1}}>
+                        </View>
+                        <View style={{backgroundColor: '#5ff281', borderRadius: 5, padding: 5}}>
                         <Text onPress={() => {
                             this.props.navigation.navigate(
                                 'CallScreen', {
@@ -1017,9 +1036,10 @@ export class ChatScreenNoTranslation extends React.Component {
                                     // sdp: 'wtfdoe'
                                 }
                             );
-                        }} style={{ textAlign: 'right', fontSize: 18, color: this.props.screenProps.theme.primaryColour, fontFamily: 'Montserrat-SemiBold' }}>
-                            {t('call')}
+                        }} style={{ textAlign: 'right', textTransform: 'uppercase', fontSize: 12, color: this.props.screenProps.theme.backgroundColour, fontFamily: 'Montserrat-SemiBold' }}>
+                            {Globals.calls.find(call => call.contact == this.props.navigation.state.params.payee.paymentID) ? t('inCall') : t('call')}
                         </Text>
+
                         </View>
 
                     </View>
@@ -1723,14 +1743,14 @@ export class CallScreenNoTranslation extends React.Component {
           {this.state.callStatus == 'disconnected' && !this.state.sdp &&
               <TouchableOpacity onPress={() =>{this.startCall()}}>
                   
-                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
+                  <CustomIcon name='call' size={24} style={{color: '#5ff281'}} />
                   
               </TouchableOpacity>
           }
   
           { this.state.sdp && this.state.callStatus == 'disconnected' &&
                <TouchableOpacity onPress={() =>{this.answerCall()}}>
-                  <CustomIcon name='call' size={24} style={{color: '#6CB955'}} />
+                  <CustomIcon name='call' size={24} style={{color: '#5ff281'}} />
              </TouchableOpacity>
           }
   
