@@ -21,8 +21,8 @@ import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
 import { getBestCache } from './HuginUtilities';
 import offline_node_list from './nodes.json';
-
 import offline_cache_list from './apis.json';
+import offline_groups_list from './groups.json';
 
 class globals {
     constructor() {
@@ -78,6 +78,8 @@ class globals {
         this.daemons = [];
 
         this.caches = [];
+
+        this.standardGroups = [];
 
         this.messages = [];
 
@@ -283,7 +285,28 @@ class globals {
         } catch (error) {
           console.log(offline_cache_list);
             this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
-            this.daemons = offline_cache_list.nodes;
+            this.daemons = offline_cache_list.apis;
+        }
+    }
+
+    async updateGroupsList() {
+        try {
+            const data = await request({
+                json: true,
+                method: 'GET',
+                timeout: Config.requestTimeout,
+                url: Config.groupsListURL,
+            });
+            console.log(data);
+            if (data.apis) {
+                this.standardGroups = data.groups;
+            } else {
+              this.standardGroups = offline_groups_list.groups;
+            }
+        } catch (error) {
+          console.log(offline_cache_list);
+            this.logger.addLogMessage('Failed to get groups list from API: ' + error.toString());
+            this.standardGroups = offline_groups_list.groups;
         }
     }
 
@@ -343,4 +366,5 @@ export async function initGlobals() {
     }
 
     await Globals.updateNodeList();
+    await Globals.updateGroupsList();
 }
