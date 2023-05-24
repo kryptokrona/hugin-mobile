@@ -130,7 +130,7 @@ async function init(navigation) {
     }
 
     initGlobals();
-    
+
     const recommended_node = await getBestCache();
 
     Globals.preferences.cache = recommended_node.url;
@@ -611,15 +611,13 @@ export class MainScreen extends React.PureComponent {
                             placeholderTextColor={'#ffffff'}
                             onSubmitEditing={async (e) => {
                               savePreferencesToDatabase(Globals.preferences);
-                                // return;
-                                // submitMessage(this.state.message);
-                                // this.setState({message: '', messageHasLength: false});
                             }}
                             onChangeText={(text) => {
                                 if (this.props.onChange) {
                                     this.props.onChange(text);
                                 }
                                 Globals.preferences.nickname = text;
+                                savePreferencesToDatabase(Globals.preferences);
                             }}
                             errorMessage={this.props.error}
                         />
