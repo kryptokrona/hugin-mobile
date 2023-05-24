@@ -278,7 +278,7 @@ export async function backgroundSync() {
                 if (thisExtra.length > 66) {
 
 
-                  let message = await getMessage(thisExtra);
+                  let message = await getMessage(thisExtra, thisHash, undefined, true);
 
                   if (!message) {
                     continue;

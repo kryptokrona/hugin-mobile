@@ -6,7 +6,7 @@ import React from 'react';
 import PushNotification from 'react-native-push-notification';
 import moment from 'moment';
 
-import { Text, Platform, ToastAndroid, Alert } from 'react-native';
+import { Text, Platform, ToastAndroid, Alert, Linking } from 'react-native';
 
 import { StackActions, NavigationActions } from 'react-navigation';
 
@@ -154,20 +154,7 @@ function trimExtra (extra) {
 
 
     PushNotification.configure({
-      onNotification: function (notification) {
-
-        // let payee = notification.userInfo;
-
-              // navigation.navigate(
-              //     'ChatScreen', {
-              //         payee: payee,
-              //     }
-              // );
-        // process the notification
-
-        // (required) Called when a remote is received or opened, or local notification is opened
-
-        },
+      onNotification: handleNotification,
 
         permissions: {
             alert: true,
@@ -180,12 +167,38 @@ function trimExtra (extra) {
         requestPermissions: true,
 
     });
-function handleNotification(notification) {
+    function handleNotification(notification) {
 
-    notification.finish(PushNotificationIOS.FetchResult.NoData);
-
-
-}
+      if (notification.transaction != undefined) {
+        return;
+      }
+  
+      let payee = notification.userInfo;
+  
+      if (payee.address) {
+  
+        payee = new URLSearchParams(payee).toString();
+  
+        let url = 'xkr://'.replace('address=', '') + payee;
+  
+        Linking.openURL(url);
+  
+      } else if (payee.key) {
+  
+        let url = `xkr://?group=${payee.key}`;
+  
+        Linking.openURL(url);
+  
+      } else {
+  
+        let url = 'xkr://?board=' + payee;
+  
+        Linking.openURL(url);
+  
+  
+      }
+  
+  }
 
 export function intToRGB(int) {
 
@@ -717,7 +730,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     if (result.success) {
       if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
-        message = 'Call started';
+        message = t('Call started');
       }
       if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
         message = 'Call answered';
@@ -899,7 +912,7 @@ async function getGroupMessage(tx) {
 
 }
 
-export async function getMessage(extra, hash, navigation){
+export async function getMessage(extra, hash, navigation, fromBackground=true){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -1061,11 +1074,14 @@ export async function getMessage(extra, hash, navigation){
           if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
             console.log('Call received!');
 
+            if (navigation) {
             navigation.navigate(
               'CallScreen', {
                   payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
                   sdp: payload_json.msg,
-              });
+              }) } else {
+                // use URL to 
+              }
 
             PushNotification.localNotification({
               title: from,//'Incoming transaction received!',
@@ -1094,7 +1110,7 @@ export async function getMessage(extra, hash, navigation){
 
           
 
-          if (Globals.activeChat != payload_json.from && !from_myself) {
+          if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
             PushNotification.localNotification({
                 title: from,//'Incoming transaction received!',
                 //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
