@@ -949,9 +949,7 @@ export async function loadGroupsDataFromDatabase() {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
-            console.log(item);
             const latestMessage = latestMessages.filter(m => m.group == item.key);
-            console.log(latestMessage);
             res.push({
                 group: item.name,
                 key: item.key,
@@ -1024,7 +1022,6 @@ export async function getLatestGroupMessages() {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
-            console.log(item);
             res.push({
                 group: item.board,
                 nickname: item.nickname,

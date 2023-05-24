@@ -130,10 +130,8 @@ async function init(navigation) {
     }
 
     initGlobals();
-    console.log('wtf');
+    
     const recommended_node = await getBestCache();
-
-    console.log('bruh', recommended_node);
 
     Globals.preferences.cache = recommended_node.url;
 
