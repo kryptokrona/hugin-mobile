@@ -166,7 +166,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                         <Text onPress={() => {
                             this.props.navigation.navigate(
                                 'CallScreen', {
-                                    payee: this.props.navigation.state.params.payee,
+                                    payee: item,
                                     // sdp: 'wtfdoe'
                                 }
                             );
@@ -1788,10 +1788,10 @@ export class CallScreenNoTranslation extends React.Component {
     <Text>{t('noRecordAccess')}</Text>
     }
     { this.state.callStatus == 'waiting' &&
-    <Text>{"Waiting for answer.."}</Text>
+    <Text>{t('waitingForAnswer')}</Text>
     }
     { this.state.callStatus == 'connecting' &&
-    <Text>{"Connecting.."}</Text>
+    <Text>{t('connecting')}</Text>
     }
     {/* { this.state.callStatus == 'connected' &&
         <Text>{"Connected"}</Text>

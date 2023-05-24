@@ -173,5 +173,9 @@
   inCall: "I samtal",
   tapToCall: "Tryck på telefonikonen för att ringa",
   isCalling: "ringer dig. Tryck på telefonikonen för att svara.",
-  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls."
+  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls.",
+  callStarted: "Samtal påbörjat",
+  callAnswered: "Svarade på samtalet",
+  waitingForAnswer: "Väntar på svar..",
+  connecting: "Ansluter.."
 }

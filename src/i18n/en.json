@@ -173,5 +173,9 @@
   inCall: "In call",
   tapToCall: "Tap the phone icon to call",
   isCalling: /* Alice */ "is calling. Tap the phone icon to answer.",
-  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls."
+  noRecordAccess: "No access to camera and/or microphone. Please allow them in your phone's settings to make calls.",
+  callStarted: "Call started",
+  callAnswered: "Call answered",
+  waitingForAnswer: "Waiting for answer..",
+  connecting: "Connecting.."
 }
