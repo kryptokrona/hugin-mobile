@@ -177,5 +177,6 @@
   callStarted: "Samtal påbörjat",
   callAnswered: "Svarade på samtalet",
   waitingForAnswer: "Väntar på svar..",
-  connecting: "Ansluter.."
+  connecting: "Ansluter..",
+  callTerminated: "Samtalet avslutat"
 }

@@ -90,7 +90,14 @@ export class RecipientsScreenNoTranslation extends React.Component {
 
     render() {
         const { t } = this.props;
-        const payees = this.state.payees;
+        let payees = this.state.payees;
+        let uniquePayees = [];
+        payees.forEach((element) => {
+            if (!uniquePayees.includes(element)) {
+                uniquePayees.push(element);
+            }
+        });
+        payees = uniquePayees;
         const noPayeesComponent =
             <View style={{
                 width: '100%',
@@ -1147,8 +1154,8 @@ function startPeer() {
         iceServers: [
         {
         urls: [
-            'stun:stun.l.google.com:19302',
-            'stun:global.stun.twilio.com:3478'
+            'stun:stun.bahnhof.net:3478',
+            'stun:stun.ipfire.org:3478'
         ]
         }
     ],
@@ -1416,6 +1423,8 @@ export class CallScreenNoTranslation extends React.Component {
 
     async disconnectCall() {
 
+        const { t } = this.props;
+
         this.state.activeCall.peer.close();
     
         this.props.navigation.navigate(
@@ -1429,7 +1438,7 @@ export class CallScreenNoTranslation extends React.Component {
               });
             Globals.stream = false;
         }
-        toastPopUp('Call terminated..')
+        toastPopUp(t('callTerminated'))
 
     }
 
