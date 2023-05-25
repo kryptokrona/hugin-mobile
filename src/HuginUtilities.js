@@ -1082,7 +1082,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
               }) } else {
                 // use URL to 
               }
-
+            if (!from_myself) {
             PushNotification.localNotification({
               title: from,//'Incoming transaction received!',
               //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
@@ -1090,7 +1090,8 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
               data: payload_json.t,
               userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
               largeIconUrl: get_avatar(payload_json.from, 64),
-          });
+          })
+        }
           payload_json.msg = 'Call received';
           saveMessage(payload_json.from, received, 'Call received', payload_json.t);
 
