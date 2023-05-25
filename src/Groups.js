@@ -82,7 +82,13 @@ export class GroupsScreenNoTranslation extends React.Component {
 
     render() {
         const { t } = this.props;
-        const groups = this.state.groups;
+        let groups = this.state.groups;
+        let uniqueGroups = [];
+        groups.forEach((element) => {
+            if (!uniqueGroups.includes(element)) {
+                uniqueGroups.push(element);
+            }
+        });
         let standardGroups = Globals.standardGroups;
 
         standardGroups = standardGroups.filter(a => !this.state.groups.map(b=>b.key).includes(a.key));
