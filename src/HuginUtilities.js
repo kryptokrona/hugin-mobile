@@ -365,13 +365,30 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
+  console.log('Optimizing messages..');
+
+  if (Globals.wallet.subWallets.getAddresses().length === 1) {
+
+    const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+    const deterministicPrivateKey = await crypto.generateDeterministicSubwalletKeys(privateSpendKey, 1)
+    const [address, error] = await Globals.wallet.importSubWallet(deterministicPrivateKey.private_key);
+    
+    if (error) {
+       return;
+    }
+  } else {
+    console.log('no');
+  }
+
   if (attempt > 10) {
     return false;
   }
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
 
-  let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
+  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
+
+  let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
 
   if (inputs.length > 8) {
     return inputs.length;
@@ -393,7 +410,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
   /* User payment */
   while (i < nbrOfTxs - 1 && i < 10) {
     payments.push([
-        Globals.wallet.subWallets.getAddresses()[0],
+      subWallet,
         2000
     ]);
 
@@ -406,7 +423,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
+      [mainWallet], // subWalletsToTakeFrom
       undefined, // changeAddress
       true, // relayToNetwork
       false, // sneedAll
@@ -424,6 +441,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
 
 }
+optimizeMessages()
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
@@ -636,7 +654,7 @@ async function optimizeWallet() {
       for (input in inputs) {
         try {
           let this_amount = inputs[input].input.amount;
-          if (this_amount == 10000) {
+          if (this_amount == 10000) { 
             message_inputs++;
           }
         } catch (err) {
