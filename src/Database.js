@@ -1115,7 +1115,7 @@ export async function getGroupMessages(group=false) {
             address
         FROM
             privateboards_messages_db
-        ${group ? 'WHERE board = "' + group + '"' : ''} AND message != ""
+        ${group ? 'WHERE board = "' + group + '"' : ''}
         ORDER BY
             timestamp
         ASC`
