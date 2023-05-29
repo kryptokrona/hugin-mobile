@@ -377,7 +377,6 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
        return;
     }
   } else {
-    console.log('no');
   }
 
   if (attempt > 10) {
@@ -568,12 +567,14 @@ export async function sendGroupsMessage(message, group) {
 
   const payload_encrypted_hex = toHex(JSON.stringify(payload_encrypted));
 
+  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
+
   let result = await Globals.wallet.sendTransactionAdvanced(
       [[my_address, 1]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
+      [subWallet], // subWalletsToTakeFrom
       undefined, // changeAddress
       true, // relayToNetwork
       false, // sneedAll
@@ -624,12 +625,14 @@ export async function sendBoardsMessage(message, board, reply=false) {
 
   const payload_hex = toHex(JSON.stringify(message_json));
 
+  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
+
   const result = await Globals.wallet.sendTransactionAdvanced(
       [[my_address, 1]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
+      [subWallet], // subWalletsToTakeFrom
       undefined, // changeAddress
       true, // relayToNetwork
       false, // sneedAll
@@ -667,6 +670,8 @@ async function optimizeWallet() {
 }
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
+
+  console.log(Globals.wallet);
 
   if (message.length == 0) {
     return;
@@ -726,12 +731,14 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     // Convert json to hex
     let payload_hex = toHex(JSON.stringify(payload_box));
 
+    let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
+
     let result = await Globals.wallet.sendTransactionAdvanced(
         [[receiver, 1]], // destinations,
         3, // mixin
         {fixedFee: 1000, isFixedFee: true}, // fee
         undefined, //paymentID
-        undefined, // subWalletsToTakeFrom
+        [subWallet], // subWalletsToTakeFrom
         undefined, // changeAddress
         true, // relayToNetwork
         false, // sneedAll
