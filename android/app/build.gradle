@@ -132,7 +132,7 @@ android {
         applicationId "com.hugin"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 036
+        versionCode 037
         versionName "v1.3.0"
         ndk {
             abiFilters "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
