@@ -1146,7 +1146,7 @@ async function backgroundSyncMessages(navigation) {
 
           console.log(`Checking tx with hash ${thisHash}`);
 
-          saveKnownTransaction(thisHash);
+          await saveKnownTransaction(thisHash);
 
 
           if (Globals.knownTXs.indexOf(thisHash) === -1) {
