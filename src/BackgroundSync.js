@@ -267,6 +267,7 @@ export async function backgroundSync() {
                   console.log(transactions[transaction]);
                 let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
                 let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+                await saveKnownTransaction(thisHash);
                 if (Globals.knownTXs.indexOf(thisHash) === -1) {
                              Globals.knownTXs.push(thisHash);
                            } else {
