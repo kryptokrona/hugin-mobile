@@ -1154,8 +1154,7 @@ function startPeer() {
         iceServers: [
         {
         urls: [
-            'stun:stun.bahnhof.net:3478',
-            'stun:stun.ipfire.org:3478'
+            'stun:techy.ddns.net:5349'
         ]
         }
     ],
@@ -1298,6 +1297,12 @@ export class CallScreenNoTranslation extends React.Component {
                 this.disconnectCall();
             }
 
+            if(this.state.activeCall.peer.connectionState == 'connected') {
+
+
+
+            }
+
         }
         
         // setup stream listening
@@ -1343,10 +1348,37 @@ export class CallScreenNoTranslation extends React.Component {
         this.setState({callStatus: 'waiting'});
 
         let data_channel = await this.state.activeCall.peer.createDataChannel('HuginDataChannel');
-
-        data_channel.addEventListener("message", (event) => {console.log("Data", event.data)});
-
         let sessionDescription = await this.state.activeCall.peer.createOffer();
+
+        data_channel.addEventListener("message", async (event) => {
+            
+            console.log("Data", event.data);
+            try {
+                let json = JSON.parse(event.data);
+                // console.log(this.state.activeCall.peer.currentRemoteDescription);
+                if (json.hasOwnProperty('sdp')) {
+                    await this.state.activeCall.peer.setLocalDescription(sessionDescription);
+                    console.log(this.state.activeCall.peer);
+                    console.log('Set remote description')
+                    await this.state.activeCall.peer.setRemoteDescription(json);
+                    console.log('Successfully set remote desc')
+                }
+
+
+                // JSON.parse()
+            } catch (err) {
+
+                console.log(err);
+
+            }
+
+        });
+
+       
+
+        
+
+        console.log(sessionDescription);
     
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
 
@@ -1365,6 +1397,16 @@ export class CallScreenNoTranslation extends React.Component {
         sessionDescription = await this.state.activeCall.peer.createOffer();
     
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
+
+        data_channel.addEventListener("open", async (event) => {
+
+            sessionDescription = await this.state.activeCall.peer.createOffer();
+
+            data_channel.send(JSON.stringify(
+                sessionDescription
+            ))
+
+        });
     
         let parsed_sdp = parse_sdp(sessionDescription);
     
@@ -1385,6 +1427,63 @@ export class CallScreenNoTranslation extends React.Component {
         const parsed_sdp = expand_sdp_offer(this.state.sdp);
 
         await this.state.activeCall.peer.setRemoteDescription(parsed_sdp);
+
+        let data_channel = await this.state.activeCall.peer.createDataChannel('HuginDataChannel');
+
+        // data_channel.addEventListener("message", async (event) => {
+            
+        //     console.log("Data", event.data);
+        //     try {
+        //         let json = JSON.parse(event.data);
+        //         if (json.sdp) {
+        //             await this.state.activeCall.peer.setRemoteDescription(json);
+        //         }
+
+
+        //         // JSON.parse()
+        //     } catch (err) {
+
+        //     }
+
+        // });
+
+        data_channel.addEventListener("message", async (event) => {
+            
+            // console.log("Data", event.data);
+            try {
+                let json = JSON.parse(event.data);
+                console.log(json);
+                console.log(this.state.activeCall.peer.currentRemoteDescription);
+
+                if (json.hasOwnProperty('sdp')) {
+                    console.log(json);
+                    json.sdp = json.sdp
+                    .replace("a=group:BUNDLE 0 1 2", "a=group:BUNDLE audio video data")
+                    .replace("a=mid:0", "a=mid:audio" )
+                    .replace("a=mid:1", "a=mid:video" )
+                    .replace("a=mid:2", "a=mid:data" )
+
+                    
+
+                    console.log('We have sdp..');
+                    await this.state.activeCall.peer.setRemoteDescription(json);
+                    console.log('Set remote description..');
+                    let answer = await this.state.activeCall.peer.createAnswer();
+                    console.log('New answer', answer)
+                    await this.state.activeCall.peer.setLocalDescription(answer);
+                    console.log('Sending answer', answer)
+                    data_channel.send(JSON.stringify(answer));
+                } else {
+                    console.log('We have no sdp..!')
+                }
+
+
+                // JSON.parse()
+            } catch (err) {
+                console.log(err);
+            }
+
+        });
 
         let answer = await this.state.activeCall.peer.createAnswer();
 
