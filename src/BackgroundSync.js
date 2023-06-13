@@ -21,7 +21,7 @@ import { sendNotification } from './MainScreen';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 
 import {
-    saveToDatabase, haveWallet, loadWallet, openDB, loadPreferencesFromDatabase, loadPayeeDataFromDatabase
+    saveToDatabase, haveWallet, loadWallet, openDB, loadPreferencesFromDatabase, loadPayeeDataFromDatabase, saveKnownTransaction
 } from './Database';
 
 export function initBackgroundSync() {
