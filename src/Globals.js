@@ -152,6 +152,10 @@ class globals {
 
 
     addGroup(group) {
+        if (Globals.groups.some((g) => g.key == group.key)) {
+            console.log('Group already exists!');
+            return;
+        }
         Globals.groups.push(group);
         saveGroupToDatabase(group);
         this.updateGroups();
