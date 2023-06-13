@@ -119,8 +119,6 @@ export class GroupsScreenNoTranslation extends React.Component {
                 key: g.key
             };
 
-            console.log(g);
-
             /* Add payee to global payee store */
             Globals.addGroup(group);
 
@@ -928,7 +926,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              if (result.success) {
 
-                    updated_messages[message_indice].type = 'sent';
+                    updated_messages = await getGroupMessages();
                     this.setState({
                         messages: updated_messages,
                         messageHasLength: false
