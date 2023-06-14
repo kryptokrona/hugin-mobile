@@ -8,6 +8,7 @@
     "test": "jest",
     "lint": "eslint .",
     "postinstall": "./node_modules/.bin/rn-nodeify --install fs,dgram,process,path,console,crypto,buffer,stream,vm,http,https,url,zlib,net,assert,tls --hack --yarn; ./node_modules/.bin/jetify",
+    "get-offline-lists": "wget https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json -O src/nodes.json && wget https://raw.githubusercontent.com/kryptokrona/hugin-groups/main/groups.json -O src/groups.json",
     "rnpm": {
       "assets": [
         "resources/fonts"
