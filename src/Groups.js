@@ -832,7 +832,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
     async componentDidMount() {
 
-
+        await markGroupConversationAsRead(this.state.key);
 
         let messages = await getGroupMessages(this.state.key);
 
@@ -855,8 +855,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
     }
 
     render() {
-
-       markGroupConversationAsRead(this.state.key);
 
        const { t } = this.props;
 
