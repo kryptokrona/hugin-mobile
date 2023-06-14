@@ -7,3 +7,5 @@ android/build
 ios/sentry.properties
 android/app/my-release-key.keystore
 .DS_STORE
+src/nodes.json
+src/groups.json
