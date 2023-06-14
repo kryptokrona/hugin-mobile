@@ -5,6 +5,7 @@
 * `git clone https://github.com/kryptokrona/hugin-mobile.git`
 * `cd hugin-mobile`
 * `yarn install`
+* `npm run get-offline-lists`
 
 ### Running
 
