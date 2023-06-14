@@ -278,17 +278,17 @@ class globals {
                 json: true,
                 method: 'GET',
                 timeout: Config.requestTimeout,
-                url: Config.cacheListURL,
+                url: Config.nodeListURL,
             });
             console.log(data);
             if (data.apis) {
                 this.caches = data.apis;
             } else {
-              this.caches = offline_cache_list.apis;
+              this.caches = offline_node_list.apis;
             }
         } catch (error) {
           console.log(offline_cache_list);
-            this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
+            this.logger.addLogMessage('Failed to get api list from API: ' + error.toString());
             this.daemons = offline_cache_list.apis;
         }
     }
