@@ -106,7 +106,7 @@ async function init(navigation) {
         Globals.logger.addLogMessage(message);
     });
 
-    Globals.wallet.setLogLevel(LogLevel.DEBUG);
+    Globals.wallet.setLogLevel(LogLevel.ERROR);
 
     /* Don't launch if already started */
     if (Globals.backgroundSaveTimer === undefined) {
