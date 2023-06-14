@@ -699,6 +699,7 @@ export async function markConversationAsRead(conversation) {
 });
 
 Globals.unreadMessages = await getUnreadMessages();
+Globals.update();
 
 }
 
@@ -722,6 +723,7 @@ export async function markGroupConversationAsRead(group) {
 
 
 Globals.unreadMessages = await getUnreadMessages();
+Globals.updateGroupsFunction();
 
 }
 
