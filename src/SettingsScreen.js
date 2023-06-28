@@ -315,7 +315,7 @@ export class LoggingScreen extends React.Component {
                     }}
                     style={{
                         marginTop: 50,
-                        marginBottom: 10,
+                        marginBottom: 100,
                         marginHorizontal: 10,
                         backgroundColor: this.props.screenProps.theme.backgroundColour,
                     }}
@@ -328,6 +328,14 @@ export class LoggingScreen extends React.Component {
                         );
                     })}
                 </ScrollView>
+
+                <CopyButton
+                                style={{position: "absolute", bottom: 25, right: 20}}
+                                data={JSON.stringify(this.state.logs)}
+                                name='Logs'
+                                {...this.props}
+                            />
+
             </View>
         );
     }
