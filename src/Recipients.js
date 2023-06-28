@@ -1363,6 +1363,8 @@ export class CallScreenNoTranslation extends React.Component {
           });
 
         sessionDescription = await this.state.activeCall.peer.createOffer();
+
+        Globals.logger.addLogMessage('[Calls] SDP generated: ' + sessionDescription.sdp);
     
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
     
@@ -1408,6 +1410,8 @@ export class CallScreenNoTranslation extends React.Component {
         answer = await this.state.activeCall.peer.createAnswer();
 
         await this.state.activeCall.peer.setLocalDescription(answer);
+
+        Globals.logger.addLogMessage('[Calls] SDP generated: ' + answer.sdp);
 
         const parsed_answer = 'δ' + parse_sdp(answer, true);
 
