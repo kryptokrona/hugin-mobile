@@ -365,6 +365,8 @@ export function toHex(str,hex){
 
 export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
+  if (!Globals?.wallet) { return }
+
   console.log('Optimizing messages..');
 
   if (Globals.wallet.subWallets.getAddresses().length === 1) {
@@ -570,7 +572,7 @@ export async function sendGroupsMessage(message, group) {
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      [[my_address, 1]], // destinations,
+      [[mainWallet, 1]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
@@ -1099,7 +1101,16 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
           if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
             console.log('Call received!');
 
-            if (navigation) {
+            let missed;
+
+            console.log('Date now:', Date.now());
+            console.log('payload_json.t', payload_json.t);
+
+            Date.now() - payload_json.t < 180000 ? missed = false : missed = true;
+
+            console.log('Call is missed? ', missed);
+
+            if (navigation && !missed) {
             navigation.navigate(
               'CallScreen', {
                   payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
@@ -1108,19 +1119,24 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
                 // use URL to 
               }
             if (!from_myself) {
-            PushNotification.localNotification({
-              title: from,//'Incoming transaction received!',
-              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-              message: 'Call received',
-              data: payload_json.t,
-              userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
-              largeIconUrl: get_avatar(payload_json.from, 64),
-          })
-        }
+
+                console.log('Notifying call..')
+                PushNotification.localNotification({
+                  title: from,//'Incoming transaction received!',
+                  //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                  message: missed ? 'Call missed' : 'Call received',
+                  data: payload_json.t,
+                  userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
+                  largeIconUrl: get_avatar(payload_json.from, 64),
+              })
+              
+            }
           payload_json.msg = 'Call received';
           saveMessage(payload_json.from, received, 'Call received', payload_json.t);
 
           resolve(payload_json);
+
+          return;
 
           } 
           if (payload_json.msg.substring(0,1) == 'δ' || payload_json.msg.substring(0,1) == 'λ') {
