@@ -1103,9 +1103,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
 
             let missed;
 
-            console.log('Date now:', Date.now());
-            console.log('payload_json.t', payload_json.t);
-
             Date.now() - payload_json.t < 180000 ? missed = false : missed = true;
 
             console.log('Call is missed? ', missed);
@@ -1122,8 +1119,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
 
                 console.log('Notifying call..')
                 PushNotification.localNotification({
-                  title: from,//'Incoming transaction received!',
-                  //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                  title: from,
                   message: missed ? 'Call missed' : 'Call received',
                   data: payload_json.t,
                   userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
@@ -1154,8 +1150,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
 
           if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
             PushNotification.localNotification({
-                title: from,//'Incoming transaction received!',
-                //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                title: from,
                 message: payload_json.msg,
                 data: payload_json.t,
                 userInfo: from_payee,
