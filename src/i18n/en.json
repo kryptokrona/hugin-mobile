@@ -178,5 +178,6 @@
   callAnswered: "Call answered",
   waitingForAnswer: "Waiting for answer..",
   connecting: "Connecting..",
-  callTerminated: "Call terminated"
+  callTerminated: "Call terminated",
+  loadMore: "Load more",
 }
