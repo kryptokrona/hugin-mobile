@@ -1129,7 +1129,7 @@ export async function getMessages(conversation=false, limit=25) {
     return undefined;
 }
 
-export async function getGroupMessages(group=false) {
+export async function getGroupMessages(group=false, limit=25) {
 
     const [data] = await database.executeSql(
         `SELECT
@@ -1144,8 +1144,30 @@ export async function getGroupMessages(group=false) {
         ${group ? 'WHERE board = "' + group + '"' : ''}
         ORDER BY
             timestamp
-        ASC`
+        DESC
+        LIMIT ${limit}`
     );
+
+    const [count] = await database.executeSql(
+        `
+        SELECT COUNT(*) FROM privateboards_messages_db ${group ? 'WHERE board = "' + group + '"' : ''}
+        `
+    );
+
+    let count_raw = 0;
+
+    if (count && count.rows && count.rows.length) {
+        console.log(count);
+        const res = [];
+
+        for (let i = 0; i < count.rows.length; i++) {
+
+            const item = count.rows.item(i);
+
+            count_raw = item['COUNT(*)'];
+
+        }
+    };
 
     if (data && data.rows && data.rows.length) {
         const res = [];
@@ -1158,11 +1180,12 @@ export async function getGroupMessages(group=false) {
                 message: item.message,
                 timestamp: item.timestamp,
                 group: item.board,
-                address: item.address
+                address: item.address,
+                count: count_raw
             });
         }
 
-        return res;
+        return res.reverse();
     } else {
       console.log('No message le found!');
     }

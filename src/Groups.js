@@ -50,6 +50,8 @@ import { withTranslation } from 'react-i18next';
 
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
+import InvertibleScrollView from 'react-native-invertible-scroll-view';
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {
@@ -958,7 +960,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 flex: 1,
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 alignItems: 'center',
-                paddingLeft: 10
             }}>
 
                 <View style={{
@@ -994,21 +995,71 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                 </View>
 
-                <ScrollView
+                <InvertibleScrollView
+                    inverted
                     showsVerticalScrollIndicator={false}
                     style={{
-                        marginRight: 30,
                         marginBottom: 0,
                         width: '100%',
                         height: '80%',
                     }}
                     ref={ref => {this.scrollView = ref}}
-                    onContentSizeChange={() => this.scrollView.scrollToEnd({animated: true})}
+                    // onContentSizeChange={() => this.scrollView.scrollToEnd({animated: false})}
                 >
 
-                {items}
+                    <View style ={{flex:1}}>
+                    
+                    {items}
 
-                </ScrollView>
+                    </View>
+
+                    {this.state.messages.length > 0 && this.state.messages[0].count != this.state.messages.length &&
+                <View style={{
+                    flex: 1,
+                    alignContent: 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 10}}
+                >
+                <TouchableOpacity style={{
+                    backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+                    borderWidth: 1,
+                    borderColor: this.props.screenProps.theme.borderColour,
+                    borderRadius: 15,
+                    padding: 10,
+                    flexDirection: 'row',
+                    flex: 1,
+                    width: "33%",
+                    alignContent: 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center'}}
+                onPress={async () => {
+                    
+                    let updated_messages = await getGroupMessages(this.state.address, this.state.messages.length + 25);
+                    this.setState({
+                    messages: updated_messages,
+                    messageHasLength: false
+                    });
+                }}>
+
+                      <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'center',
+                        fontSize: 12,
+                        fontFamily: 'Montserrat-Bold'
+                      }}>
+
+                    {t('loadMore')}
+
+                      </Text>
+
+                      </TouchableOpacity>
+                      </View>
+                
+           
+                }
+
+                </InvertibleScrollView>
 
                 <KeyboardAvoidingView
                  behavior={Platform.OS == "ios" ? "padding" : "height"}
