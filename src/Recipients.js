@@ -893,10 +893,6 @@ export class ChatScreenNoTranslation extends React.Component {
             message: "",
             messageHasLength: false,
 
-            totalHeight: 0,
-            prevHeight: 0
-
-
         }
 
 
@@ -1070,7 +1066,7 @@ export class ChatScreenNoTranslation extends React.Component {
                     // onContentSizeChange={() => this.scrollView.scrollToEnd({animated: false})}
                 >
 
-                <View style ={{flex:1}} onLayout={e=>{this.setState({totalHeight: e.nativeEvent.layout.height, prevHeight: e.nativeEvent.layout.height - this.state.prevHeight}); console.log('new height:', e.nativeEvent.layout.height)}}>
+                <View style ={{flex:1}}>
   
                 {items}
 
