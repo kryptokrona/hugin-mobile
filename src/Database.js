@@ -1070,7 +1070,7 @@ export async function getLatestMessages() {
     return undefined;
 }
 
-export async function getMessages(conversation=false) {
+export async function getMessages(conversation=false, limit=25) {
 
     const [data] = await database.executeSql(
         `SELECT
@@ -1083,10 +1083,33 @@ export async function getMessages(conversation=false) {
         ${conversation ? 'WHERE conversation = "' + conversation + '"' : ''}
         ORDER BY
             timestamp
-        ASC`
+        DESC
+        LIMIT ${limit}`
     );
 
+    const [count] = await database.executeSql(
+        `
+        SELECT COUNT(*) FROM message_db ${conversation ? 'WHERE conversation = "' + conversation + '"' : ''}
+        `
+    );
+
+    let count_raw = 0;
+
+    if (count && count.rows && count.rows.length) {
+        console.log(count);
+        const res = [];
+
+        for (let i = 0; i < count.rows.length; i++) {
+
+            const item = count.rows.item(i);
+
+            count_raw = item['COUNT(*)'];
+
+        }
+    };
+
     if (data && data.rows && data.rows.length) {
+
         const res = [];
 
         for (let i = 0; i < data.rows.length; i++) {
@@ -1095,11 +1118,12 @@ export async function getMessages(conversation=false) {
                 conversation: item.conversation,
                 type: item.type,
                 message: item.message,
-                timestamp: item.timestamp
+                timestamp: item.timestamp,
+                count: count_raw
             });
         }
 
-        return res;
+        return res.reverse();
     }
 
     return undefined;
