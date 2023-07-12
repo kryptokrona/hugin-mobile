@@ -1072,7 +1072,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 </View>
 
-                {this.state.messages.length > 0 && this.state.messages[0].count != this.state.messages.length &&
+                {this.state.messages?.length > 0 && this.state.messages[0].count != this.state.messages?.length &&
                 <View style={{
                     flex: 1,
                     alignContent: 'center',
@@ -1094,7 +1094,7 @@ export class ChatScreenNoTranslation extends React.Component {
                     justifyContent: 'center'}}
                 onPress={async () => {
                     
-                    let updated_messages = await getMessages(this.state.address, this.state.messages.length + 25);
+                    let updated_messages = await getMessages(this.state.address, this.state.messages?.length + 25);
                     this.setState({
                     messages: updated_messages,
                     messageHasLength: false
