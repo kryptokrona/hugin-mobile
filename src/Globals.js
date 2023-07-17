@@ -130,6 +130,7 @@ class globals {
         Globals.payees.push(payee);
         savePayeeToDatabase(payee);
         this.update();
+        this.updateMessages();
     }
 
     removePayee(nickname, removeMessages) {
