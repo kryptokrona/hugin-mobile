@@ -490,6 +490,20 @@ export class ModifyPayeeScreenNoTranslation extends React.Component {
         }
     }
 
+    componentDidMount() {
+        this.focusSubscription = this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                const { address, nickname, paymentID } = Globals.payees.filter(payee => payee.address == this.state.address)[0];
+                this.setState({
+                    nickname: nickname,
+                    address: address,
+                    paymentID: paymentID
+                })
+            }
+          );
+    }
+
     render() {
         const { t } = this.props;
         return(
@@ -896,9 +910,9 @@ export class ChatScreenNoTranslation extends React.Component {
         }
 
 
-        Globals.updateChatFunctions.push(() => {
+        Globals.updateChatFunctions.push(async () => {
             this.setState({
-                messages: Globals.messages
+                messages: await getMessages(this.state.address)
             })
         });
 
@@ -916,11 +930,24 @@ export class ChatScreenNoTranslation extends React.Component {
 
         Globals.activeChat = this.state.address;
 
+        this.focusSubscription = this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                const { address, nickname, paymentID } = Globals.payees.filter(payee => payee.address == this.state.address)[0];
+                this.setState({
+                    nickname: nickname,
+                    address: address,
+                    paymentID: paymentID
+                })
+            }
+          );
+
     }
 
     async componentWillUnmount() {
 
         Globals.activeChat = '';
+        this.focusSubscription();
 
     }
 
@@ -984,7 +1011,6 @@ export class ChatScreenNoTranslation extends React.Component {
        const items = [];
 
        for (message in this.state.messages) {
-         if (this.state.address == this.state.messages[message].conversation){
            let timestamp = this.state.messages[message].timestamp / 1000;
            if (this.state.messages[message].type == 'received'){
               items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
@@ -1003,7 +1029,6 @@ export class ChatScreenNoTranslation extends React.Component {
             </View>)
            }
 
-       }
        }
 
 
