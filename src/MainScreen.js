@@ -914,7 +914,7 @@ class BalanceComponentNoTranslation extends React.Component {
               await Linking.openURL('https://kryptokrona.org/en/faucet?address=' + this.props.address);
 
           });
-          if (!hasBalance) {
+          if (false) {
             return <Button title={'⛽' + t('topUp')} onPress={handlePress} />;
           } else {
             return <View style={{alignItems: 'center'}}></View>;
