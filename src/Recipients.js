@@ -908,6 +908,8 @@ export class ChatScreenNoTranslation extends React.Component {
 
         const messages = await getMessages(this.state.address);
 
+        console.log('messages', messages);
+
         this.setState({
           messages: messages
         });
@@ -933,7 +935,7 @@ export class ChatScreenNoTranslation extends React.Component {
         Keyboard.dismiss();
         this.state.input.current._textInput.clear();
 
-        let updated_messages = await getMessages();
+        let updated_messages = await getMessages(this.state.address);
         if (!updated_messages) {
           updated_messages = [];
         }
@@ -956,7 +958,7 @@ export class ChatScreenNoTranslation extends React.Component {
         
         if (result.success) {
            await removeMessage(temp_timestamp);
-           let updated_messages = await getMessages(); 
+           let updated_messages = await getMessages(this.state.address); 
 
           this.setState({
             messages: updated_messages,
@@ -964,7 +966,7 @@ export class ChatScreenNoTranslation extends React.Component {
           })
           // this.state.input.current.clear();
         } else {
-           let updated_messages = await getMessages();
+           let updated_messages = await getMessages(this.state.address);
            updated_messages.push({
                conversation: this.state.address,
                type: 'failed',
@@ -1072,7 +1074,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
                 </View>
 
-                {this.state.messages?.length > 0 && this.state.messages[0].count != this.state.messages?.length &&
+                {this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length && this.state.messages[0]?.count > 25 && this.state.messages?.length > 24 &&
                 <View style={{
                     flex: 1,
                     alignContent: 'center',
@@ -1093,7 +1095,7 @@ export class ChatScreenNoTranslation extends React.Component {
                     alignItems: 'center',
                     justifyContent: 'center'}}
                 onPress={async () => {
-                    
+
                     let updated_messages = await getMessages(this.state.address, this.state.messages?.length + 25);
                     this.setState({
                     messages: updated_messages,
