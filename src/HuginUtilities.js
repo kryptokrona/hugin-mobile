@@ -939,7 +939,7 @@ async function getGroupMessage(tx) {
 
 }
 
-export async function getMessage(extra, hash, navigation, fromBackground=true){
+export async function getMessage(extra, hash, navigation, fromBackground=false){
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -1145,8 +1145,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=true){
           }
 
           saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
-
-          
 
           if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
             PushNotification.localNotification({
