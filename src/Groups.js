@@ -1013,7 +1013,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                     </View>
 
-                    {this.state.messages.length > 0 && this.state.messages[0].count != this.state.messages.length &&
+                    {this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length &&
                 <View style={{
                     flex: 1,
                     alignContent: 'center',
