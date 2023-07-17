@@ -994,6 +994,9 @@ export class ChatScreenNoTranslation extends React.Component {
           // this.state.input.current.clear();
         } else {
            let updated_messages = await getMessages(this.state.address);
+           if (!updated_messages) {
+            updated_messages = [];
+          }
            updated_messages.push({
                conversation: this.state.address,
                type: 'failed',
