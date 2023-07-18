@@ -322,7 +322,7 @@ export class TransferScreenNoTranslation extends React.Component {
 
                     </Text>
                   }
-
+{/*                      
                         <Button
                             title={t('sendMaxButton')}
                             onPress={() => {
@@ -338,15 +338,17 @@ export class TransferScreenNoTranslation extends React.Component {
                                 color: this.props.screenProps.theme.primaryColour,
                             }}
                             type="clear"
-                        />
+                        /> */}
+                    
                     </View>
 
                     <Text style={{
                         color: this.props.screenProps.theme.primaryColour,
                         fontSize: 18,
-                        marginLeft: 30,
                         marginTop: 20,
-                        fontFamily: 'Montserrat-Regular'
+                        fontFamily: 'Montserrat-Regular',
+                        textAlign: 'center',
+                        width: '100%'
                     }}>
                         {t('shouldArriveIn')} {getArrivalTime([t('minute'), t('second')])}
                     </Text>
