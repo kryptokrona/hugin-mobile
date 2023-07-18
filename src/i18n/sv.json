@@ -59,7 +59,7 @@
   value: "Värde",
   state: "Status",
   hash: "hash",
-  paymentID: "betalningsID",
+  paymentID: "Försändelse-ID",
   blockHeight: "Blockhöjd",
   address: "Adress",
   notes: "Anteckningar",

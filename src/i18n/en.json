@@ -180,4 +180,5 @@
   connecting: "Connecting..",
   callTerminated: "Call terminated",
   loadMore: "Load more",
+  transactionHash: "Transaction hash"
 }
