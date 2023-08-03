@@ -228,6 +228,11 @@ async function createTables(DB) {
             )`
         );
 
+            
+        //   tx.executeSql(
+        //     `DROP TABLE privateboards_messages_db`
+        // );
+
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
                 board TEXT,
@@ -270,9 +275,6 @@ async function createTables(DB) {
         );
 
 
-        //   tx.executeSql(
-        //     `DROP TABLE knownTXs`
-        // );
 
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS knownTXs (
@@ -318,6 +320,22 @@ async function createTables(DB) {
                 latest_message INT default 0`);
 
         }
+        console.log('dbVersion', dbVersion);
+        if (dbVersion === 6) {
+
+            tx.executeSql(
+              `ALTER TABLE
+                    privateboards_messages_db
+                ADD
+                    reply TEXT default ""`);
+
+            tx.executeSql(
+                `ALTER TABLE
+                        privateboards_messages_db
+                    ADD
+                        hash TEXT default ""`);
+  
+          }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -573,9 +591,9 @@ export async function deleteKnownTransaction(txhash) {
 }
 
 
-export async function saveGroupMessage(group, type, message, timestamp, nickname, address) {
+export async function saveGroupMessage(group, type, message, timestamp, nickname, address, reply, hash) {
 
-
+    console.log('Saving message with reply:', reply);
 
   const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
 
@@ -584,9 +602,9 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO privateboards_messages_db
-              (board, type, message, timestamp, read, nickname, address, read)
+              (board, type, message, timestamp, read, nickname, address, read, reply, hash)
           VALUES
-              (?, ?, ?, ?, ?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
               group,
               type,
@@ -595,7 +613,9 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
               'false',
               nickname,
               address,
-              read
+              read,
+              reply,
+              hash
           ]
       );
   });
@@ -1234,25 +1254,16 @@ export async function getReplies(post) {
   console.log(post);
 
     const [data] = await database.executeSql(
-        `SELECT
-            message,
-            address,
-            signature,
-            board,
-            timestamp,
-            nickname,
-            reply,
-            hash,
-            sent,
-            read
+        `SELECT *
         FROM
-            boards_message_db WHERE reply = "${post}"
+            privateboards_messages_db WHERE reply = "${post}"
         ORDER BY
             timestamp
         DESC
         LIMIT
         20`
     );
+
     console.log('Got ' + data.rows.length + " board messages");
     if (data && data.rows && data.rows.length) {
         const res = [];
@@ -1263,13 +1274,11 @@ export async function getReplies(post) {
             res.push({
                 message: item.message,
                 address: item.address,
-                signature: item.signature,
                 board: item.board,
                 timestamp: item.timestamp,
                 nickname: item.nickname,
                 reply: item.reply,
-                hash: item.hash,
-                sent: item.sent,
+                type: item.type,
                 read: item.read
             });
         }

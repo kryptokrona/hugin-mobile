@@ -541,7 +541,7 @@ export async function createGroup() {
 }
 
 
-export async function sendGroupsMessage(message, group) {
+export async function sendGroupsMessage(message, group, reply='') {
 
   const my_address = Globals.wallet.getPrimaryAddress();
 
@@ -559,6 +559,9 @@ export async function sendGroupsMessage(message, group) {
     "s": signature,
     "g": group,
     "n": Globals.preferences.nickname
+  }
+  if (reply != "") {
+    message_json.r = reply;
   }
 
   const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
@@ -585,15 +588,28 @@ export async function sendGroupsMessage(message, group) {
 
 
   if (!result.success) {
+    result = await Globals.wallet.sendTransactionAdvanced(
+      [[mainWallet, 1]], // destinations,
+      3, // mixin
+      {fixedFee: 1000, isFixedFee: true}, // fee
+      undefined, //paymentID
+      undefined, // subWalletsToTakeFrom
+      undefined, // changeAddress
+      true, // relayToNetwork
+      false, // sneedAll
+      Buffer.from(payload_encrypted_hex, 'hex')
+  );
+  if (!result.success) {
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
       console.log('Failed to send with Hugin API..')
     }
   }
+}
 
   if (result.success == true) {
-    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k);
+    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply);
     backgroundSave();
   }
 
@@ -748,12 +764,27 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
+      // Try to send from all subwallets if failed
+      result = await Globals.wallet.sendTransactionAdvanced(
+        [[receiver, 1]], // destinations,
+        3, // mixin
+        {fixedFee: 1000, isFixedFee: true}, // fee
+        undefined, //paymentID
+        undefined, // subWalletsToTakeFrom
+        undefined, // changeAddress
+        true, // relayToNetwork
+        false, // sneedAll
+        Buffer.from(payload_hex, 'hex')
+    );
+    if (!result.success) {
+      console.log(result);
       try {
         result = await sendMessageWithHuginAPI(payload_encrypted_hex);
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
     }
+  }
 
     if (result.success) {
       if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
@@ -905,6 +936,8 @@ async function getGroupMessage(tx) {
 
   const payload_json = JSON.parse(message_dec);
 
+  console.log(payload_json);
+
   const from = payload_json.k;
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
   const received = (from_myself ? 'sent' : 'received');
@@ -913,7 +946,9 @@ async function getGroupMessage(tx) {
 
   const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
 
-  saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k);
+  const reply = payload_json?.r ? payload.json.r : "";
+
+  saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k, reply, tx.hash);
 
   const nickname = payload_json.n ? payload_json.n : t('Anonymous');
 
@@ -932,6 +967,7 @@ async function getGroupMessage(tx) {
           userInfo: group_object[0],
           largeIconUrl: get_avatar(from, 64),
       });
+    } else {
     }
 
   return payload_json;
@@ -964,6 +1000,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           if (await groupMessageExists(tx.t)) {
             reject();
           }
+          tx.hash = hash;
           let groupMessage = await getGroupMessage(tx);
           resolve(groupMessage);
         }

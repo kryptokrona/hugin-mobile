@@ -17,7 +17,7 @@ import {
     validateAddresses, WalletErrorCode, validatePaymentID,
 } from 'kryptokrona-wallet-backend-js';
 
-import { Button as RNEButton, Alert } from 'react-native';
+import { Button as RNEButton, Alert, Modal } from 'react-native';
 
 import { Button, Input, Icon } from 'react-native-elements';
 
@@ -43,7 +43,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages} from './Database';
+import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -51,6 +51,8 @@ import { withTranslation } from 'react-i18next';
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
+
+import GestureRecognizer from 'react-native-swipe-gestures';
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -820,7 +822,20 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
             messages: [],
             message: "",
-            messageHasLength: false
+            messageHasLength: false,
+            messageModalVisible: false,
+            activePost: {
+                "message": "",
+                "address": "",
+                "signature": "",
+                "board": "",
+                "timestamp": "",
+                "nickname": "",
+                "reply": "0",
+                "hash": "",
+                "sent": 0,
+                "read": 0
+            }
         }
 
 
@@ -856,9 +871,19 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
     }
 
+    setActivePost = (item) => {
+        this.setState({ activePost: item });
+      }
+
+    setMessageModalVisible = (visible) => {
+        this.setState({ messageModalVisible: visible });
+    }
+
     render() {
 
        const { t } = this.props;
+
+       const { messageModalVisible, activePost } = this.state;
 
        const items = [];
 
@@ -869,10 +894,28 @@ export class GroupChatScreenNoTranslation extends React.Component {
            let timestamp = this.state.messages[message].timestamp / 1000;
            // if (this.state.messages[message].type == 'received'){
               items.push(
-              <View  key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}>
+                <TouchableOpacity onPress={async () => {
+                if (this.state.messages[message].reply && this.state.messages[message].reply != 0) {
+                this.state.replies = await getReplies(this.state.messages[message].reply);
+                const op = await getGroupsMessage(this.state.messages[message].reply);
+                if (op.length == 0) {
+                    return;
+                }
+                this.setActivePost(op[0]);
+
+                } else {
+                this.state.replies = await getReplies(this.state.messages[message].hash);
+                this.setActivePost(this.state.messages[message]);
+
+                }
+                this.setMessageModalVisible(true);
+
+                }}>
+              <View key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}>
                 
                 {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
                     {this.state.messages[message].type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {console.log(this.state.messages, message); submitMessage(this.state.messages[message].message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+
                     <View style={{flexDirection:"row", marginBottom: 10}}>
                         <Image
                         style={{width: 30, height: 30, marginTop: -5}}
@@ -884,13 +927,81 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     fontFamily: "Montserrat-SemiBold"
                 }}>{this.state.messages[message].nickname ? this.state.messages[message].nickname : t('Anonymous')}
                 </Text>
-                </View></View><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+                </View></View>
+                <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text>
+                <Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment>
+                </View>
+                </TouchableOpacity>
+
+                )
            // } else {
            //   items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            // }
 
        }
        }
+
+       const modalStyle = {
+        height: '100%',
+        marginTop: 50,
+        backgroundColor: '#272527',
+        borderTopRightRadius: 50,
+        borderTopLeftRadius: 50,
+        padding: 25,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+      };
+
+      const replyInput =
+            <View
+            style={{
+                width: this.state.replyHasLength ? '80%' : '100%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderWidth: 0,
+                  borderColor: 'transparent',
+                  borderRadius: 15,
+                  marginBottom: 15
+              }}
+            >
+            <AutoGrowingTextInput
+                multiline={true}
+                textAlignVertical={'top'}
+                ref={input => { this.replyinput = input }}
+                style={{
+                    color: this.props.screenProps.theme.primaryColour,
+                    fontFamily: 'Montserrat-Regular',
+                    fontSize: 15,
+                    width: '100%',
+                    height: '100%',
+                    padding: 15,
+
+                }}
+                maxLength={512}
+                placeholder={"✏️ " + t('typeMessageHere')}
+                placeholderTextColor={'#ffffff'}
+                onSubmitEditing={async (e) => {
+                  e.preventDefault();
+                    // return;
+                    // submitMessage(this.state.message);
+                    // this.setState({message: '', messageHasLength: false});
+                }}
+                onChangeText={(text) => {
+                    if (this.props.onChange) {
+                        this.props.onChange(text);
+                    }
+                    this.state.reply = text;
+                    this.setState({replyHasLength: this.state.reply.length > 0});
+                }}
+                errorMessage={this.props.error}
+            />
+            </View>;
 
 
            const submitMessage = async (text) => {
@@ -1125,7 +1236,173 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                 }
 
+<GestureRecognizer
+                      onSwipeDown={ () => this.setMessageModalVisible(false) }
+                    >
+                      <View>
+                        <Modal
+                          style={{}}
+                          animationType="slide"
+                          transparent={true}
+                          visible={messageModalVisible}
+                          onRequestClose={() => {
+                            this.setMessageModalVisible(!messageModalVisible);
+                          }}
+                        >
+                          <View style={modalStyle}>
+                          <ScrollView>
 
+
+                            <View style={{
+                              margin: 10
+                            }}>
+
+                            <View style={{flexDirection:"row", marginBottom: 10}}>
+
+                            <Image
+                              style={{width: 50, height: 50, marginTop: -10}}
+                              source={{uri: get_avatar(this.state.activePost.address)}}
+                            />
+                            <View style={{width: 150, overflow: 'hidden'}}>
+                              <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                  color: '#ffffff',
+                                  fontSize: 18,
+                                  fontFamily: "Montserrat-SemiBold"
+                              }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
+                              </Text>
+                              </View>
+                              {/* {board == 'Home' &&
+                              <View>
+                              <View style={{
+                                backgroundColor: getBoardColors(this.state.activePost.board)[0],
+                                padding: 2,
+                                paddingBottom: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 20,
+                                marginLeft: 'auto'
+                              }}>
+                              <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
+                                  marginLeft: 5,
+                                  marginRight: 5,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 10,
+                                  fontFamily: "Montserrat-Regular",
+                                  marginTop: -5
+                              }}>
+
+                                  {this.state.activePost.board}
+                                </Text>
+                              </View>
+                              </View>
+                             } */}
+
+
+                              </View>
+                              <View style={{paddingLeft: 20, paddingRight: 20}}>
+
+
+                                <Text selectable>{this.state.activePost.message + "\n"}</Text>
+                                <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp / 1000}</Moment>
+
+
+                              </View>
+                          </View>
+
+                          <KeyboardAvoidingView
+                           behavior={Platform.OS == "ios" ? "padding" : "height"}
+                           style={{
+                              marginBottom: 10,
+                              marginRight: 12,
+                              flexDirection: 'row'
+                          }}>
+
+                          {replyInput}
+
+                          {this.state.replyHasLength &&
+
+                              <TouchableOpacity
+                                  onPress={() => {
+                                    submitReply(this.state.reply);
+                                    this.setState({reply: '', replyHasLength: false});
+                                  }}
+                              >
+                                <View style={{
+                                  backgroundColor: '#63D880',
+                                  padding: 5,
+                                  paddingTop: 8,
+                                  borderRadius: 5,
+                                  height: 28,
+                                  marginTop: 20,
+                                  marginLeft: 10
+                                }}>
+                                <Text style={{
+                                    marginLeft: 5,
+                                    marginRight: 5,
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    fontSize: 16,
+                                    fontFamily: "Montserrat-SemiBold",
+                                    marginTop: -5
+                                }}>
+                              {t('send')}
+                              </Text>
+                              </View>
+                              </TouchableOpacity>
+
+                          }
+
+                          </KeyboardAvoidingView>
+
+                          <View style={{flexDirection:"row", marginBottom: 10}}>
+                            <View style={{width: '85%', marginLeft: 15  }}>
+                              <Button
+                                title={t('close')}
+                                onPress={() => this.setMessageModalVisible(false)}
+                              />
+                            </View>
+                          </View>
+
+                          <View style={{width: '85%', marginLeft: 15 }}>
+                            <Button
+                              title={'Send tip'}
+                              onPress={() => sendTip(this.state.activePost.address, this.state.activePost.hash, this.state.activePost.nickname)}
+                            />
+                          </View>
+
+
+                        <View style={{marginTop: 10}}>
+
+                        {this.state.replies && this.state.replies.map((item,i) => {
+                          return <View style={{padding: 10, borderRadius: 20, margin: 10, backgroundColor: "rgba(0,0,0,0.2)"}}>
+                          <View style={{flexDirection:"row"}}>
+
+                          <Image
+                            style={{width: 32, height: 32, marginTop: -5}}
+                            source={{uri: get_avatar(item.address)}}
+                          />
+                          <View style={{width: 150, overflow: 'hidden'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                color: '#ffffff',
+                                fontSize: 18,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>{item.nickname ? item.nickname : 'Anonymous'}
+                            </Text>
+                            </View>
+                          </View>
+                          <Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}>{item.message}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp}</Moment></Hyperlink>
+                          </View>
+                        } ) }
+
+                        </View>
+
+
+
+
+                        </ScrollView>
+                        </View>
+                        </Modal>
+                      </View>
+                    </GestureRecognizer>
 
             </KeyboardAvoidingView>
             </View>
