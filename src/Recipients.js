@@ -276,7 +276,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                         justifyContent: 'flex-start',
                     }}>
 
-                        {this.state.payees.length > 0 ? addressBookComponent : noPayeesComponent}
+                        {this.state.payees?.length > 0 ? addressBookComponent : noPayeesComponent}
 
                     </View>
                 </View>
@@ -1230,8 +1230,6 @@ function startPeer() {
         iceServers: [
         {
         urls: [
-            'stun:stun.bahnhof.net:3478',
-            'stun:stun.ipfire.org:3478'
         ]
         }
     ],
@@ -1400,7 +1398,7 @@ export class CallScreenNoTranslation extends React.Component {
 
           Globals.calls.splice(Globals.calls.indexOf(this.state.activeCall), 1);
 
-          if(!Globals.calls.length) {
+          if(!Globals.calls?.length) {
 
             Globals.stream.getTracks().forEach(function(track) {
                 track.stop();
