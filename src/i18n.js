@@ -9,6 +9,8 @@ import de from './i18n/de.json';
 import ru from './i18n/ru.json';
 import fi from './i18n/fi.json';
 import pt from './i18n/pt.json';
+import uk from './i18n/uk.json';
+import hi from './i18n/hi.json';
 import { Globals } from './Globals';
 import RNLanguageDetector from '@os-team/i18next-react-native-language-detector';
 
@@ -57,8 +59,14 @@ i18next
       pt: {
         translation: pt,
       },
+      uk: {
+        translation: uk,
+      },
+      hi: {
+        translation: hi,
+      }
     },
   });
 
 
-  export default i18next;
+export default i18next;
