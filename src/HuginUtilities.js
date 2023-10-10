@@ -541,7 +541,7 @@ export async function createGroup() {
 }
 
 
-export async function sendGroupsMessage(message, group, reply='') {
+export async function sendGroupsMessage(message, group, reply=false) {
 
   const my_address = Globals.wallet.getPrimaryAddress();
 
@@ -560,7 +560,8 @@ export async function sendGroupsMessage(message, group, reply='') {
     "g": group,
     "n": Globals.preferences.nickname
   }
-  if (reply != "") {
+
+  if (reply) {
     message_json.r = reply;
   }
 
@@ -586,6 +587,8 @@ export async function sendGroupsMessage(message, group, reply='') {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
 
+  console.log(result);
+
 
   if (!result.success) {
     result = await Globals.wallet.sendTransactionAdvanced(
@@ -609,7 +612,7 @@ export async function sendGroupsMessage(message, group, reply='') {
 }
 
   if (result.success == true) {
-    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply);
+    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
   }
 
@@ -936,8 +939,6 @@ async function getGroupMessage(tx) {
 
   const payload_json = JSON.parse(message_dec);
 
-  console.log(payload_json);
-
   const from = payload_json.k;
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
   const received = (from_myself ? 'sent' : 'received');
@@ -967,7 +968,6 @@ async function getGroupMessage(tx) {
           userInfo: group_object[0],
           largeIconUrl: get_avatar(from, 64),
       });
-    } else {
     }
 
   return payload_json;
@@ -1048,7 +1048,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
         let payees = await loadPayeeDataFromDatabase();
 
-        while (!decryptBox && i < payees.length) {
+        while (!decryptBox && i < payees?.length) {
 
           let possibleKey = payees[i].paymentID;
 
