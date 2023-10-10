@@ -500,7 +500,7 @@ class ExistingPayeesNoTranslation extends React.Component {
                 <View style={{
                 }}>
 
-                    {Globals.payees.length > 0 ? <AddressBook {...this.props}/> : noPayeesComponent}
+                    {Globals.payees?.length > 0 ? <AddressBook {...this.props}/> : noPayeesComponent}
                 </View>
             </View>
         );
