@@ -541,7 +541,7 @@ export async function createGroup() {
 }
 
 
-export async function sendGroupsMessage(message, group) {
+export async function sendGroupsMessage(message, group, reply=false) {
 
   const my_address = Globals.wallet.getPrimaryAddress();
 
@@ -559,6 +559,10 @@ export async function sendGroupsMessage(message, group) {
     "s": signature,
     "g": group,
     "n": Globals.preferences.nickname
+  }
+
+  if (reply) {
+    message_json.r = reply;
   }
 
   const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
@@ -583,7 +587,21 @@ export async function sendGroupsMessage(message, group) {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
 
+  console.log(result);
 
+
+  if (!result.success) {
+    result = await Globals.wallet.sendTransactionAdvanced(
+      [[mainWallet, 1]], // destinations,
+      3, // mixin
+      {fixedFee: 1000, isFixedFee: true}, // fee
+      undefined, //paymentID
+      undefined, // subWalletsToTakeFrom
+      undefined, // changeAddress
+      true, // relayToNetwork
+      false, // sneedAll
+      Buffer.from(payload_encrypted_hex, 'hex')
+  );
   if (!result.success) {
     result = await Globals.wallet.sendTransactionAdvanced(
       [[mainWallet, 1]], // destinations,
@@ -606,7 +624,7 @@ export async function sendGroupsMessage(message, group) {
 }
 
   if (result.success == true) {
-    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k);
+    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
   }
 
@@ -941,7 +959,9 @@ async function getGroupMessage(tx) {
 
   const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
 
-  saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k);
+  const reply = payload_json?.r ? payload.json.r : "";
+
+  saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k, reply, tx.hash);
 
   const nickname = payload_json.n ? payload_json.n : t('Anonymous');
 
@@ -992,6 +1012,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           if (await groupMessageExists(tx.t)) {
             reject();
           }
+          tx.hash = hash;
           let groupMessage = await getGroupMessage(tx);
           resolve(groupMessage);
         }
@@ -1039,7 +1060,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
         let payees = await loadPayeeDataFromDatabase();
 
-        while (!decryptBox && i < payees.length) {
+        while (!decryptBox && i < payees?.length) {
 
           let possibleKey = payees[i].paymentID;
 
