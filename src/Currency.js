@@ -10,9 +10,14 @@ import Constants from './Constants';
 import { Globals } from './Globals';
 
 export async function getCoinPriceFromAPI() {
-    /* Note: Coingecko has to support your coin for this to work */
-    let uri = `${Config.priceApiLink}`; //?ids=${Config.coinName.toLowerCase()}&vs_currencies=${getCurrencyTickers()}`;
 
+    let fiatPrice = 0;
+
+    let i = 0;
+
+    while (!fiatPrice && i < Config.priceApiLinks.length) {
+
+    let uri = `${Config.priceApiLinks[i].url}`; 
     try {
         const data = await request({
             json: true,
@@ -20,16 +25,25 @@ export async function getCoinPriceFromAPI() {
             timeout: Config.requestTimeout,
             url: uri,
         });
-
-        const coinData = data['quotes'].USD.price; //Config.coinName.toLowerCase()];
-
+        let j = 0;
+        let currentLevel = data;
+        while (j < Config.priceApiLinks[i].path.length){
+            currentLevel = currentLevel[Config.priceApiLinks[i].path[j]]; 
+            j++;
+        }
+        const coinData = currentLevel;
         Globals.logger.addLogMessage('Updated coin price from API');
         Globals.logger.addLogMessage('PRICE:' + coinData);
-        return coinData;
+        if (coinData) {
+            return coinData;
+        }
+        
     } catch (error) {
-        Globals.logger.addLogMessage('Failed to get price from API: ' + error.toString());
-        return undefined;
+        // return undefined;
     }
+    i++;
+    }
+    Globals.logger.addLogMessage('Failed to get price from API.');
 }
 
 function getCurrencyTickers() {

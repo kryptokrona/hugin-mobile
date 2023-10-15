@@ -228,6 +228,11 @@ async function createTables(DB) {
             )`
         );
 
+            
+        //   tx.executeSql(
+        //     `DROP TABLE privateboards_messages_db`
+        // );
+
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
                 board TEXT,
@@ -237,7 +242,9 @@ async function createTables(DB) {
                 message TEXT,
                 timestamp TEXT,
                 read BOOLEAN default 1,
-                UNIQUE (timestamp)
+                UNIQUE (timestamp),
+                hash TEXT UNIQUE,
+                reply TEXT
             )`
         );
 
@@ -270,9 +277,6 @@ async function createTables(DB) {
         );
 
 
-        //   tx.executeSql(
-        //     `DROP TABLE knownTXs`
-        // );
 
         tx.executeSql(
           `CREATE TABLE IF NOT EXISTS knownTXs (
@@ -318,6 +322,22 @@ async function createTables(DB) {
                 latest_message INT default 0`);
 
         }
+        console.log('dbVersion', dbVersion);
+        if (dbVersion === 6) {
+
+            tx.executeSql(
+              `ALTER TABLE
+                    privateboards_messages_db
+                ADD
+                    reply TEXT default ""`);
+
+            tx.executeSql(
+                `ALTER TABLE
+                        privateboards_messages_db
+                    ADD
+                        hash TEXT default ""`);
+  
+          }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -384,7 +404,7 @@ async function createTables(DB) {
 
 
         tx.executeSql(
-            `PRAGMA user_version = 6`
+            `PRAGMA user_version = 7`
         );
     });
 }
@@ -573,9 +593,9 @@ export async function deleteKnownTransaction(txhash) {
 }
 
 
-export async function saveGroupMessage(group, type, message, timestamp, nickname, address) {
+export async function saveGroupMessage(group, type, message, timestamp, nickname, address, reply, hash) {
 
-
+    console.log('Saving message with reply:', reply);
 
   const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
 
@@ -584,9 +604,9 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO privateboards_messages_db
-              (board, type, message, timestamp, read, nickname, address, read)
+              (board, type, message, timestamp, read, nickname, address, read, reply, hash)
           VALUES
-              (?, ?, ?, ?, ?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
               group,
               type,
@@ -595,7 +615,9 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
               'false',
               nickname,
               address,
-              read
+              read,
+              reply,
+              hash
           ]
       );
   });
@@ -1013,7 +1035,7 @@ export async function getLatestGroupMessages() {
         `
         SELECT *
         FROM privateboards_messages_db D
-        WHERE timestamp = (SELECT MAX(timestamp) FROM privateboards_messages_db WHERE board = D.board)
+        WHERE timestamp = (SELECT MAX(timestamp) FROM privateboards_messages_db WHERE board = D.board AND reply = '')
         ORDER BY
             timestamp
         ASC
@@ -1029,7 +1051,10 @@ export async function getLatestGroupMessages() {
                 nickname: item.nickname,
                 message: item.message,
                 timestamp: item.timestamp,
-                read: item.read
+                read: item.read,
+                reply: item.reply,
+                hash: item.hash,
+
             });
         }
         console.log(res);
@@ -1138,10 +1163,11 @@ export async function getGroupMessages(group=false, limit=25) {
             message,
             timestamp,
             board,
-            address
+            address,
+            hash
         FROM
             privateboards_messages_db
-        ${group ? 'WHERE board = "' + group + '"' : ''}
+        WHERE reply = '' ${group ? ' AND board = "' + group + '"' : ''}
         ORDER BY
             timestamp
         DESC
@@ -1174,6 +1200,28 @@ export async function getGroupMessages(group=false, limit=25) {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
+
+            const [replyCount] = await database.executeSql(
+                `
+                SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = "${item.hash}"
+                `
+            );
+
+            let replyCount_raw = 0;
+
+            if (replyCount && replyCount.rows && replyCount.rows.length) {
+
+                const res = [];
+        
+                for (let i = 0; i < replyCount.rows.length; i++) {
+        
+                    const item = replyCount.rows.item(i);
+        
+                    replyCount_raw = item['COUNT(*)'];
+        
+                }
+            };
+
             res.push({
                 nickname: item.nickname,
                 type: item.type,
@@ -1181,7 +1229,10 @@ export async function getGroupMessages(group=false, limit=25) {
                 timestamp: item.timestamp,
                 group: item.board,
                 address: item.address,
-                count: count_raw
+                hash: item.hash,
+                reply: item.reply,
+                replies: replyCount_raw,
+                count: count_raw,
             });
         }
 
@@ -1234,25 +1285,16 @@ export async function getReplies(post) {
   console.log(post);
 
     const [data] = await database.executeSql(
-        `SELECT
-            message,
-            address,
-            signature,
-            board,
-            timestamp,
-            nickname,
-            reply,
-            hash,
-            sent,
-            read
+        `SELECT *
         FROM
-            boards_message_db WHERE reply = "${post}"
+            privateboards_messages_db WHERE reply = "${post}"
         ORDER BY
             timestamp
-        DESC
+        ASC
         LIMIT
         20`
     );
+
     console.log('Got ' + data.rows.length + " board messages");
     if (data && data.rows && data.rows.length) {
         const res = [];
@@ -1263,13 +1305,11 @@ export async function getReplies(post) {
             res.push({
                 message: item.message,
                 address: item.address,
-                signature: item.signature,
                 board: item.board,
                 timestamp: item.timestamp,
                 nickname: item.nickname,
                 reply: item.reply,
-                hash: item.hash,
-                sent: item.sent,
+                type: item.type,
                 read: item.read
             });
         }
@@ -1342,25 +1382,22 @@ export async function getBoardsMessages(board='Home') {
     return [];
 }
 
-export async function getBoardsMessage(hash) {
+export async function getGroupsMessage(hash) {
 
     const [data] = await database.executeSql(
         `SELECT
-            message,
-            address,
-            signature,
-            board,
-            timestamp,
             nickname,
-            reply,
+            type,
+            message,
+            timestamp,
+            board,
+            address,
             hash,
-            sent,
-            read
+            reply
         FROM
-            boards_message_db WHERE hash = '${hash}'
-        `
+            privateboards_messages_db WHERE hash = '${hash}'`
     );
-    console.log('Got ' + data.rows.length + " board messages");
+
     if (data && data.rows && data.rows.length) {
         const res = [];
 
@@ -1370,14 +1407,12 @@ export async function getBoardsMessage(hash) {
             res.push({
                 message: item.message,
                 address: item.address,
-                signature: item.signature,
                 board: item.board,
                 timestamp: item.timestamp,
                 nickname: item.nickname,
                 reply: item.reply,
                 hash: item.hash,
-                sent: item.sent,
-                read: item.read
+                sent: item.type
             });
         }
 

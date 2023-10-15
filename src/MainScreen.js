@@ -826,7 +826,7 @@ class BalanceComponentNoTranslation extends React.Component {
             expandedBalance: false,
         };
 
-        this.animation = new Animated.Value(0);
+        // this.animation = new Animated.Value(0);
 
         this.balanceRef = (ref) => this.balance = ref;
         this.valueRef = (ref) => this.value = ref;
@@ -834,7 +834,7 @@ class BalanceComponentNoTranslation extends React.Component {
 
 
         componentWillMount() {
-          this.animatedValue = new Animated.Value(0);
+          // this.animatedValue = new Animated.Value(0);
         }
 
 
@@ -842,25 +842,25 @@ class BalanceComponentNoTranslation extends React.Component {
 
               let flipFlop = false;
 
-              let keepAnimating = () => {
+            //   let keepAnimating = () => {
 
-                Animated.timing(this.animatedValue, {
-                  toValue: flipFlop ? 0 : 224,
-                  duration: 10000
-                }).start(() => {
-                  flipFlop = flipFlop ? false : true;
-                  keepAnimating();
-                });
+            //     Animated.timing(this.animatedValue, {
+            //       toValue: flipFlop ? 0 : 224,
+            //       duration: 10000
+            //     }).start(() => {
+            //       flipFlop = flipFlop ? false : true;
+            //       keepAnimating();
+            //     });
 
-              }
+            //   }
 
-                Animated.timing(this.animatedValue, {
-                  toValue: 224,
-                  duration: 10000
-                }).start(() => {
-                  keepAnimating();
+            //     Animated.timing(this.animatedValue, {
+            //       toValue: 224,
+            //       duration: 10000
+            //     }).start(() => {
+            //       keepAnimating();
 
-            });
+            // });
             }
 
     componentWillReceiveProps(nextProps) {
@@ -874,15 +874,15 @@ class BalanceComponentNoTranslation extends React.Component {
         const {t} = this.props;
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
-                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'black' : 'black', fontSize: 24}}
+                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
                                 >
 
                                      {prettyPrintAmountMainScreen(this.props.unlockedBalance)}
                                </OneLineText>;
 
         const lockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FontAwesome name={'lock'} size={16} color={'black'} style={{marginRight: 7, marginTop: 0}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
+                                    <FontAwesome name={'lock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 0}}/>
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.state.expandedBalance
                                           })}>
@@ -891,8 +891,8 @@ class BalanceComponentNoTranslation extends React.Component {
                               </View>;
 
         const unlockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                    <FontAwesome name={'unlock'} size={16} color={'black'} style={{marginRight: 7, marginTop: 3}}/>
-                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'black', fontSize: 25}}
+                                    <FontAwesome name={'unlock'} size={16} color={'white'} style={{marginRight: 7, marginTop: 3}}/>
+                                    <OneLineText style={{ fontFamily: 'MajorMonoDisplay-Regular', color: 'white', fontSize: 25}}
                                           onPress={() => this.setState({
                                              expandedBalance: !this.props.expandedBalance
                                           })}>
@@ -921,18 +921,19 @@ class BalanceComponentNoTranslation extends React.Component {
           }
         };
 
-       const interpolateColor =  this.animatedValue.interpolate({
-       inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
-       outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
-     });
+    //    const interpolateColor =  this.animatedValue.interpolate({
+    //    inputRange: [0, 32, 64, 96, 128, 160, 192, 224],
+    //    outputRange:['#5f86f2','#a65ff2','#f25fd0','#f25f61','#f2cb5f','#abf25f','#5ff281','#5ff2f0']
+    //  });
 
 
 
         return(
             <View style={{alignItems: 'center'}}>
-            <Animated.View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 0, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: interpolateColor, minWidth: '80%'}}>
+            {/* <Animated.View */}
+            <View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%'}}>
                     <Text style={{
-                        color: 'black',
+                        color: 'white',
                         fontSize: 64,
                         fontFamily: 'icomoon',
                         position: 'absolute',
@@ -945,8 +946,9 @@ class BalanceComponentNoTranslation extends React.Component {
                         {this.state.expandedBalance ? expandedBalance : compactBalance}
                     </View>
                     {parseInt(this.props.lockedBalance) > 0 &&
-                    <Text style={{color: 'black'}}>+ {prettyPrintAmount(this.props.lockedBalance, Config).slice(0,-4)}</Text>}
-            </Animated.View>
+                    <Text style={{color: 'white'}}>+ {prettyPrintAmount(this.props.lockedBalance, Config).slice(0,-4)}</Text>}
+            </View>
+            {/* </Animated.View> */}
 
             <OpenURLButton></OpenURLButton>
 <Text>

@@ -8,7 +8,7 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 const runes = require('runes');
 
 import {
-    ActivityIndicator, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, TouchableWithoutFeedback, Image
+    Linking, ActivityIndicator, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, TouchableWithoutFeedback, Image
 } from 'react-native';
 
 import { StackActions } from 'react-navigation';
@@ -17,7 +17,7 @@ import {
     validateAddresses, WalletErrorCode, validatePaymentID,
 } from 'kryptokrona-wallet-backend-js';
 
-import { Button as RNEButton, Alert } from 'react-native';
+import { Button as RNEButton, Alert, Modal } from 'react-native';
 
 import { Button, Input, Icon } from 'react-native-elements';
 
@@ -35,6 +35,8 @@ import 'moment/locale/tr';
 import 'moment/locale/zh-cn';
 import 'moment/locale/nb';
 
+import CustomIcon from './CustomIcon.js'
+
 import { Globals } from './Globals';
 import { Hr, BottomButton, CopyButton } from './SharedComponents';
 
@@ -43,7 +45,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages} from './Database';
+import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, getGroupsMessage} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -51,6 +53,10 @@ import { withTranslation } from 'react-i18next';
 import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
+
+import GestureRecognizer from 'react-native-swipe-gestures';
+
+import Hyperlink from 'react-native-hyperlink'
 
 String.prototype.hashCode = function() {
     var hash = 0;
@@ -820,7 +826,19 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
             messages: [],
             message: "",
-            messageHasLength: false
+            messageHasLength: false,
+            messageModalVisible: false,
+            activePost: {
+                "message": "",
+                "address": "",
+                "group": "",
+                "timestamp": "",
+                "nickname": "",
+                "reply": "0",
+                "hash": "",
+                "sent": 0,
+                "read": 0
+            }
         }
 
 
@@ -856,9 +874,19 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
     }
 
+    setActivePost = (item) => {
+        this.setState({ activePost: item });
+      }
+
+    setMessageModalVisible = (visible) => {
+        this.setState({ messageModalVisible: visible });
+    }
+
     render() {
 
        const { t } = this.props;
+
+       const { messageModalVisible, activePost } = this.state;
 
        const items = [];
 
@@ -867,24 +895,55 @@ export class GroupChatScreenNoTranslation extends React.Component {
          if (this.state.key == this.state.messages[message].group){
 
            let timestamp = this.state.messages[message].timestamp / 1000;
-           // if (this.state.messages[message].type == 'received'){
+           let thisMessage = this.state.messages[message];
+
               items.push(
-              <View  key={message} style={{alignSelf: (this.state.messages[message].type == 'received' ? 'flex-start' : 'flex-end'), marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: (this.state.messages[message].type == 'received' ? '#2C2C2C' : '#006BA7'), padding: 15, borderRadius: 15}}>
+                <TouchableOpacity onPress={async () => {
+                if (thisMessage.reply && thisMessage.reply != 0) {
+
+                    
+                this.state.replies = await getReplies(thisMessage.reply);
+
+                const op = await getGroupsMessage(thisMessage.reply);
+                if (op.length == 0) {
+                    return;
+                }
+                this.setActivePost(op[0]);
+
+                } else {
+                this.state.replies = await getReplies(thisMessage.hash);
+                this.setActivePost(thisMessage);
+
+                }
+                this.setMessageModalVisible(true);
+
+                }}>
+              <View key={message} style={{marginLeft: 20, marginRight: 20, marginBottom: 20, padding: 15, borderRadius: 15}}>
                 
-                {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
-                    {this.state.messages[message].type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {console.log(this.state.messages, message); submitMessage(this.state.messages[message].message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                {thisMessage.type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
+                    {thisMessage.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {console.log(this.state.messages, message); submitMessage(thisMessage.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+
                     <View style={{flexDirection:"row", marginBottom: 10}}>
                         <Image
                         style={{width: 30, height: 30, marginTop: -5}}
-                        source={{uri: get_avatar(this.state.messages[message].address)}}/>
+                        source={{uri: get_avatar(thisMessage.address)}}/>
               <View style={{width: 150, overflow: 'hidden'}}>
                 <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
                     color: '#ffffff',
                     fontSize: 15,
                     fontFamily: "Montserrat-SemiBold"
-                }}>{this.state.messages[message].nickname ? this.state.messages[message].nickname : t('Anonymous')}
+                }}>{thisMessage.nickname ? thisMessage.nickname : t('Anonymous')}
                 </Text>
-                </View></View><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
+                </View></View>
+                <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{thisMessage.message}</Text>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment>
+                {thisMessage.replies > 0 &&  <View style={{flexDirection: 'row'}}><CustomIcon name='message' size={14} style={{marginRight: 5, color: 'rgba(255,255,255,0.8)'}} /><Text style={{ fontFamily: "Montserrat-Regular", fontSize: 10}} >{thisMessage.replies}</Text></View> }
+                </View>
+                </View>
+                </TouchableOpacity>
+
+                )
            // } else {
            //   items.push(<View  key={message} style={{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#006BA7', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            // }
@@ -892,6 +951,177 @@ export class GroupChatScreenNoTranslation extends React.Component {
        }
        }
 
+       const modalStyle = {
+        height: '100%',
+        marginTop: 50,
+        marginLeft: 10,
+        marginRight: 10,
+        backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+        borderWidth: 1,
+        borderColor: this.props.screenProps.theme.borderColour,
+        borderTopRightRadius: 20,
+        borderTopLeftRadius: 20,
+        padding: 25,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5
+      };
+
+      const replyInput =
+            <View
+            style={{
+                width: '100%',
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  borderWidth: 0,
+                  borderColor: 'transparent',
+                  borderRadius: 15,
+                  marginBottom: 15
+              }}
+            >
+            <AutoGrowingTextInput
+                multiline={true}
+                textAlignVertical={'top'}
+                ref={input => { this.replyinput = input }}
+                style={{
+                    color: this.props.screenProps.theme.primaryColour,
+                    fontFamily: 'Montserrat-Regular',
+                    fontSize: 15,
+                    width: '100%',
+                    height: '100%',
+                    padding: 15,
+
+                }}
+                maxLength={512}
+                placeholder={"✏️ " + t('typeMessageHere')}
+                placeholderTextColor={'#ffffff'}
+                onSubmitEditing={async (e) => {
+                  e.preventDefault();
+                    // return;
+                    // submitMessage(this.state.message);
+                    // this.setState({message: '', messageHasLength: false});
+                }}
+                onChangeText={(text) => {
+                    if (this.props.onChange) {
+                        this.props.onChange(text);
+                    }
+                    this.state.reply = text;
+                    this.setState({replyHasLength: this.state.reply.length > 0});
+                }}
+                errorMessage={this.props.error}
+            />
+            </View>;
+
+            const sendTip = (address, hash, name) => {
+                const url = `xkr://?address=${address}&paymentid=${hash}&istip=true&name=${name}`;
+                this.setMessageModalVisible(false);
+                Linking.openURL(url);
+            }
+
+            const submitReply = async (text) => {
+                this.setState({reply: '', replyHasLength: false, replying: false});
+                Keyboard.dismiss();
+
+                // let updated_messages = await getGroupMessages(this.state.key);
+                // if (!updated_messages) {
+                // updated_messages = [];
+                // }
+                // let temp_timestamp = parseInt(Date.now() / 1000);
+                // console.log(updated_messages);
+                // updated_messages.unshift({
+                //     group: this.state.activePost.group,
+                //     address: Globals.wallet.getPrimaryAddress(),
+                //     message: checkText(text),
+                //     timestamp: temp_timestamp,
+                //     hash: temp_timestamp.toString(),
+                //     read: 1,
+                //     nickname: Globals.preferences.nickname,
+                //     reply: this.state.activePost.hash,
+                //     op: this.state.activePost
+                // });
+                // console.log(updated_messages);
+                // let message_indice = updated_messages.push({
+                //     address: Globals.wallet.getPrimaryAddress(),
+                //     nickname: Globals.preferences.nickname,
+                //     group: this.state.key,
+                //     type: 'processing',
+                //     message: checkText(text),
+                //     timestamp: temp_timestamp,
+                //     read: 1
+                // });
+                // console.log(message_indice);
+
+                // this.setState({
+                // messages: updated_messages,
+                // messageHasLength: false,
+                // message: ''
+                // });
+
+                // console.log('State has been set');
+
+                // this.replyinput._textInput.clear();
+
+                console.log('Cleared input');
+
+                // this.setState({replyHasLength: this.state.reply.length > 0});
+
+                console.log('Sending message..')
+
+                console.log(this.state.activePost);
+
+                let success = await sendGroupsMessage(checkText(text), this.state.activePost.group, this.state.activePost.hash);
+                console.log(success);
+
+                // await removeMessage(temp_timestamp);
+                if (success.success) {
+                console.log(success);
+                // await saveBoardsMessage(
+                //     checkText(text),
+                //     Globals.wallet.getPrimaryAddress(),
+                //     '',
+                //     this.state.activePost.board,
+                //     temp_timestamp,
+                //     Globals.preferences.nickname,
+                //     this.state.activePost.hash,
+                //     success.transactionHash,
+                //     '1',
+                //     false);
+                // let updated_replies = this.state.replies;
+
+                // updated_replies.unshift({
+                //     message: checkText(text),
+                //     address: Globals.wallet.getPrimaryAddress(),
+                //     signature: '',
+                //     board: this.state.activePost.board,
+                //     timestamp: temp_timestamp.toString(),
+                //     nickname: Globals.preferences.nickname,
+                //     reply: this.state.activePost.hash,
+                //     hash: success.transactionHash,
+                //     sent: 0,
+                //     read: 1
+                //
+                // });
+                // console.log(updated_replies);
+                // this.state.replies = updated_replies;
+                // console.log(this.state.replies);
+                this.state.replies = await getReplies(this.state.activePost.hash);
+                console.log('newreps', this.state.replies);
+                // this.state.input.current.clear();
+                } else {
+                // updated_messages = await getBoardsMessages(this.state.board);
+
+                //     this.setState({
+                //     messages: updated_messages,
+                //     messageHasLength: true
+                //     })
+
+                }
+            }
 
            const submitMessage = async (text) => {
 
@@ -922,8 +1152,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              let result = await sendGroupsMessage(checkText(text), this.state.key);
 
-            console.log('wtfdood', result)
-
              if (result.success) {
 
                     updated_messages = await getGroupMessages();
@@ -944,12 +1172,10 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     timestamp: temp_timestamp,
                     read: 1
                 });
-                console.log('Push messages')
                 this.setState({
                     messages: updated_messages,
                     messageHasLength: false
                   });
-                  console.log('State set')
 
              }
            }
@@ -1125,7 +1351,183 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                 }
 
+<GestureRecognizer
+                      onSwipeDown={ () => {
+                        this.setMessageModalVisible(false);
+                        this.setState({replying: false});
+                    }}
+                    >
+                      <View>
+                        <Modal
+                          style={{}}
+                          animationType="slide"
+                          transparent={true}
+                          visible={messageModalVisible}
+                          onRequestClose={() => {
+                            this.setMessageModalVisible(!messageModalVisible);
+                          }}
+                        >
+                          <View style={modalStyle}>
+                            
+                          <TouchableOpacity style={{padding: 15, position: 'absolute', right: 5, top: 5}} onPress={() => {this.setMessageModalVisible(false);this.setState({replying: false});}}>
+                            <Text style={{fontSize: 18, fontFamily: "Montserrat-SemiBold", transform: [{ rotate: '45deg'}]}}>+</Text>
+                          </TouchableOpacity>
+                          <ScrollView style={{width: '100%'}}>
 
+
+                            <View style={{
+                              margin: 10
+                            }}>
+
+                            <View style={{flexDirection:"row", marginBottom: 10}}>
+
+                            <Image
+                              style={{width: 50, height: 50, marginTop: -10}}
+                              source={{uri: get_avatar(this.state.activePost.address)}}
+                            />
+                            <View style={{width: 150, overflow: 'hidden'}}>
+                              <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                  color: '#ffffff',
+                                  fontSize: 18,
+                                  fontFamily: "Montserrat-SemiBold"
+                              }}>{this.state.activePost.nickname ? this.state.activePost.nickname : 'Anonymous'}
+                              </Text>
+                              </View>
+                              {/* {board == 'Home' &&
+                              <View>
+                              <View style={{
+                                backgroundColor: getBoardColors(this.state.activePost.board)[0],
+                                padding: 2,
+                                paddingBottom: 5,
+                                paddingTop: 8,
+                                borderRadius: 5,
+                                height: 20,
+                                marginLeft: 'auto'
+                              }}>
+                              <Text ellipsizeMode={'tail'} numberOfLines={2} style={{
+                                  marginLeft: 5,
+                                  marginRight: 5,
+                                  color: this.props.screenProps.theme.primaryColour,
+                                  fontSize: 10,
+                                  fontFamily: "Montserrat-Regular",
+                                  marginTop: -5
+                              }}>
+
+                                  {this.state.activePost.board}
+                                </Text>
+                              </View>
+                              </View>
+                             } */}
+
+
+                              </View>
+                              <View style={{paddingLeft: 20, paddingRight: 20}}>
+
+
+                                <Text style={{fontSize: 16}}selectable>{this.state.activePost.message + "\n"}</Text>
+                                <Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{this.state.activePost.timestamp / 1000}</Moment>
+
+
+                              </View>
+                          </View>
+
+                          <KeyboardAvoidingView
+                           behavior={Platform.OS == "ios" ? "padding" : "height"}
+                           style={{
+                              marginBottom: 10,
+                              marginRight: 12,
+                              flexDirection: 'row'
+                          }}>
+                          {this.state.replying &&
+                            replyInput
+                          }
+
+                          </KeyboardAvoidingView>
+
+                          <View style={{width: '100%', justifyContent: 'center', alignItems: 'center', flexDirection: 'row'}}>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.02)',
+                                    borderWidth: 1,
+                                    borderColor: this.props.screenProps.theme.borderColour,
+                                    borderRadius: 15,
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    alignContent: 'center',
+                                    justifyContent: 'space-between'
+                                  }}
+                              onPress={() => sendTip(this.state.activePost.address, this.state.activePost.hash, this.state.activePost.nickname)}
+                            >
+                                <CustomIcon name='coin' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 14,
+                        fontFamily: 'Montserrat-Bold',
+                        textAlign: 'center'
+                      }}>
+                        Send tip</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.02)',
+                                    borderWidth: 1,
+                                    borderColor: this.props.screenProps.theme.borderColour,
+                                    borderRadius: 15,
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    alignContent: 'center',
+                                    justifyContent: 'space-between',
+                                    marginLeft: 10
+                                  }}
+                              onPress={() => {this.state.replying && this.state.replyHasLength ? submitReply(this.state.reply) : this.setState({replying: !this.state.replying})}}
+                            >
+                                <CustomIcon name='direct-send' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 14,
+                        fontFamily: 'Montserrat-Bold',
+                        textAlign: 'center'
+                      }}>
+                        Reply</Text>
+                            </TouchableOpacity>
+                          </View>
+
+
+                        <View style={{marginTop: 10}}>
+
+                        {this.state.replies && this.state.replies.map((item,i) => {
+                          return <View style={{borderRadius: 20, margin: 10, paddingBottom: 30}}>
+                          <View style={{flexDirection:"row"}}>
+
+                          <Image
+                            style={{width: 32, height: 32, marginTop: -5}}
+                            source={{uri: get_avatar(item.address)}}
+                          />
+                          <View style={{width: 150, overflow: 'hidden'}}>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                color: '#ffffff',
+                                fontSize: 14,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>{item.nickname ? item.nickname : 'Anonymous'}
+                            </Text>
+                            </View>
+                          </View>
+                          <Hyperlink linkDefault={ true }><Text selectable style={{fontFamily: "Montserrat-Regular"}}>{item.message}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.timestamp / 1000}</Moment></Hyperlink>
+                          </View>
+                        } ) }
+
+                        </View>
+
+
+
+
+                        </ScrollView>
+                        </View>
+                        </Modal>
+                      </View>
+                    </GestureRecognizer>
 
             </KeyboardAvoidingView>
             </View>

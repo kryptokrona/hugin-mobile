@@ -180,15 +180,24 @@ const Config = new function() {
      *
      * The program *should* fail gracefully if your coin is not supported, or
      * you just set this to an empty string. If you have another API you want
-     * it to support, you're going to have to modify the code in Currency.js.
+     * it to support, you're going to have to modify the code in Currency.
      */
-    this.priceApiLink = 'https://api.coinpaprika.com/v1/tickers/xkr-kryptokrona';
+    this.priceApiLinks = [
+        {
+            url: 'https://api.coinpaprika.com/v1/tickers/xkr-kryptokrona', 
+            path: ['quotes', 'USD', 'price']
+        },
+        {
+            url: 'https://api.coingecko.com/api/v3/simple/price?ids=kryptokrona&vs_currencies=usd', 
+            path: ['kryptokrona', 'usd']
+        }
+    ];
 
     /**
      * Default daemon to use. Can either be a BlockchainCacheApi(baseURL, SSL),
      * or a ConventionalDaemon(url, port).
      */
-    this.defaultDaemon = new Daemon('gota.kryptokrona.se', 11898, false);
+    this.defaultDaemon = new Daemon('blocksum.org', 11898, false);
 
     /**
      * Default Hugin Cache to use.
@@ -215,7 +224,7 @@ const Config = new function() {
     /**
      * Displayed in the settings screen
      */
-    this.appVersion = 'v1.3.1';
+    this.appVersion = 'v1.3.2';
 
     /**
      * Base URL for us to chuck a hash on the end, and find a transaction
