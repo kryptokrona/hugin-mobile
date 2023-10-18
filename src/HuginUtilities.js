@@ -632,6 +632,8 @@ export async function sendGroupsMessage(message, group, reply=false) {
 
 }
 
+}
+
 export async function sendBoardsMessage(message, board, reply=false) {
 
   const my_address = Globals.wallet.getPrimaryAddress();
@@ -959,7 +961,7 @@ async function getGroupMessage(tx) {
 
   const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
 
-  const reply = payload_json?.r ? payload.json.r : "";
+  const reply = payload_json?.r ? payload_json.r : "";
 
   saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k, reply, tx.hash);
 
