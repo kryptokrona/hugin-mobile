@@ -301,7 +301,7 @@ const HomeNavigator = createBottomTabNavigator(
                     iconName = 'wallet';
                 } else if (routeName === 'Transfer') {
                   IconComponent = CustomIcon;
-                  iconName = 'people';
+                  iconName = 'money-send';
                 } else if (routeName === 'Recipients') {
                     IconComponent = CustomIcon;
                     iconName = 'message';
