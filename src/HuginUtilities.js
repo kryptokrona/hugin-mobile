@@ -1000,19 +1000,20 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
     Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
-        if (tx.m || tx.b || tx.brd) {
-          reject();
-          tx.hash = hash;
-          if (await boardsMessageExists(hash)) {
-            reject();
-          }
-          getBoardsMessage(tx);
-        }
+        // if (tx.m || tx.b || tx.brd) {
+        //   reject();
+        //   tx.hash = hash;
+        //   if (await boardsMessageExists(hash)) {
+        //     reject();
+        //   }
+        //   getBoardsMessage(tx);
+        // }
 
         if (tx.sb) {
 
           if (await groupMessageExists(tx.t)) {
             reject();
+            return;
           }
           tx.hash = hash;
           let groupMessage = await getGroupMessage(tx);
@@ -1085,6 +1086,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
         if (!decryptBox) {
           console.log('No encrypted message found.. Sad!')
           reject();
+          return;
         }
 
 
