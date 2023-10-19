@@ -22,7 +22,7 @@ import {
 } from 'kryptokrona-wallet-backend-js';
 
 import {
-    View, Text, TextInput, TouchableWithoutFeedback, FlatList, Platform,
+    View, Text, TextInput, TouchableWithoutFeedback, TouchableOpacity, FlatList, Platform,
     ScrollView, Clipboard, Image
 } from 'react-native';
 
@@ -45,6 +45,8 @@ import {
 } from './Utilities';
 
 import Identicon from 'identicon.js';
+
+import CustomIcon from './CustomIcon.js'
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -1394,45 +1396,36 @@ export class ChoosePayeeScreenNoTranslation extends React.Component {
 
 
                 <View style={{
-                    alignItems: 'flex-start',
-                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     marginLeft: 30,
                     marginRight: 10,
                 }}>
 
-
-                    <TouchableWithoutFeedback
-                        onPress={() => {
-                            this.props.navigation.navigate('NewPayee');
-                        }}
-                    >
-                        <View style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-
-                        }}>
-                            <View style={{
-                                height: 37,
-                                width: 37,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <SimpleLineIcons
-                                    name={'user-follow'}
-                                    size={24}
-                                    color={this.props.screenProps.theme.slightlyMoreVisibleColour}
-                                    padding={5}
-                                />
-                            </View>
-
-                            <Text style={{ fontFamily: 'Montserrat-Regular', marginLeft: 15, color: this.props.screenProps.theme.primaryColour, fontSize: 16 }}>
-                                {t('addNewRecipient')}
-                            </Text>
-                        </View>
-                    </TouchableWithoutFeedback>
-
-
+                    <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.02)',
+                                    borderWidth: 1,
+                                    borderColor: this.props.screenProps.theme.borderColour,
+                                    borderRadius: 15,
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    alignContent: 'center',
+                                    justifyContent: 'space-between'
+                                  }}
+                              onPress={() => this.props.navigation.navigate('NewPayee')}
+                            >
+                                <CustomIcon name='user-add' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                <Text style={{
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    textAlign: 'left',
+                                    fontSize: 14,
+                                    fontFamily: 'Montserrat-Bold',
+                                    textAlign: 'center'
+                                }}>
+                                    {t('addNewRecipient')}
+                                </Text>
+                    </TouchableOpacity>
 
                     <ExistingPayees {...this.props}/>
                 </View>

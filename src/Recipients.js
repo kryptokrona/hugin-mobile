@@ -7,7 +7,7 @@ import { checkText } from 'smile2emoji';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 
 import {
-    ActivityIndicator, Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableWithoutFeedback, TouchableOpacity, Image
+    ActivityIndicator, Picker, Keyboard, KeyboardAvoidingView, View, Text, TextInput, ScrollView, FlatList, Platform, TouchableOpacity, Image
 } from 'react-native';
 
 import {
@@ -224,19 +224,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                     marginTop: 15,
                     width: '85%'
                 }}>
-                    <TouchableWithoutFeedback
-                        onPress={() => {
-                            Globals.fromChat = true;
-                            this.props.navigation.navigate('NewPayee', {
-                                finishFunction: (item) => {
-                                    this.props.navigation.navigate(
-                                        'ChatScreen', {
-                                            payee: item,
-                                        });
-                                }
-                            })
-                        }}
-                    >
+
                         <View style={{
                             flexDirection: 'row',
                             justifyContent: 'space-between',
@@ -251,22 +239,49 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                 {t('messagesTitle')}
                             </Text>
 
-                            <View style={{
-                                height: 37,
-                                width: 37,
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}>
-                                <SimpleLineIcons
-                                    name={'user-follow'}
-                                    size={24}
-                                    color={this.props.screenProps.theme.slightlyMoreVisibleColour}
-                                    padding={5}
-                                />
-                            </View>
-
                         </View>
-                    </TouchableWithoutFeedback>
+                        <View style={{
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginLeft: 30,
+                            marginRight: 10,
+                        }}>
+                            <TouchableOpacity
+                                        style={{
+                                            backgroundColor: 'rgba(255,255,255,0.02)',
+                                            borderWidth: 1,
+                                            borderColor: this.props.screenProps.theme.borderColour,
+                                            borderRadius: 15,
+                                            padding: 10,
+                                            flexDirection: 'row',
+                                            alignContent: 'center',
+                                            justifyContent: 'space-between',
+                                            marginBottom: 10,
+                                        }}
+                                        onPress={() => {
+                                            Globals.fromChat = true;
+                                            this.props.navigation.navigate('NewPayee', {
+                                                finishFunction: (item) => {
+                                                    this.props.navigation.navigate(
+                                                        'ChatScreen', {
+                                                            payee: item,
+                                                        });
+                                                }
+                                            })
+                                        }}
+                                    >
+                                        <CustomIcon name='user-add' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                        <Text style={{
+                                            color: this.props.screenProps.theme.primaryColour,
+                                            textAlign: 'left',
+                                            fontSize: 14,
+                                            fontFamily: 'Montserrat-Bold',
+                                            textAlign: 'center'
+                                        }}>
+                                            {t('addNewRecipient')}
+                                        </Text>
+                            </TouchableOpacity>
+                        </View>
 
 
                     <View style={{
