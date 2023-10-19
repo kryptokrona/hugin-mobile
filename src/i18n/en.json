@@ -7,7 +7,7 @@
   notSyncedMessage: "\n\n Your wallet is still syncing, please wait..",
   emptyAddressBook: "Your address book is empty! Add a new recipient above to populate it.",
   messagesTitle: "Private Messages",
-  sendToWho: "Who would you like to send to?",
+  sendToWho: "Send transaction",
   addNewRecipient: "Add contact",
   scanQR: "Scan QR",
   sendingMsg: "Sending payment..",
@@ -180,5 +180,6 @@
   connecting: "Connecting..",
   callTerminated: "Call terminated",
   loadMore: "Load more",
-  transactionHash: "Transaction hash"
+  transactionHash: "Transaction hash",
+  transactionHistory: "Transaction history"
 }
