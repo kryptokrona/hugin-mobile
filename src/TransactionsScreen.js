@@ -490,6 +490,17 @@ class TransactionListNoTranslation extends React.Component {
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
             }}>
+                <View style={{
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    marginLeft: 30,
+                    marginTop: 20,
+                    marginRight: 10,
+                }}>
+                    <Text style={{ fontFamily: "Montserrat-SemiBold", color: this.props.screenProps.theme.primaryColour, fontSize: 24 }}>
+                        {t('transactionHistory')}
+                    </Text>
+                </View>
                 <Header
                     containerStyle={{ borderBottomWidth:0, borderBottomColor:'transparent' }}
                     leftComponent={{

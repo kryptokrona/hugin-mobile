@@ -774,35 +774,46 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         errorMessage={this.state.paymentIDError}
                     />
 
-                    <View style={{ alignItems: 'center', marginTop: 8, borderRadius: 3, paddingTop: 0,
-                                    borderColor: this.props.screenProps.theme.borderColour,
-                                    borderWidth: 1,}}>
-                        <Button
-                            title={t('scanQR')}
-                            onPress={() => {
-                                const func = (data) => {
-                                    if (data.startsWith(Config.uriPrefix)) {
-                                        handleURI(data, this.props.navigation);
-                                    } else {
-                                        this.setState({
-                                            address: data,
-                                            // paymentID: data.substring(99),
-                                        }, () => this.checkErrors());
-                                    }
-                                };
-
-                                this.props.navigation.navigate('QrScanner', {
-                                    setAddress: func
-                                });
-                            }}
-                            titleStyle={{
-                                color: this.props.screenProps.theme.primaryColour,
-                                fontFamily: 'Montserrat-SemiBold'
-
-                            }}
-                            type="clear"
-                        />
-                    </View>
+                        <TouchableOpacity
+                                        style={{
+                                            backgroundColor: 'rgba(255,255,255,0.02)',
+                                            borderWidth: 1,
+                                            borderColor: this.props.screenProps.theme.borderColour,
+                                            borderRadius: 15,
+                                            padding: 10,
+                                            flexDirection: 'row',
+                                            alignContent: 'center',
+                                            justifyContent: 'space-between',
+                                            marginBottom: 10,
+                                        }}
+                                        onPress={() => {
+                                            const func = (data) => {
+                                                if (data.startsWith(Config.uriPrefix)) {
+                                                    handleURI(data, this.props.navigation);
+                                                } else {
+                                                    this.setState({
+                                                        address: data,
+                                                        // paymentID: data.substring(99),
+                                                    }, () => this.checkErrors());
+                                                }
+                                            };
+            
+                                            this.props.navigation.navigate('QrScanner', {
+                                                setAddress: func
+                                            });
+                                        }}
+                                    >
+                                        <CustomIcon name='scan-barcode' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                        <Text style={{
+                                            color: this.props.screenProps.theme.primaryColour,
+                                            textAlign: 'left',
+                                            fontSize: 14,
+                                            fontFamily: 'Montserrat-Bold',
+                                            textAlign: 'center'
+                                        }}>
+                                            {t('scanQR')}
+                                        </Text>
+                            </TouchableOpacity>
 
                     <BottomButton
                         title={t('continue')}
