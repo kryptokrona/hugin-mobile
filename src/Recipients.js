@@ -1265,6 +1265,8 @@ async function initWebRTC(contactKey) {
     return new Promise((resolve, reject) => { 
 
     let new_peer;
+    let data_peer;
+
     if (!Globals.stream) {
 
     mediaDevices.enumerateDevices().then(sourceInfos => {
@@ -1291,8 +1293,9 @@ async function initWebRTC(contactKey) {
         Globals.localWebcamOn = true;
         Globals.localMicOn = true;
         new_peer = startPeer();
+        data_peer = startPeer()
         new_peer.addStream(Globals.stream);
-        Globals.calls.push({peer: new_peer, status: 'disconnected', contact: contactKey});
+        Globals.calls.push({channel: data_peer, peer: new_peer, status: 'disconnected', contact: contactKey});
         resolve(true);
 
         })
@@ -1304,8 +1307,9 @@ async function initWebRTC(contactKey) {
     } else {
 
         new_peer = startPeer();
+        data_peer = startPeer()
         new_peer.addStream(Globals.stream);
-        Globals.calls.push({peer: new_peer, status: 'disconnected', contact: contactKey});
+        Globals.calls.push({channel: data_peer, peer: new_peer, status: 'disconnected', contact: contactKey});
         resolve(true);
 
     }
@@ -1426,60 +1430,7 @@ export class CallScreenNoTranslation extends React.Component {
 
     }
 
-    async startCall() {
-
-        this.state.activeCall.status = 'waiting';
-        this.setState({callStatus: 'waiting'});
-
-        let data_channel = await this.state.activeCall.peer.createDataChannel('HuginDataChannel');
-
-        data_channel.addEventListener("message", (event) => {console.log("Data", event.data)});
-
-        let sessionDescription = await this.state.activeCall.peer.createOffer();
-    
-        await this.state.activeCall.peer.setLocalDescription(sessionDescription);
-
-        await new Promise((resolve) => {
-            if (this.state.activeCall.peer.iceGatheringState === 'complete') {
-              resolve();
-            } else {
-                this.state.activeCall.peer.addEventListener('icegatheringstatechange', () => {
-                if (this.state.activeCall.peer.iceGatheringState === 'complete') {
-                  resolve();
-                }
-              });
-            }
-          });
-
-        sessionDescription = await this.state.activeCall.peer.createOffer();
-
-        Globals.logger.addLogMessage('[Calls] SDP generated: ' + sessionDescription.sdp);
-    
-        await this.state.activeCall.peer.setLocalDescription(sessionDescription);
-    
-        let parsed_sdp = parse_sdp(sessionDescription);
-    
-        let parsed_data = 'Δ' + parsed_sdp;
-
-        const reparsed_sdp = expand_sdp_offer(parsed_data);
-    
-        let receiver = this.state.address;
-    
-        let messageKey = this.state.paymentID;
-    
-        sendMessage(parsed_data, receiver, messageKey);    
-    
-       }
-
-    async answerCall() {
-        
-        const parsed_sdp = expand_sdp_offer(this.state.sdp);
-
-        await this.state.activeCall.peer.setRemoteDescription(parsed_sdp);
-
-        let answer = await this.state.activeCall.peer.createAnswer();
-
-        await this.state.activeCall.peer.setLocalDescription(answer);
+    async checkPeerIceState() {
 
         await new Promise((resolve) => {
 
@@ -1494,11 +1445,141 @@ export class CallScreenNoTranslation extends React.Component {
             }
           });
 
-        await this.state.activeCall.peer.setRemoteDescription(parsed_sdp);
+    }
 
-        answer = await this.state.activeCall.peer.createAnswer();
+    async signal(type, data) {
+        
+        let sessionDescription
 
-        await this.state.activeCall.peer.setLocalDescription(answer);
+        if (type === "new") {
+            sessionDescription = await this.state.activeCall.peer.createOffer();
+        } else if (type === "incoming") {
+            
+            await this.state.activeCall.peer.setRemoteDescription(data);
+
+            sessionDescription = await this.state.activeCall.peer.createAnswer();
+        }
+        
+        //Set local sdp
+        await this.state.activeCall.peer.setLocalDescription(sessionDescription);
+        
+        await checkPeerIceState()
+
+        sessionDescription = await this.state.activeCall.peer.createAnswer();
+
+        await this.state.activeCall.peer.setLocalDescription(sessionDescription);
+
+        sendDataMessage(sessionDescription)
+    }
+
+    async sendDataMessage(message) {
+        this.state.activeCall.channel.send(JSON.stringify(message))
+    }
+
+    async dataMessage(data) {
+        let incoming
+        try {
+          incoming = JSON.parse(data)
+        } catch(err) {
+            Globals.logger.addLogMessage('[DataChannel] Error parsing data channel message: ' + data);
+            return
+        }
+        Globals.logger.addLogMessage('[DataChannel] incoming: ' + incoming);
+        if (incoming.type === "offer") {
+            //Incoming offer
+            this.signal("incoming", incoming)
+            
+        } else if (incoming.type === "answer") {
+            //Got answer
+            this.state.activeCall.peer.setRemoteDescription(incoming);
+        }
+    }
+
+    async startCall() {
+
+        this.state.activeCall.status = 'waiting';
+        this.setState({callStatus: 'waiting'});
+
+        let data_channel = await this.state.activeCall.peer.createDataChannel('HuginDataChannel');
+        let channel = await this.state.activeCall.channel.createDataChannel('DataChannel');
+
+        channel.addEventListener("open", (event) => {
+            //Create new offer to send via data channel
+            this.signal("new", null)
+          });
+          
+        channel.addEventListener("message", (event) => {this.dataMessage(event.data)});
+
+        let sessionDescription = await this.state.activeCall.channel.createOffer();
+    
+        await this.state.activeCall.channel.setLocalDescription(sessionDescription);
+
+        await new Promise((resolve) => {
+            if (this.state.activeCall.channel.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+                this.state.activeCall.channel.addEventListener('icegatheringstatechange', () => {
+                if (this.state.activeCall.channel.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+
+        sessionDescription = await this.state.activeCall.channel.createOffer();
+
+        Globals.logger.addLogMessage('[Calls] SDP generated: ' + sessionDescription.sdp);
+    
+        await this.state.activeCall.channel.setLocalDescription(sessionDescription);
+    
+        let parsed_sdp = parse_sdp(sessionDescription);
+    
+        let parsed_data = 'Δ' + parsed_sdp;
+
+        const reparsed_sdp = expand_sdp_offer(parsed_data);
+
+        Globals.logger.addLogMessage('Data channel sdp reparsed: ' + reparsed_sdp);
+        let receiver = this.state.address;
+    
+        let messageKey = this.state.paymentID;
+    
+        sendMessage(parsed_data, receiver, messageKey);    
+    
+       }
+
+    async answerCall() {
+        
+        
+        let channel = await this.state.activeCall.channel.createDataChannel('DataChannel');
+        channel.addEventListener("message", (event) => {this.dataMessage(event.data)});
+
+        const parsed_sdp = expand_sdp_offer(this.state.sdp);
+
+        await this.state.activeCall.channel.setRemoteDescription(parsed_sdp);
+        
+
+        let answer = await this.state.activeCall.channel.createAnswer();
+
+        await this.state.activeCall.channel.setLocalDescription(answer);
+
+        await new Promise((resolve) => {
+
+            if (this.state.activeCall.channel.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+              this.state.activeCall.channel.addEventListener('icegatheringstatechange', () => {
+                if (this.state.activeCall.channel.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
+
+        await this.state.activeCall.channel.setRemoteDescription(parsed_sdp);
+
+        answer = await this.state.activeCall.channel.createAnswer();
+
+        await this.state.activeCall.channel.setLocalDescription(answer);
 
         Globals.logger.addLogMessage('[Calls] SDP generated: ' + answer.sdp);
 
