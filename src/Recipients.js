@@ -1472,7 +1472,12 @@ export class CallScreenNoTranslation extends React.Component {
 
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
 
-        sendDataMessage(sessionDescription)
+        let message = {
+            type: sessionDescription.type,
+            data: sessionDescription
+        }
+
+        sendDataMessage(message)
     }
 
     async sendDataMessage(message) {
@@ -1490,11 +1495,11 @@ export class CallScreenNoTranslation extends React.Component {
         Globals.logger.addLogMessage('[DataChannel] incoming: ' + incoming);
         if (incoming.type === "offer") {
             //Incoming offer
-            this.signal("incoming", incoming)
+            this.signal("incoming", incoming.data)
             
         } else if (incoming.type === "answer") {
             //Got answer
-            this.state.activeCall.peer.setRemoteDescription(incoming);
+            this.state.activeCall.peer.setRemoteDescription(incoming.data);
         }
     }
 
