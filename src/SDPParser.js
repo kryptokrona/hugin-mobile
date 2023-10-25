@@ -118,7 +118,7 @@ export function expand_sdp_offer (compressed_string, incoming = false) {
 o=- 5726742634414877819 3 IN IP4 127.0.0.1
 s=-
 t=0 0
-a=group:BUNDLE 0
+a=group:BUNDLE data
 a=msid-semantic: WMS
 m=application ` +
         external_ports[0] +
@@ -138,7 +138,7 @@ a=fingerprint:sha-256 ` +
         fingerprint +
         `
 a=setup:active
-a=mid:0
+a=mid:data
 a=sctp-port:5000
 a=max-message-size:262144
 `
@@ -251,7 +251,7 @@ let sdp =
 o=- 5726742634414877819 3 IN IP4 127.0.0.1
 s=-
 t=0 0
-a=group:BUNDLE 0
+a=group:BUNDLE data
 a=msid-semantic: WMS
 m=application ` +
     external_port +
@@ -271,7 +271,7 @@ a=fingerprint:sha-256 ` +
     fingerprint +
     `
 a=setup:passive
-a=mid:0
+a=mid:data
 a=sctp-port:5000
 a=max-message-size:262144
 `
