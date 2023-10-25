@@ -1465,7 +1465,10 @@ export class CallScreenNoTranslation extends React.Component {
         
         await checkPeerIceState()
 
-        sessionDescription = await this.state.activeCall.peer.createAnswer();
+        //Set Answer/Offer
+        //Todo, check why this needs to be set twice after Ice state
+        if (type === "new")  sessionDescription = await this.state.activeCall.peer.createOffer();
+        else if (type === "incoming") sessionDescription = await this.state.activeCall.peer.createAnswer();
 
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
 
