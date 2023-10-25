@@ -1245,6 +1245,8 @@ function startPeer() {
         iceServers: [
         {
         urls: [
+            'stun:stun1.l.google.com:19302',
+            'stun:global.stun.twilio.com:3478'
         ]
         }
     ],
@@ -1463,7 +1465,7 @@ export class CallScreenNoTranslation extends React.Component {
         //Set local sdp
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
         
-        await checkPeerIceState()
+        await this.checkPeerIceState()
 
         //Set Answer/Offer
         //Todo, check why this needs to be set twice after Ice state
@@ -1477,11 +1479,11 @@ export class CallScreenNoTranslation extends React.Component {
             data: sessionDescription
         }
 
-        sendDataMessage(message)
+        this.sendDataMessage(message)
     }
 
     async sendDataMessage(message) {
-        this.state.activeCall.channel.send(JSON.stringify(message))
+        this.state.dataChannel.send(JSON.stringify(message))
     }
 
     async dataMessage(data) {
@@ -1505,17 +1507,18 @@ export class CallScreenNoTranslation extends React.Component {
 
     async startCall() {
 
+
         this.state.activeCall.status = 'waiting';
         this.setState({callStatus: 'waiting'});
-
         let data_channel = await this.state.activeCall.peer.createDataChannel('HuginDataChannel');
         let channel = await this.state.activeCall.channel.createDataChannel('DataChannel');
+        this.setState({dataChannel: channel});
 
         channel.addEventListener("open", (event) => {
             //Create new offer to send via data channel
             this.signal("new", null)
           });
-          
+
         channel.addEventListener("message", (event) => {this.dataMessage(event.data)});
 
         let sessionDescription = await this.state.activeCall.channel.createOffer();
@@ -1546,7 +1549,7 @@ export class CallScreenNoTranslation extends React.Component {
 
         const reparsed_sdp = expand_sdp_offer(parsed_data);
 
-        Globals.logger.addLogMessage('Data channel sdp reparsed: ' + reparsed_sdp);
+        console.log('Data channel sdp reparsed: ' + reparsed_sdp);
         let receiver = this.state.address;
     
         let messageKey = this.state.paymentID;
