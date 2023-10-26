@@ -1495,17 +1495,29 @@ export class CallScreenNoTranslation extends React.Component {
             return
         }
         Globals.logger.addLogMessage('[DataChannel] incoming: ' + incoming);
+        const incomingCall = checkIncomingCall(incoming)
+        if (incomingCall) return
+        
+        //Here we can receive data messages etc..
+    }
+
+    async checkIncomingCall(incoming) {
         if (incoming.type === "offer") {
             //Incoming offer
             this.signal("incoming", incoming.data)
             
-        } else if (incoming.type === "answer") {
-            //Got answer
-            this.state.activeCall.peer.setRemoteDescription(incoming.data);
-        } else if (incoming.data.type === "renegotiate") {
+        }else if (incoming.data.type === "renegotiate") {
             //Peer2 needs a new offer. Signal a new one
             this.signal("new", null)
+        } 
+        else if (incoming.type === "answer") {
+            //Got answer
+            this.state.activeCall.peer.setRemoteDescription(incoming.data);
+        } else {
+            return false
         }
+
+        return true
     }
 
     async startCall() {
