@@ -1487,15 +1487,15 @@ export class CallScreenNoTranslation extends React.Component {
     }
 
     async dataMessage(data) {
-        let incoming
+        let message
         try {
-          incoming = JSON.parse(data)
+            message = JSON.parse(data)
         } catch(err) {
             Globals.logger.addLogMessage('[DataChannel] Error parsing data channel message: ' + data);
             return
         }
-        Globals.logger.addLogMessage('[DataChannel] incoming: ' + incoming);
-        const incomingCall = checkIncomingCall(incoming)
+        Globals.logger.addLogMessage('[DataChannel] incoming: ' + message);
+        const incomingCall = this.checkIncomingCall(message)
         if (incomingCall) return
         
         //Here we can receive data messages etc..
@@ -1514,6 +1514,7 @@ export class CallScreenNoTranslation extends React.Component {
             //Got answer
             this.state.activeCall.peer.setRemoteDescription(incoming.data);
         } else {
+            //Not SDP, probably a message
             return false
         }
 
