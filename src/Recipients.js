@@ -1502,6 +1502,9 @@ export class CallScreenNoTranslation extends React.Component {
         } else if (incoming.type === "answer") {
             //Got answer
             this.state.activeCall.peer.setRemoteDescription(incoming.data);
+        } else if (incoming.data.type === "renegotiate") {
+            //Peer2 needs a new offer. Signal a new one
+            this.signal("new", null)
         }
     }
 
@@ -1563,12 +1566,12 @@ export class CallScreenNoTranslation extends React.Component {
         
         let channel = await this.state.activeCall.channel.createDataChannel('DataChannel');
         channel.addEventListener("message", (event) => {this.dataMessage(event.data)});
+        this.setState({dataChannel: channel});
 
         const parsed_sdp = expand_sdp_offer(this.state.sdp);
 
         await this.state.activeCall.channel.setRemoteDescription(parsed_sdp);
         
-
         let answer = await this.state.activeCall.channel.createAnswer();
 
         await this.state.activeCall.channel.setLocalDescription(answer);
