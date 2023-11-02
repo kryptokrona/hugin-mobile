@@ -1024,9 +1024,9 @@ export class GroupChatScreenNoTranslation extends React.Component {
             }
 
             const submitReply = async (text) => {
-                this.setState({reply: '', replyHasLength: false, replying: false});
+                
                 Keyboard.dismiss();
-
+                this.setState({reply: '', replyHasLength: false, replying: false});
                 // let updated_messages = await getGroupMessages(this.state.key);
                 // if (!updated_messages) {
                 // updated_messages = [];
@@ -1055,6 +1055,20 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 //     read: 1
                 // });
                 // console.log(message_indice);
+
+                let replies = this.state.replies;
+                console.log(replies);
+                replies.unshift({
+                    message: checkText(text),
+                    address: Globals.wallet.getPrimaryAddress(),
+                    board: this.state.key,
+                    timestamp: parseInt(Date.now()),
+                    nickname: Globals.preferences.nickname,
+                    reply: this.state.activePost.hash,
+                    type: 'sent',
+                    read: 1
+                });
+                this.setState({replies: replies});
 
                 // this.setState({
                 // messages: updated_messages,
@@ -1110,10 +1124,23 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 // this.state.replies = updated_replies;
                 // console.log(this.state.replies);
                 this.state.replies = await getReplies(this.state.activePost.hash);
-                console.log('newreps', this.state.replies);
                 // this.state.input.current.clear();
                 } else {
                 // updated_messages = await getBoardsMessages(this.state.board);
+
+                replies = await getReplies(this.state.activePost.hash);
+                replies.unshift({
+                    message: checkText(text),
+                    address: Globals.wallet.getPrimaryAddress(),
+                    board: this.state.key,
+                    timestamp: parseInt(Date.now()),
+                    nickname: Globals.preferences.nickname,
+                    reply: this.state.activePost.hash,
+                    type: 'failed',
+                    read: 1
+                });
+                this.setState({replies: replies});
+
 
                 //     this.setState({
                 //     messages: updated_messages,
@@ -1499,8 +1526,8 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                         {this.state.replies && this.state.replies.map((item,i) => {
                           return <View style={{borderRadius: 20, margin: 10, paddingBottom: 30}}>
+                            {item.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {submitReply(item.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
                           <View style={{flexDirection:"row"}}>
-
                           <Image
                             style={{width: 32, height: 32, marginTop: -5}}
                             source={{uri: get_avatar(item.address)}}

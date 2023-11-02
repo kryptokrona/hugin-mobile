@@ -229,9 +229,6 @@ async function createTables(DB) {
         );
 
             
-        //   tx.executeSql(
-        //     `DROP TABLE privateboards_messages_db`
-        // );
 
         tx.executeSql(
             `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
@@ -275,7 +272,6 @@ async function createTables(DB) {
                  latest_message INT default 0
             )`
         );
-
 
 
         tx.executeSql(
@@ -562,7 +558,6 @@ export async function getKnownTransactions() {
         knownTXs.push(data.rows.item(i).hash);
 
       }
-
       return knownTXs;
 
   } else {
@@ -1209,7 +1204,7 @@ export async function getGroupMessages(group=false, limit=25) {
 
             let replyCount_raw = 0;
 
-            if (replyCount && replyCount.rows && replyCount.rows.length) {
+            if (replyCount && replyCount.rows && replyCount.rows.length && item.hash != '') {
 
                 const res = [];
         
@@ -1284,6 +1279,10 @@ export async function getReplies(post) {
 
   console.log(post);
 
+  if (post == '') {
+    return [];
+  }
+
     const [data] = await database.executeSql(
         `SELECT *
         FROM
@@ -1312,6 +1311,38 @@ export async function getReplies(post) {
                 type: item.type,
                 read: item.read
             });
+            const [reply_data] = await database.executeSql(
+                `SELECT *
+                FROM
+                    privateboards_messages_db WHERE reply = "${item.hash}"
+                ORDER BY
+                    timestamp
+                ASC
+                LIMIT
+                20`
+            );
+            
+            // Secondary replies ("replies on replies")
+            if (reply_data && reply_data.rows && reply_data.rows.length) {
+                const res = [];
+        
+                for (let i = 0; i < reply_data.rows.length; i++) {
+
+                    const item = reply_data.rows.item(i);
+                    res.push({
+                        message: item.message,
+                        address: item.address,
+                        board: item.board,
+                        timestamp: item.timestamp,
+                        nickname: item.nickname,
+                        reply: item.reply,
+                        type: item.type,
+                        read: item.read
+                    });
+
+                }
+            }
+
         }
 
         return res;
