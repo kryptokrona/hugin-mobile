@@ -133,7 +133,7 @@ a=ice-pwd:` +
 a=fingerprint:sha-256 ` +
         fingerprint +
         `
-a=setup:active
+a=setup:actpass
 a=mid:data
 a=sctp-port:5000
 a=max-message-size:262144
@@ -266,7 +266,7 @@ a=ice-pwd:` +
 a=fingerprint:sha-256 ` +
     fingerprint +
     `
-a=setup:passive
+a=setup:active
 a=mid:data
 a=sctp-port:5000
 a=max-message-size:262144
