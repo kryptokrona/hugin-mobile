@@ -1286,7 +1286,9 @@ async function initWebRTC(contactKey) {
 
     mediaDevices
         .getUserMedia({
-        audio: true,
+        audio: {
+            googNoiseSuppression: true
+        },
         video: true,
         })
         .then(stream => {
@@ -1337,10 +1339,6 @@ export class CallScreenNoTranslation extends React.Component {
 
         }
 
-    componentWillUnmount() {
-
-    }
-
     async componentDidMount() {
 
         if (!this.state.activeCall) {
@@ -1384,14 +1382,18 @@ export class CallScreenNoTranslation extends React.Component {
 
         this.state.activeCall.peer.onconnectionstatechange = (ev) => {
 
+            try {
+
             console.log('Connection change');
-            console.log(this.state.activeCall.peer);
             this.state.activeCall.status = this.state.activeCall.peer.connectionState;
             this.setState({callStatus: this.state.activeCall.peer.connectionState});
 
             if(this.state.activeCall.peer.connectionState == 'disconnected') {
                 this.disconnectCall();
             }
+        } catch (err) {
+            this.disconnectCall();
+        }
 
         }
         
@@ -1468,11 +1470,7 @@ export class CallScreenNoTranslation extends React.Component {
         await this.checkPeerIceState()
 
         //Set Answer/Offer
-        //Todo, check why this needs to be set twice after Ice state
         if (type === "new")  sessionDescription = await this.state.activeCall.peer.createOffer();
-        else if (type === "incoming") sessionDescription = await this.state.activeCall.peer.createAnswer();
-
-        await this.state.activeCall.peer.setLocalDescription(sessionDescription);
 
         let message = {
             type: sessionDescription.type,
@@ -1575,6 +1573,9 @@ export class CallScreenNoTranslation extends React.Component {
        }
 
     async answerCall() {
+
+        this.state.activeCall.status = 'connecting';
+        this.setState({callStatus: 'connecting'});
         
         
         let channel = await this.state.activeCall.channel.createDataChannel('DataChannel');
@@ -1627,11 +1628,13 @@ export class CallScreenNoTranslation extends React.Component {
         const { t } = this.props;
 
         this.state.activeCall.peer.close();
+
+        this.state.activeCall.channel.close();
+
+        this.setState({activeCall: null});
     
-        this.props.navigation.navigate(
-            'ChatScreen', {
-                payee: this.props.navigation.state.params.payee,
-            });
+        this.props.navigation.goBack();
+
         Globals.calls.splice(Globals.calls.indexOf(this.state.activeCall), 1);
         if(!Globals.calls.length) {
             Globals.stream.getTracks().forEach(function(track) {
