@@ -1775,6 +1775,7 @@ export class CallScreenNoTranslation extends React.Component {
                   { this.state.stream && this.state.localWebcamOn &&
                   <RTCView
                     objectFit={"cover"}
+                    mirror={true}
                     style={{ flex: 1, backgroundColor: "#050A0E" }}
                     streamURL={this.state.stream.toURL()} />
                   }
@@ -1867,6 +1868,7 @@ export class CallScreenNoTranslation extends React.Component {
       { this.state.stream && this.state.localWebcamOn &&
       <RTCView
         objectFit={"cover"}
+        mirror={true}
         style={{ flex: 1, backgroundColor: "#050A0E" }}
         streamURL={this.state.stream.toURL()} />
       }
