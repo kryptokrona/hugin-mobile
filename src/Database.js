@@ -240,8 +240,7 @@ async function createTables(DB) {
                 timestamp TEXT,
                 read BOOLEAN default 1,
                 hash TEXT,
-                reply TEXT,
-                UNIQUE (timestamp)
+                reply TEXT
             )`
         );
 
@@ -403,6 +402,7 @@ async function createTables(DB) {
             `PRAGMA user_version = 7`
         );
     });
+
 }
 
 export async function openDB() {
