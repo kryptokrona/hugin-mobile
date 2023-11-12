@@ -239,9 +239,9 @@ async function createTables(DB) {
                 message TEXT,
                 timestamp TEXT,
                 read BOOLEAN default 1,
-                UNIQUE (timestamp),
-                hash TEXT UNIQUE,
-                reply TEXT
+                hash TEXT,
+                reply TEXT,
+                UNIQUE (timestamp)
             )`
         );
 
@@ -325,13 +325,13 @@ async function createTables(DB) {
               `ALTER TABLE
                     privateboards_messages_db
                 ADD
-                    reply TEXT default ""`);
+                    reply TEXT default ''`);
 
             tx.executeSql(
                 `ALTER TABLE
                         privateboards_messages_db
                     ADD
-                        hash TEXT default ""`);
+                        hash TEXT default ''`);
   
           }
 
