@@ -736,7 +736,7 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         }}
                         errorMessage={this.state.addressError}
                     />
-
+                    {this.state.address != '' &&
                     <Input
                     containerStyle={{
                         width: '90%',
@@ -773,6 +773,8 @@ export class NewPayeeScreenNoTranslation extends React.Component {
                         editable={this.state.paymentIDEnabled}
                         errorMessage={this.state.paymentIDError}
                     />
+                    }
+                    
 
                         <TouchableOpacity
                                         style={{

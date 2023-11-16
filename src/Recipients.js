@@ -78,13 +78,13 @@ export class RecipientsScreenNoTranslation extends React.Component {
         super(props);
 
         this.state = {
-            payees: Globals.payees,
+            payees: Globals.payees.filter(item => item.paymentID.length > 0),
             index: 0,
         }
 
         Globals.updatePayeeFunctions.push(() => {
             this.setState(prevState => ({
-                payees: Globals.payees,
+                payees: Globals.payees.filter(item => item.paymentID.length > 0),
                 index: prevState.index + 1,
             }))
         });
@@ -203,7 +203,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                     await markConversationAsRead(item.address);
                                     Globals.payees = await loadPayeeDataFromDatabase();
                                     this.setState({
-                                        payees: Globals.payees
+                                        payees: Globals.payees.filter(item => item.paymentID.length > 0)
                                     });
                                 }}
                             />
