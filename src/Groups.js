@@ -1395,6 +1395,15 @@ export class GroupChatScreenNoTranslation extends React.Component {
                           }}
                         >
                           <View style={modalStyle}>
+
+                          <View style={{
+                                height: 3,
+                                width: 30,
+                                borderRadius: 3,
+                                backgroundColor: 'rgba(255, 255, 255 ,0.3)',
+                                alignSelf: 'center',
+                                marginTop: -10
+                            }} />
                             
                           <TouchableOpacity style={{padding: 15, position: 'absolute', right: 5, top: 5}} onPress={() => {this.setMessageModalVisible(false);this.setState({replying: false});}}>
                             <Text style={{fontSize: 18, fontFamily: "Montserrat-SemiBold", transform: [{ rotate: '45deg'}]}}>+</Text>
