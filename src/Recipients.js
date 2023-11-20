@@ -1991,7 +1991,8 @@ export class CallScreenNoTranslation extends React.Component {
         borderRadius: 5,
         padding: 10,
         color: 'black',
-        textAlign: 'center'
+        textAlign: 'center',
+        flexDirection: 'row'
     }}>
     { this.state.sdp && this.state.callStatus == 'disconnected' &&
     <Text>{this.state.nickname + t('isCalling')}</Text>
@@ -2003,10 +2004,10 @@ export class CallScreenNoTranslation extends React.Component {
     <Text>{t('noRecordAccess')}</Text>
     }
     { this.state.callStatus == 'waiting' &&
-    <Text>{t('waitingForAnswer')}</Text>
+    <><Text>{t('waitingForAnswer')}</Text><ActivityIndicator /></>
     }
     { this.state.callStatus == 'connecting' &&
-    <Text>{t('connecting')}</Text>
+    <><Text>{t('connecting')}</Text><ActivityIndicator /></>
     }
     {/* { this.state.callStatus == 'connected' &&
         <Text>{"Connected"}</Text>
