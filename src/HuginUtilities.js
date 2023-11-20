@@ -805,7 +805,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
 
     if (result.success) {
       if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
-        message = t('Call started');
+        message = 'Call started';
       }
       if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
         message = 'Call answered';
