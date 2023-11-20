@@ -1252,7 +1252,7 @@ function startPeer() {
     ],
     iceTransportPolicy: "all",
     sdpSemantics: 'unified-plan',
-    //   trickle: false
+    trickle: false
     });
 
     return peer;
@@ -1457,6 +1457,7 @@ export class CallScreenNoTranslation extends React.Component {
 
         if (type === "new") {
             sessionDescription = await this.state.activeCall.peer.createOffer();
+            
         } else if (type === "incoming") {
             
             await this.state.activeCall.peer.setRemoteDescription(data);
@@ -1467,10 +1468,24 @@ export class CallScreenNoTranslation extends React.Component {
         //Set local sdp
         await this.state.activeCall.peer.setLocalDescription(sessionDescription);
         
-        await this.checkPeerIceState()
+        await new Promise((resolve) => {
+            if (this.state.activeCall.peer.iceGatheringState === 'complete') {
+              resolve();
+            } else {
+                this.state.activeCall.peer.addEventListener('icegatheringstatechange', () => {
+                if (this.state.activeCall.peer.iceGatheringState === 'complete') {
+                  resolve();
+                }
+              });
+            }
+          });
 
         //Set Answer/Offer
         if (type === "new")  sessionDescription = await this.state.activeCall.peer.createOffer();
+        if (type === "incoming")  {
+            await this.state.activeCall.peer.setRemoteDescription(data);
+            sessionDescription = await this.state.activeCall.peer.createAnswer();
+        }
 
         let message = {
             type: sessionDescription.type,
@@ -1492,7 +1507,7 @@ export class CallScreenNoTranslation extends React.Component {
             Globals.logger.addLogMessage('[DataChannel] Error parsing data channel message: ' + data);
             return
         }
-        Globals.logger.addLogMessage('[DataChannel] incoming: ' + message);
+        Globals.logger.addLogMessage('[DataChannel] incoming: ' + JSON.stringify(message));
         const incomingCall = this.checkIncomingCall(message)
         if (incomingCall) return
         
@@ -1568,7 +1583,11 @@ export class CallScreenNoTranslation extends React.Component {
     
         let messageKey = this.state.paymentID;
     
-        sendMessage(parsed_data, receiver, messageKey);    
+        const result = await sendMessage(parsed_data, receiver, messageKey);    
+        console.log(result);
+        if (!result.success) {
+            toastPopUp('Failed to send call! Check your balance and try again.');
+        }
     
        }
 
