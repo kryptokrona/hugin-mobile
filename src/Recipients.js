@@ -60,6 +60,8 @@ import CustomIcon from './CustomIcon.js'
 
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
 
+import InCallManager from 'react-native-incall-manager';
+
 String.prototype.hashCode = function() {
     var hash = 0;
     if (this.length == 0) {
@@ -1341,6 +1343,8 @@ export class CallScreenNoTranslation extends React.Component {
 
     async componentDidMount() {
 
+
+
         if (!this.state.activeCall) {
             console.log('Initating WebRTC');
             const initiated = await initWebRTC(this.state.paymentID);
@@ -1374,6 +1378,7 @@ export class CallScreenNoTranslation extends React.Component {
 
         }
 
+
         this.state.activeCall.peer.onaddstream = event => {
             // Got stream
             this.state.activeCall.remoteStream = event.stream;
@@ -1391,6 +1396,9 @@ export class CallScreenNoTranslation extends React.Component {
             if(this.state.activeCall.peer.connectionState == 'disconnected') {
                 this.disconnectCall();
             }
+            if(this.state.activeCall.peer.connectionState == 'connected') {
+                InCallManager.stopRingback();
+            }
         } catch (err) {
             this.disconnectCall();
         }
@@ -1405,11 +1413,18 @@ export class CallScreenNoTranslation extends React.Component {
             callStatus = 'disconnected';
         }
 
+        if (this.state.sdp && callStatus == 'disconnected') {
+            InCallManager.start({ media: 'audio/video', auto: true});
+            InCallManager.startRingtone('_BUNDLE_');
+        }
+
         const localWebcamOn = Globals.localWebcamOn;
 
         const localMicOn = Globals.localMicOn;
 
-        this.setState({selectedValue: 'video', callStatus: callStatus, localMicOn: localMicOn, localWebcamOn: localWebcamOn})
+        const speakerOn = Globals.speakerOn;
+
+        this.setState({selectedValue: 'video', callStatus: callStatus, localMicOn: localMicOn, localWebcamOn: localWebcamOn, speakerOn: speakerOn})
 
     }
 
@@ -1536,6 +1551,9 @@ export class CallScreenNoTranslation extends React.Component {
 
     async startCall() {
 
+        InCallManager.start({ media: 'audio/video', auto: true, ringback: '_DTMF_'});
+        InCallManager.setSpeakerphoneOn(this.state.speakerOn);
+        
 
         this.state.activeCall.status = 'waiting';
         this.setState({callStatus: 'waiting'});
@@ -1593,6 +1611,10 @@ export class CallScreenNoTranslation extends React.Component {
 
     async answerCall() {
 
+        InCallManager.stop();
+        InCallManager.start({media: 'audio/video', ringback: '_DTMF_'});
+        InCallManager.setSpeakerphoneOn(this.state.speakerOn);
+
         this.state.activeCall.status = 'connecting';
         this.setState({callStatus: 'connecting'});
         
@@ -1646,6 +1668,8 @@ export class CallScreenNoTranslation extends React.Component {
 
         const { t } = this.props;
 
+        InCallManager.stop();
+
         this.state.activeCall.peer.close();
 
         this.state.activeCall.channel.close();
@@ -1689,6 +1713,13 @@ export class CallScreenNoTranslation extends React.Component {
     this.state.stream.getAudioTracks().forEach((track) => {
         this.state.localMicOn ? (track.enabled = false) : (track.enabled = true);
     });
+    }
+
+    toggleSpeaker() {
+        this.state.speakerOn ? InCallManager.setSpeakerphoneOn(false) : InCallManager.setSpeakerphoneOn(true);
+        this.setState({speakerOn: !this.state.speakerOn});
+        Globals.speakerOn = !Globals.speakerOn;
+        this.state.speakerOn ? Globals.speakerOn = false : Globals.speakerOn = true;
     }
 
     // Switch Camera
@@ -1971,6 +2002,16 @@ export class CallScreenNoTranslation extends React.Component {
                :
                <TouchableOpacity onPress={() =>{this.toggleMic()}}>
               <CustomIcon name='microphone-2' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+          }
+
+          {this.state.speakerOn ? 
+              <TouchableOpacity onPress={() =>{ this.toggleSpeaker() }}>
+              <CustomIcon name='volume-low' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
+              </TouchableOpacity>
+               :
+               <TouchableOpacity onPress={() =>{  this.toggleSpeaker() }}>
+              <CustomIcon name='volume-cross' size={24} style={{color: 'rgba(255,255,255,0.8)'}} />
               </TouchableOpacity>
           }
   

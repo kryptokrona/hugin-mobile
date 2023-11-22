@@ -109,6 +109,8 @@ class globals {
         
         this.localMicOn = false;
 
+        this.speakerOn = true;
+
     }
 
     reset() {
