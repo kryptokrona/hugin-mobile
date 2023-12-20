@@ -12,6 +12,8 @@ import pt from './i18n/pt.json';
 import uk from './i18n/uk.json';
 import hi from './i18n/hi.json';
 import mr from './i18n/mr.json';
+import id from './i18n/id.json';
+
 import { Globals } from './Globals';
 import RNLanguageDetector from '@os-team/i18next-react-native-language-detector';
 
@@ -68,6 +70,9 @@ i18next
       },
       mr: {
         translation: mr,
+      },
+      id: {
+        translation: id,
       }
     },
   });
