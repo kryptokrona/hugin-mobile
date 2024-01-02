@@ -13,6 +13,7 @@ import uk from './i18n/uk.json';
 import hi from './i18n/hi.json';
 import mr from './i18n/mr.json';
 import id from './i18n/id.json';
+import te from ',/i18n/te.json';
 import ph from './i18n/ph.json';
 import fr from './i18n/fr.json';
 
@@ -72,6 +73,9 @@ i18next
       },
       mr: {
         translation: mr,
+      },
+      te: {
+        translation: te,
       },
       id: {
         translation: id,
