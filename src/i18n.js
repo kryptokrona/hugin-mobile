@@ -14,6 +14,8 @@ import hi from './i18n/hi.json';
 import mr from './i18n/mr.json';
 import id from './i18n/id.json';
 import te from ',/i18n/te.json';
+import ph from './i18n/ph.json';
+import fr from './i18n/fr.json';
 
 import { Globals } from './Globals';
 import RNLanguageDetector from '@os-team/i18next-react-native-language-detector';
@@ -77,7 +79,13 @@ i18next
       },
       id: {
         translation: id,
+      },
+      ph: {
+        translation: ph,
+      fr: {
+        translation: fr,
       }
+
     },
   });
 
