@@ -13,6 +13,7 @@ import uk from './i18n/uk.json';
 import hi from './i18n/hi.json';
 import mr from './i18n/mr.json';
 import id from './i18n/id.json';
+import ph from './i18n/ph.json';
 import fr from './i18n/fr.json';
 
 import { Globals } from './Globals';
@@ -75,6 +76,8 @@ i18next
       id: {
         translation: id,
       },
+      ph: {
+        translation: ph,
       fr: {
         translation: fr,
       }
