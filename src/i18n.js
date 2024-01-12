@@ -18,6 +18,8 @@ import ph from "./i18n/ph.json";
 import fr from "./i18n/fr.json";
 import mai from "./i18n/mai.json";
 import bho from "./i18n/bho.json";
+import gu from './i18n/gu.json';
+
 
 import { Globals } from "./Globals";
 import RNLanguageDetector from "@os-team/i18next-react-native-language-detector";
@@ -94,6 +96,9 @@ i18next
       bho: {
         translation: bho,
       },
+      gu: {
+        translation: gu,
+      }
     },
   });
 
