@@ -537,8 +537,6 @@ export async function saveKnownTransaction(txhash) {
       );
   });
 
-  console.log('wtfffs', await getKnownTransactions());
-
 }
 
 export async function getKnownTransactions() {

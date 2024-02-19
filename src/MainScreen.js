@@ -1118,11 +1118,12 @@ async function backgroundSyncMessages(navigation) {
     Globals.logger.addLogMessage('Getting unconfirmed transactions...');
 
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      let knownTXs = await getKnownTransactions();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',
         body: JSON.stringify({
-             knownTxsIds: Globals.knownTXs
+             knownTxsIds: knownTXs
          })
       })
       .then((response) => response.json())
