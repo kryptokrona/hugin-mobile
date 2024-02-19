@@ -121,7 +121,7 @@ export async function getBestCache() {
 
   for (cache in caches) {
     let this_cache = caches[cache];
-    let cacheURL = `${this_cache.url}/api/v1/posts`;
+    let cacheURL = `${this_cache.url}/api/v1/info`;
     try {
       const resp = await fetch(cacheURL, {
          method: 'GET'
@@ -392,6 +392,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
 
   if (inputs.length > 8) {
+    Globals.logger.addLogMessage(`Already have ${inputs.length} available inputs. Skipping optimization.`);
     return inputs.length;
   }
 
@@ -432,6 +433,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
   );
 
   if (result.success) {
+    Globals.logger.addLogMessage(`Optimized ${payments.length} messages.`);
     return true;
 
   } else {
@@ -442,7 +444,6 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 
 
 }
-optimizeMessages()
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
@@ -587,9 +588,6 @@ export async function sendGroupsMessage(message, group, reply=false) {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
 
-  console.log(result);
-
-
   if (!result.success) {
     result = await Globals.wallet.sendTransactionAdvanced(
       [[mainWallet, 1]], // destinations,
@@ -634,75 +632,6 @@ export async function sendGroupsMessage(message, group, reply=false) {
 
 }
 
-export async function sendBoardsMessage(message, board, reply=false) {
-
-  const my_address = Globals.wallet.getPrimaryAddress();
-
-  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
-
-  const signature = await xkrUtils.signMessage(message, privateSpendKey);
-
-  let message_json = {
-    "m":message,
-    "k": my_address,
-    "s": signature,
-    "brd": board,
-    "t": parseInt(Date.now() / 1000)
-  }
-
-  if (reply) {
-    message_json.r = reply;
-  }
-
-  if (Globals.preferences.nickname != 'Anonymous') {
-    message_json.n = Globals.preferences.nickname;
-  }
-
-  const payload_hex = toHex(JSON.stringify(message_json));
-
-  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
-
-  const result = await Globals.wallet.sendTransactionAdvanced(
-      [[my_address, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      [subWallet], // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_hex, 'hex')
-  );
-
-  backgroundSave();
-
-  if (!result.success) {
-    const result_api = await sendMessageWithHuginAPI(payload_hex);
-    return result_api;
-  }
-  optimizeWallet();
-  return result;
-
-}
-
-async function optimizeWallet() {
-  const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-      let message_inputs = 0;
-      for (input in inputs) {
-        try {
-          let this_amount = inputs[input].input.amount;
-          if (this_amount == 10000) { 
-            message_inputs++;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-      if (message_inputs < 2) {
-        optimizeMessages(10);
-      }
-}
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
@@ -812,9 +741,6 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       }
       saveMessage(receiver, 'sent', message, timestamp);
       backgroundSave();
-
-      optimizeWallet();
-      
     } 
 
     return result;
@@ -923,8 +849,6 @@ async function getGroupMessage(tx) {
 
     i += 1;
 
-    Globals.logger.addLogMessage('Trying key: ' + possibleKey);
-
     try {
 
      decryptBox = nacl.secretbox.open(
@@ -997,7 +921,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
   return new Promise(async (resolve, reject) => {
 
     let data = trimExtra(extra);
-    Globals.logger.addLogMessage('Message detected: ' + data);
 
     let tx = JSON.parse(data);
         // if (tx.m || tx.b || tx.brd) {
@@ -1068,8 +991,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           let possibleKey = payees[i].paymentID;
 
           i += 1;
-
-          Globals.logger.addLogMessage('Trying key: ' + possibleKey);
 
           try {
            decryptBox = nacl.box.open(hexToUint(box),
