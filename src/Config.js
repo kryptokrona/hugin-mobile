@@ -202,7 +202,7 @@ const Config = new function() {
     /**
      * Default Hugin Cache to use.
      */
-    this.defaultCache = 'https://cache.hugin.chat';
+    this.defaultCache = 'https://techy.ddns.net';
 
     /**
      * A link to where a bug can be reported for your wallet. Please update
@@ -251,7 +251,7 @@ const Config = new function() {
     /**
     * A Url to fetch Hugin Caches from.
     */
-    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/hugin-api-list/main/apis.json';
+    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json';
 
     /**
     * A Url to fetch Hugin Caches from.
