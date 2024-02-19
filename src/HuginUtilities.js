@@ -448,7 +448,6 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
 export async function sendMessageWithHuginAPI(payload_hex) {
 
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
-
   const response = await fetch(`${cacheURL}/api/v1/posts`, {
     method: 'POST', // or 'PUT'
     headers: {
@@ -587,50 +586,20 @@ export async function sendGroupsMessage(message, group, reply=false) {
       false, // sneedAll
       Buffer.from(payload_encrypted_hex, 'hex')
   );
-
-  if (!result.success) {
-    result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_encrypted_hex, 'hex')
-  );
-  if (!result.success) {
-    result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_encrypted_hex, 'hex')
-  );
   if (!result.success) {
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
-      console.log('Failed to send with Hugin API..')
+      console.log('Failed to send with Hugin API..');
     }
   }
-}
-
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
   }
-
   return result;
-
 }
 
-}
 
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
