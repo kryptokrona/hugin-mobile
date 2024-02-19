@@ -75,27 +75,7 @@ async function init(navigation) {
 
     Globals.wallet.on('incomingtx', async (transaction) => {
         sendNotification(transaction);
-        const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-        let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-        let message_inputs = 0;
-        for (input in inputs) {
-          try {
-
-            let this_amount = inputs[input].input.amount;
-
-            if (this_amount == 10000) {
-              message_inputs++;
-            }
-          } catch (err) {
-            continue;
-          }
-        }
-        console.log('message_inputs', message_inputs);
-        if (message_inputs < 2) {
-          optimizeMessages(10);
-
-        }
-
+        optimizeMessages(10);
     });
 
     Globals.wallet.on('deadnode', () => {
@@ -128,14 +108,11 @@ async function init(navigation) {
     if (Platform.OS === 'android') {
         Globals.wallet.setBlockOutputProcessFunc(processBlockOutputs);
     }
-
     initGlobals();
 
     const recommended_node = await getBestCache();
 
     Globals.preferences.cache = recommended_node.url;
-
-    console.log(Globals.preferences.cache);
 
     cacheSync(true);
 
@@ -312,6 +289,7 @@ export class MainScreen extends React.PureComponent {
 
         Globals.wallet.on('createdtx', () => {
             this.updateBalance();
+            optimizeMessages(10);
         });
 
         Globals.wallet.on('createdfusiontx', () => {
@@ -1114,8 +1092,6 @@ async function backgroundSyncMessages(navigation) {
   try {
 
   cacheSync(false);
-
-    Globals.logger.addLogMessage('Getting unconfirmed transactions...');
 
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let knownTXs = await getKnownTransactions();
