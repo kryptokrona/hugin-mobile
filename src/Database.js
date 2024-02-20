@@ -588,8 +588,6 @@ export async function deleteKnownTransaction(txhash) {
 
 export async function saveGroupMessage(group, type, message, timestamp, nickname, address, reply, hash) {
 
-    console.log('Saving message with reply:', reply);
-
   const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
 
   console.log('Saving group message', group, type, message, timestamp, nickname, address, read);
@@ -1234,7 +1232,7 @@ export async function getGroupMessages(group=false, limit=25) {
       console.log('No message le found!');
     }
 
-    return undefined;
+    return [];
 }
 
 
