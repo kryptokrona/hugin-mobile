@@ -246,6 +246,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                                     );
                                     await markGroupConversationAsRead(item.key);
                                     Globals.groups = await loadGroupsDataFromDatabase();
+                                    console.log(Globals.groups);
                                     this.setState({
                                         groups: Globals.groups
                                     });
@@ -381,7 +382,6 @@ function validGroupName(group) {
     return [true, errorMessage];
 }
 
-
 function isAddressValid(address) {
     let errorMessage = '';
 
@@ -434,8 +434,6 @@ class ModifyGroup extends React.Component {
         );
     }
 }
-
-
 
 class ModifyNickname extends React.Component {
     constructor(props) {
@@ -645,22 +643,6 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                                   } else {
                                       this.setState(shared);
                                   }
-
-                                    //
-                                    //
-                                    // validGroupName(text);
-                                    // const shared = {
-                                    //
-                                    // };
-                                    //
-                                    // if (true) {
-                                    //     this.setState({
-                                    //         newGroup: text,
-                                    //         ...shared,
-                                    //     });
-                                    // } else {
-                                    //     this.setState(shared);
-                                    // }
                                 }}
                                 {...this.props}
                             />
@@ -779,27 +761,6 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
 }
 
 export const ModifyGroupScreen = withTranslation()(ModifyGroupScreenNoTranslation)
-
-//
-// export class MessageBubble extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         // this.animation = new Animated.Value(0);
-//     }
-//
-//
-//     componentWillMount() {
-//       // this.animatedValue = new Animated.Value(0);
-//     }
-//
-//     componentDidMount() {
-//
-//     }
-//
-//     render() {
-//
-//     }
-// }
 
 
 export class GroupChatScreenNoTranslation extends React.Component {
@@ -1027,34 +988,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 
                 Keyboard.dismiss();
                 this.setState({reply: '', replyHasLength: false, replying: false});
-                // let updated_messages = await getGroupMessages(this.state.key);
-                // if (!updated_messages) {
-                // updated_messages = [];
-                // }
-                // let temp_timestamp = parseInt(Date.now() / 1000);
-                // console.log(updated_messages);
-                // updated_messages.unshift({
-                //     group: this.state.activePost.group,
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     message: checkText(text),
-                //     timestamp: temp_timestamp,
-                //     hash: temp_timestamp.toString(),
-                //     read: 1,
-                //     nickname: Globals.preferences.nickname,
-                //     reply: this.state.activePost.hash,
-                //     op: this.state.activePost
-                // });
-                // console.log(updated_messages);
-                // let message_indice = updated_messages.push({
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     nickname: Globals.preferences.nickname,
-                //     group: this.state.key,
-                //     type: 'processing',
-                //     message: checkText(text),
-                //     timestamp: temp_timestamp,
-                //     read: 1
-                // });
-                // console.log(message_indice);
 
                 let replies = this.state.replies;
                 console.log(replies);
@@ -1070,19 +1003,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 });
                 this.setState({replies: replies});
 
-                // this.setState({
-                // messages: updated_messages,
-                // messageHasLength: false,
-                // message: ''
-                // });
-
-                // console.log('State has been set');
-
-                // this.replyinput._textInput.clear();
-
                 console.log('Cleared input');
-
-                // this.setState({replyHasLength: this.state.reply.length > 0});
 
                 console.log('Sending message..')
 
@@ -1091,42 +1012,13 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 let success = await sendGroupsMessage(checkText(text), this.state.activePost.group, this.state.activePost.hash);
                 console.log(success);
 
-                // await removeMessage(temp_timestamp);
                 if (success.success) {
                 console.log(success);
-                // await saveBoardsMessage(
-                //     checkText(text),
-                //     Globals.wallet.getPrimaryAddress(),
-                //     '',
-                //     this.state.activePost.board,
-                //     temp_timestamp,
-                //     Globals.preferences.nickname,
-                //     this.state.activePost.hash,
-                //     success.transactionHash,
-                //     '1',
-                //     false);
-                // let updated_replies = this.state.replies;
 
-                // updated_replies.unshift({
-                //     message: checkText(text),
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     signature: '',
-                //     board: this.state.activePost.board,
-                //     timestamp: temp_timestamp.toString(),
-                //     nickname: Globals.preferences.nickname,
-                //     reply: this.state.activePost.hash,
-                //     hash: success.transactionHash,
-                //     sent: 0,
-                //     read: 1
-                //
-                // });
-                // console.log(updated_replies);
-                // this.state.replies = updated_replies;
-                // console.log(this.state.replies);
                 this.state.replies = await getReplies(this.state.activePost.hash);
-                // this.state.input.current.clear();
+
                 } else {
-                // updated_messages = await getBoardsMessages(this.state.board);
+
 
                 replies = await getReplies(this.state.activePost.hash);
                 replies.unshift({
@@ -1140,12 +1032,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     read: 1
                 });
                 this.setState({replies: replies});
-
-
-                //     this.setState({
-                //     messages: updated_messages,
-                //     messageHasLength: true
-                //     })
 
                 }
             }
