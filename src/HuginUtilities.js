@@ -363,7 +363,7 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
+export async function optimizeMessages(nbrOfTxs) {
 
   if (!Globals?.wallet) { return }
 
@@ -378,11 +378,7 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
     if (error) {
        return;
     }
-  } else {
-  }
 
-  if (attempt > 10) {
-    return false;
   }
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
@@ -396,15 +392,19 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
     return inputs.length;
   }
 
-  let subWallets = Globals.wallet.subWallets.subWallets;
+  // let subWallets = Globals.wallet.subWallets.subWallets;
 
-  subWallets.forEach((value, name) => {
-    let txs = value.unconfirmedIncomingAmounts.length;
+  // console.log(subWallets);
 
-    if (txs > 0) {
-      return txs;
-    }
-  })
+  // subWallets.forEach((value, name) => {
+  //   let txs = value.unconfirmedIncomingAmounts.length;
+
+  //   console.log(value);
+
+  //   if (txs > 0) {
+  //     return txs;
+  //   }
+  // })
 
   let payments = [];
   let i = 0;
@@ -436,14 +436,13 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
     Globals.logger.addLogMessage(`Optimized ${payments.length} messages.`);
     return true;
 
-  } else {
-    optimizeMessages(nbrOfTxs, fee + 500, attempt + 1)
   }
 
   return result;
 
 
-}
+} 
+
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
@@ -587,6 +586,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
   if (!result.success) {
+    optimizeMessages(10);
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
@@ -679,28 +679,14 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
-      // Try to send from all subwallets if failed
-      result = await Globals.wallet.sendTransactionAdvanced(
-        [[receiver, 1]], // destinations,
-        3, // mixin
-        {fixedFee: 1000, isFixedFee: true}, // fee
-        undefined, //paymentID
-        undefined, // subWalletsToTakeFrom
-        undefined, // changeAddress
-        true, // relayToNetwork
-        false, // sneedAll
-        Buffer.from(payload_hex, 'hex')
-    );
-    if (!result.success) {
+      optimizeMessages(10);
       console.log(result);
       try {
         result = await sendMessageWithHuginAPI(payload_encrypted_hex);
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
-    }
-  }
-
+   
     if (result.success) {
       if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
         message = 'Call started';
@@ -715,6 +701,8 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     return result;
 
     Globals.logger.addLogMessage(JSON.stringify(result));
+
+}
 
 }
 
