@@ -181,5 +181,6 @@
   callTerminated: "Call terminated",
   loadMore: "Load more",
   transactionHash: "Transaction hash",
-  transactionHistory: "Transaction history"
+  transactionHistory: "Transaction history",
+  optimizationComplete: "Optimization failed..",
 }
