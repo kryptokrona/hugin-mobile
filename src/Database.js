@@ -655,7 +655,6 @@ let fromMyself = address == Globals.wallet.getPrimaryAddress();
 
 }
 
-
 export async function removeMessage(timestamp) {
 
   console.log('Removing message ', timestamp);
@@ -715,7 +714,6 @@ Globals.unreadMessages = await getUnreadMessages();
 Globals.update();
 
 }
-
 
 export async function markGroupConversationAsRead(group) {
 
@@ -803,8 +801,6 @@ export async function removePayeeFromDatabase(nickname, removeMessages) {
   }
 }
 
-
-
 export async function saveGroupToDatabase(group) {
     await database.transaction((tx) => {
         tx.executeSql(
@@ -816,7 +812,6 @@ export async function saveGroupToDatabase(group) {
         );
     });
 }
-
 
 export async function removeGroupFromDatabase(key, removeMessages) {
     await database.transaction((tx) => {
@@ -841,9 +836,6 @@ export async function removeGroupFromDatabase(key, removeMessages) {
     })
   }
 }
-
-
-
 
 export async function removeMessages() {
     await database.transaction((tx) => {
@@ -877,7 +869,6 @@ export async function removeMessages() {
         );
     });
 }
-
 
 export async function getGroupKey(group) {
     const [data] = await database.executeSql(
@@ -943,7 +934,6 @@ export async function getGroupName(key) {
     }
 }
 
-
 export async function loadGroupsDataFromDatabase() {
 
     const [data] = await database.executeSql(
@@ -1008,15 +998,14 @@ export async function loadPayeeDataFromDatabase() {
                 nickname: item.nickname,
                 address: item.address,
                 paymentID: item.paymentid,
-                lastMessage: latestMessage.length ? latestMessage[0].message : false,
-                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
-                read: latestMessage.length ? latestMessage[0].read : true
+                lastMessage: latestMessage.length && item.paymentid ? latestMessage[0].message : false,
+                lastMessageTimestamp: latestMessage.length && item.paymentid ? latestMessage[0].timestamp : 0,
+                read: latestMessage.length && item.paymentid ? latestMessage[0].read : true
             })
           }
 
         return res.sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp)
     }
-
 
     return undefined;
 }
@@ -1083,7 +1072,7 @@ export async function getLatestMessages() {
         return res;
     }
 
-    return undefined;
+    return [];
 }
 
 export async function getMessages(conversation=false, limit=25) {
@@ -1235,7 +1224,6 @@ export async function getGroupMessages(group=false, limit=25) {
     return [];
 }
 
-
 export async function getHistory(conversation) {
 
     const [data] = await database.executeSql(
@@ -1269,7 +1257,6 @@ export async function getHistory(conversation) {
     }
 
 }
-
 
 export async function getReplies(post) {
 
@@ -1449,7 +1436,6 @@ export async function getGroupsMessage(hash) {
     return [];
 }
 
-
 export async function getBoardRecommendations() {
 
     const [data] = await database.executeSql(
@@ -1589,7 +1575,6 @@ export async function getBoardSubscriptions() {
     return [];
 }
 
-
 export async function subscribeToBoard(board, key) {
 
     await database.transaction((tx) => {
@@ -1607,7 +1592,6 @@ export async function subscribeToBoard(board, key) {
 
 }
 
-
 export async function subscribeToGroup(group, key) {
 
     await database.transaction((tx) => {
@@ -1621,7 +1605,6 @@ export async function subscribeToGroup(group, key) {
     });
 
 }
-
 
 export async function removeBoard(board) {
 
@@ -1687,7 +1670,6 @@ export async function messageExists(timestamp) {
 
 }
 
-
 export async function groupMessageExists(timestamp) {
     const [data] = await database.executeSql(
         `SELECT
@@ -1709,7 +1691,6 @@ export async function groupMessageExists(timestamp) {
 
 }
 
-
 export async function boardsMessageExists(hash) {
     const [data] = await database.executeSql(
         `SELECT
@@ -1727,8 +1708,6 @@ export async function boardsMessageExists(hash) {
     }
 
 }
-
-
 
 export async function saveToDatabase(wallet) {
     try {
