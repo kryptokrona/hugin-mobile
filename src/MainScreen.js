@@ -76,6 +76,7 @@ async function init(navigation) {
     Globals.wallet.on('incomingtx', async (transaction) => {
         sendNotification(transaction);
         optimizeMessages(10);
+        backgroundSave();
     });
 
     Globals.wallet.on('deadnode', () => {
@@ -290,6 +291,7 @@ export class MainScreen extends React.PureComponent {
         Globals.wallet.on('createdtx', () => {
             this.updateBalance();
             optimizeMessages(10);
+            backgroundSave();
         });
 
         Globals.wallet.on('createdfusiontx', () => {
