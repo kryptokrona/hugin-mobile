@@ -1167,7 +1167,7 @@ export async function getGroupMessages(group=false, limit=25) {
 
     const [count] = await database.executeSql(
         `
-        SELECT COUNT(*) FROM privateboards_messages_db ${group ? 'WHERE board = "' + group + '"' : ''}
+        SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = ''${group ? ' AND board = "' + group + '"' : ''}
         `
     );
 
