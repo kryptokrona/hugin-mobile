@@ -99,6 +99,8 @@ export class GroupsScreenNoTranslation extends React.Component {
         });
         let standardGroups = Globals.standardGroups;
 
+        console.log(standardGroups);
+
         standardGroups = standardGroups.filter(a => !this.state.groups.map(b=>b.key).includes(a.key));
 
 
@@ -204,9 +206,6 @@ export class GroupsScreenNoTranslation extends React.Component {
                             <ListItem
                                 title={item.group}
                                 subtitle={item.lastMessage ? <Text><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text style={{fontFamily: 'Montserrat-Regular'}}>{" " + item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
-                                subtitleStyle={{
-                                    fontFamily: "Montserrat-Regular"
-                                }}
                                 chevron={item.read == '1' ? false : newMessageIndicator }
                                 leftIcon={
                                     <Image
@@ -494,6 +493,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
     render() {
         const { t } = this.props;
         const group = this.state.group;
+        const editableGroup = !Globals.standardGroups.some((rec) => rec.key == this.state.key);
         return(
             <View style={{
                 flex: 1,
@@ -583,20 +583,23 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                             }}>
                                 {'Groupname'}
                             </Text>
-
+                            {editableGroup &&
                             <Button
-                                title={t('change')}
-                                onPress={() => {
-                                    this.setState({
-                                        modifyGroup: !this.state.modifyGroup,
-                                    });
-                                }}
-                                titleStyle={{
-                                    color: this.props.screenProps.theme.primaryColour,
-                                    fontSize: 13
-                                }}
-                                type="clear"
-                            />
+                            title={t('change')}
+                            onPress={() => {
+                                this.setState({
+                                    modifyGroup: !this.state.modifyGroup,
+                                });
+                            }}
+                            titleStyle={{
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 13
+                            }}
+                            type="clear"
+                        />
+                            
+                            }
+                            
                         </View>
 
                         {!this.state.modifyGroup &&
@@ -687,7 +690,8 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                                         </View>
 
                 </View>
-
+                {editableGroup && 
+                
                 <View style={{
                     marginHorizontal: 30,
                     flex: 1,
@@ -721,7 +725,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                         />
                     </View>
                 </View>
-
+              }
                 <View style={{
                     marginHorizontal: 30,
                     flex: 1,
