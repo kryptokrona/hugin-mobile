@@ -1276,8 +1276,8 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     if (Globals.preferences.limitData && netInfo.type === 'cellular') {
                                         Globals.wallet.stop();
                                     } else {
-                                        Globals.wallet.start();
                                         Globals.wallet.enableAutoOptimization(false);
+                                        Globals.wallet.start();
                                     }
 
                                     toastPopUp(Globals.preferences.limitData ? t('dataLimitOn') : t('dataLimitOff'));

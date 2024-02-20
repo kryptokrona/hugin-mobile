@@ -325,8 +325,8 @@ function updateConnection(connection) {
     if (Globals.preferences.limitData && connection.type === 'cellular') {
         Globals.wallet.stop();
     } else {
-        Globals.wallet.start();
         Globals.wallet.enableAutoOptimization(false);
+        Globals.wallet.start();
     }
 }
 
@@ -368,8 +368,8 @@ export async function initGlobals() {
             ]
         );
     } else {
-        Globals.wallet.start();
         Globals.wallet.enableAutoOptimization(false);
+        Globals.wallet.start();
     }
 
     await Globals.updateNodeList();

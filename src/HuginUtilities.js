@@ -413,7 +413,7 @@ export async function optimizeMessages(nbrOfTxs) {
   while (i < nbrOfTxs - 1 && i < 10) {
     payments.push([
       subWallet,
-        2000
+        1000
     ]);
 
     i += 1;
@@ -575,7 +575,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
+      [[mainWallet, 1000]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
@@ -667,7 +667,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
     let result = await Globals.wallet.sendTransactionAdvanced(
-        [[receiver, 1]], // destinations,
+        [[receiver, 1000]], // destinations,
         3, // mixin
         {fixedFee: 1000, isFixedFee: true}, // fee
         undefined, //paymentID
