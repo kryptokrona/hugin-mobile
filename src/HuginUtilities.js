@@ -59,14 +59,6 @@ import {
     toastPopUp,
 } from './Utilities';
 
-
-function tryNode(this_node) {
-    return new Promise((resolve) => {
-
-
-  });
-}
-
 export async function getBestNode(ssl=true) {
 
   let recommended_node = undefined;
@@ -107,7 +99,6 @@ if (recommended_node == undefined) {
 }
 
 }
-
 
 export async function getBestCache() {
 
@@ -152,53 +143,52 @@ function trimExtra (extra) {
 
 }
 
+PushNotification.configure({
+    onNotification: handleNotification,
 
-    PushNotification.configure({
-      onNotification: handleNotification,
+      permissions: {
+          alert: true,
+          badge: true,
+          sound: true,
+      },
 
-        permissions: {
-            alert: true,
-            badge: true,
-            sound: true,
-        },
+      popInitialNotification: true,
 
-        popInitialNotification: true,
+      requestPermissions: true,
 
-        requestPermissions: true,
+  });
+  function handleNotification(notification) {
 
-    });
-    function handleNotification(notification) {
+    if (notification.transaction != undefined) {
+      return;
+    }
 
-      if (notification.transaction != undefined) {
-        return;
-      }
-  
-      let payee = notification.userInfo;
-  
-      if (payee.address) {
-  
-        payee = new URLSearchParams(payee).toString();
-  
-        let url = 'xkr://'.replace('address=', '') + payee;
-  
-        Linking.openURL(url);
-  
-      } else if (payee.key) {
-  
-        let url = `xkr://?group=${payee.key}`;
-  
-        Linking.openURL(url);
-  
-      } else {
-  
-        let url = 'xkr://?board=' + payee;
-  
-        Linking.openURL(url);
-  
-  
-      }
-  
-  }
+    let payee = notification.userInfo;
+
+    if (payee.address) {
+
+      payee = new URLSearchParams(payee).toString();
+
+      let url = 'xkr://'.replace('address=', '') + payee;
+
+      Linking.openURL(url);
+
+    } else if (payee.key) {
+
+      let url = `xkr://?group=${payee.key}`;
+
+      Linking.openURL(url);
+
+    } else {
+
+      let url = 'xkr://?board=' + payee;
+
+      Linking.openURL(url);
+
+
+    }
+
+}
 
 export function intToRGB(int) {
 
@@ -217,14 +207,11 @@ export function intToRGB(int) {
   }
 }
 
-
-
 export function hashCode(str) {
 		let hash = Math.abs(str.hashCode())*0.007812499538;
     return Math.floor(hash);
 
 }
-
 
 export function get_avatar(hash, size) {
 
@@ -325,12 +312,11 @@ export function nonceFromTimestamp(tmstmp) {
   }
 
   return nonce;
-  }
+}
 
 export function hexToUint(hexString) {
 return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }
-
 
 export function getKeyPair() {
   // return new Promise((resolve) => setTimeout(resolve, ms));
@@ -340,6 +326,7 @@ export function getKeyPair() {
   return keyPair;
 
 }
+
 export function getKeyPairOld() {
     // return new Promise((resolve) => setTimeout(resolve, ms));
     const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
@@ -438,11 +425,9 @@ export async function optimizeMessages(nbrOfTxs) {
 
   }
 
-  return result;
-
+  return false;
 
 } 
-
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
@@ -534,11 +519,9 @@ export async function cacheSync(silent=true, latest_board_message_timestamp=0, f
 
 }
 
-
 export async function createGroup() {
   return await Buffer.from(nacl.randomBytes(32)).toString('hex');
 }
-
 
 export async function sendGroupsMessage(message, group, reply=false) {
 
@@ -562,6 +545,8 @@ export async function sendGroupsMessage(message, group, reply=false) {
 
   if (reply) {
     message_json.r = reply;
+  } else {
+    reply = '';
   }
 
   const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
@@ -599,8 +584,6 @@ export async function sendGroupsMessage(message, group, reply=false) {
   }
   return result;
 }
-
-
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
 
@@ -740,53 +723,6 @@ export async function getExtra(hash){
     .catch((error) => Globals.logger.addLogMessage(error))
 
   })
-}
-
-async function getBoardsMessage(json) {
-
-
-  let message = json.m;
-  let from = json.k;
-  let signature = json.s;
-  let board = json.brd;
-  let timestamp = json.t;
-  let nickname = json.n ? json.n : 'Anonymous';
-  let reply = json.r ? json.r : 0;
-  let hash = json.hash;
-  let sent = false;
-
-  if (nickname == 'null') {
-    nickname = 'Anonymous';
-  }
-
-  let silent = from == Globals.wallet.getPrimaryAddress() ? true : false;
-
-  const this_addr = await Address.fromAddress(from);
-
-  const verified = await xkrUtils.verifyMessageSignature(message, this_addr.spend.publicKey, signature);
-
-  if (!verified) {
-    return false;
-  }
-
-  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent, silent);
-
-
-    const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
-      return sub.board == board;
-    })
-
-
-  if (from != Globals.wallet.getPrimaryAddress() && subscriptionList.length > 0) {
-  PushNotification.localNotification({
-      title: nickname + ' in ' + board,//'Incoming transaction received!',
-      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-      message: message,
-      data: timestamp,
-      userInfo: board,
-      // largeIconUrl: get_avatar(payload_json.from, 64),
-  });
-}
 }
 
 async function getGroupMessage(tx) {
