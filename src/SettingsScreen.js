@@ -1418,7 +1418,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                                 onClick: async () => {
                                     // optimizeWallet(this.props.navigation);
-                                    const result = await optimizeMessages(10, false);
+                                    const result = await optimizeMessages(10, true);
                                     if (result === true) {
                                       toastPopUp(i18next.t('optimizationComplete'));
                                     } else if (result === false) {

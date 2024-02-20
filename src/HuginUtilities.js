@@ -350,7 +350,7 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs) {
+export async function optimizeMessages(nbrOfTxs, force=false) {
 
   if (!Globals?.wallet) { return }
 
@@ -374,7 +374,7 @@ export async function optimizeMessages(nbrOfTxs) {
 
   let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
 
-  if (inputs.length > 8) {
+  if (inputs.length > 8 && !force) {
     Globals.logger.addLogMessage(`Already have ${inputs.length} available inputs. Skipping optimization.`);
     return inputs.length;
   }
