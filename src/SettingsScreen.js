@@ -1421,6 +1421,8 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     const result = await optimizeMessages(10, false);
                                     if (result === true) {
                                       toastPopUp(i18next.t('optimizationComplete'));
+                                    } else if (result === false) {
+                                      toastPopUp(i18next.t('optimizationFailed'));
                                     } else {
                                       toastPopUp(i18next.t('cancelOptimize').replace(/{inputs.length}/g, result));
                                     }
