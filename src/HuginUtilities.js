@@ -669,23 +669,20 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
-   
-    if (result.success) {
-      if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
-        message = 'Call started';
-      }
-      if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
-        message = 'Call answered';
-      }
-      saveMessage(receiver, 'sent', message, timestamp);
-      backgroundSave();
-    } 
-
-    return result;
-
-    Globals.logger.addLogMessage(JSON.stringify(result));
-
 }
+
+if (result.success) {
+  if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
+    message = 'Call started';
+  }
+  if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
+    message = 'Call answered';
+  }
+  saveMessage(receiver, 'sent', message, timestamp);
+  backgroundSave();
+} 
+
+return result;
 
 }
 
