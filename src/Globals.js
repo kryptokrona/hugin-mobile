@@ -164,9 +164,10 @@ class globals {
         this.updateGroups();
     }
 
-    removeGroup(key, removeMessages) {
-        _.remove(Globals.group, (item) => item.key === key);
-        removeGroupFromDatabase(key, removeMessages);
+    async removeGroup(key, removeMessages) {
+        Globals.groups = Globals.groups.filter((item) => item.key != key);
+        await removeGroupFromDatabase(key, removeMessages);
+        console.log('Group removed from DB');
         this.updateGroups();
     }
 

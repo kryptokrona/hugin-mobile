@@ -705,8 +705,8 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                     }}>
                         <RNEButton
                             title={t('update')}
-                            onPress={() => {
-                                Globals.removeGroup(this.state.key, false);
+                            onPress={async () => {
+                                await Globals.removeGroup(this.state.key, false);
 
                                 Globals.addGroup({
                                     group: this.state.newGroup,
