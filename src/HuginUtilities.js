@@ -665,7 +665,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       optimizeMessages(10);
       console.log(result);
       try {
-        result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+        result = await sendMessageWithHuginAPI(payload_hex);
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
