@@ -560,7 +560,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1000]], // destinations,
+      [[subWallet, 1000]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
@@ -650,7 +650,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
     let result = await Globals.wallet.sendTransactionAdvanced(
-        [[receiver, 1000]], // destinations,
+        [[subWallet, 1000]], // destinations,
         3, // mixin
         {fixedFee: 1000, isFixedFee: true}, // fee
         undefined, //paymentID
