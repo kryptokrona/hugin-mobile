@@ -595,7 +595,7 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO privateboards_messages_db
-              (board, type, message, timestamp, read, nickname, address, read, reply, hash)
+              (board, type, message, timestamp, nickname, address, read, reply, hash)
           VALUES
               (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
@@ -603,7 +603,6 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
               type,
               message,
               timestamp,
-              'false',
               nickname,
               address,
               read,
