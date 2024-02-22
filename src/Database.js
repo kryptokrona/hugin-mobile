@@ -597,7 +597,7 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
           `REPLACE INTO privateboards_messages_db
               (board, type, message, timestamp, nickname, address, read, reply, hash)
           VALUES
-              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
               group,
               type,
