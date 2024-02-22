@@ -56,8 +56,11 @@ const xkrUtils = new CryptoNote()
 const crypto = new Crypto()
 
 import {
+  delay,
     toastPopUp,
 } from './Utilities';
+
+let optimizing = false
 
 export async function getBestNode(ssl=true) {
 
@@ -350,6 +353,11 @@ export function toHex(str,hex){
   return hex
 }
 
+async function optimizeTimer() {
+  await delay(600 * 1000)
+  optimizing = false
+}
+
 export async function optimizeMessages(nbrOfTxs, force=false) {
 
   if (!Globals?.wallet) { return }
@@ -368,39 +376,27 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
   }
 
+  if (optimizing === true) return
+
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
 
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
-  let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
+  const inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
 
   if (inputs.length > 8 && !force) {
     Globals.logger.addLogMessage(`Already have ${inputs.length} available inputs. Skipping optimization.`);
     return inputs.length;
   }
 
-  // let subWallets = Globals.wallet.subWallets.subWallets;
-
-  // console.log(subWallets);
-
-  // subWallets.forEach((value, name) => {
-  //   let txs = value.unconfirmedIncomingAmounts.length;
-
-  //   console.log(value);
-
-  //   if (txs > 0) {
-  //     return txs;
-  //   }
-  // })
-
   let payments = [];
   let i = 0;
 
   /* User payment */
-  while (i < nbrOfTxs - 1 && i < 10) {
+  while (i < 15) {
     payments.push([
       subWallet,
-        1000
+        2000
     ]);
 
     i += 1;
@@ -421,6 +417,8 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
   if (result.success) {
     Globals.logger.addLogMessage(`Optimized ${payments.length} messages.`);
+    optimizeTimer()
+    optimizing = true
     return true;
 
   }
@@ -571,13 +569,13 @@ export async function sendGroupsMessage(message, group, reply=false) {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
   if (!result.success) {
-    optimizeMessages(10);
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
       console.log('Failed to send with Hugin API..');
     }
-  }
+  } else optimizeMessages(10);
+  
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
@@ -662,14 +660,13 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
-      optimizeMessages(10);
       console.log(result);
       try {
         result = await sendMessageWithHuginAPI(payload_hex);
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
-}
+    } else optimizeMessages(10);
 
 if (result.success) {
   if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
