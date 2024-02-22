@@ -290,7 +290,6 @@ export class MainScreen extends React.PureComponent {
 
         Globals.wallet.on('createdtx', () => {
             this.updateBalance();
-            optimizeMessages(10);
             backgroundSave();
         });
 
