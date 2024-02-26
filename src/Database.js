@@ -732,9 +732,6 @@ export async function markGroupConversationAsRead(group) {
 });
 
 
-Globals.unreadMessages = await getUnreadMessages();
-Globals.updateGroupsFunction();
-
 }
 
 export async function markBoardsMessageAsRead(hash) {
@@ -1136,21 +1133,33 @@ export async function getMessages(conversation=false, limit=25) {
 export async function getGroupMessages(group=false, limit=25) {
 
     const [data] = await database.executeSql(
-        `SELECT
-            nickname,
-            type,
-            message,
-            timestamp,
-            board,
-            address,
-            hash
-        FROM
-            privateboards_messages_db
-        WHERE reply = '' ${group ? ' AND board = "' + group + '"' : ''}
-        ORDER BY
-            timestamp
-        DESC
-        LIMIT ${limit}`
+        `
+        SELECT 
+    pm.nickname,
+    pm.type,
+    pm.message,
+    pm.timestamp,
+    pm.board,
+    pm.address,
+    pm.hash,
+    pm.reply,
+    COALESCE(rc.reply_count, 0) AS replies
+FROM 
+    privateboards_messages_db pm
+LEFT JOIN (
+    SELECT 
+        reply,
+        COUNT(*) AS reply_count
+    FROM 
+        privateboards_messages_db
+    GROUP BY 
+        reply
+) rc ON pm.hash = rc.reply
+WHERE 
+    pm.reply = '' ${group ? ' AND pm.board = "' + group + '"' : ''}
+ORDER BY 
+    pm.timestamp DESC
+LIMIT ${limit}`
     );
 
     const [count] = await database.executeSql(
@@ -1162,7 +1171,7 @@ export async function getGroupMessages(group=false, limit=25) {
     let count_raw = 0;
 
     if (count && count.rows && count.rows.length) {
-        console.log(count);
+        console.log(count, rand);
         const res = [];
 
         for (let i = 0; i < count.rows.length; i++) {
@@ -1180,27 +1189,6 @@ export async function getGroupMessages(group=false, limit=25) {
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
 
-            const [replyCount] = await database.executeSql(
-                `
-                SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = "${item.hash}"
-                `
-            );
-
-            let replyCount_raw = 0;
-
-            if (replyCount && replyCount.rows && replyCount.rows.length && item.hash != '') {
-
-                const res = [];
-        
-                for (let i = 0; i < replyCount.rows.length; i++) {
-        
-                    const item = replyCount.rows.item(i);
-        
-                    replyCount_raw = item['COUNT(*)'];
-        
-                }
-            };
-
             res.push({
                 nickname: item.nickname,
                 type: item.type,
@@ -1210,7 +1198,7 @@ export async function getGroupMessages(group=false, limit=25) {
                 address: item.address,
                 hash: item.hash,
                 reply: item.reply,
-                replies: replyCount_raw,
+                replies: item.replies,
                 count: count_raw,
             });
         }

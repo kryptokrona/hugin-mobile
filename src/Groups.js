@@ -821,7 +821,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
         await markGroupConversationAsRead(this.state.key);
 
-        let messages = await getGroupMessages(this.state.key);
+        let messages = await getGroupMessages(this.state.key, 25);
 
         if (!messages) {
           messages = [];
