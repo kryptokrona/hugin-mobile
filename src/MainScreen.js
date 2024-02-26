@@ -103,6 +103,7 @@ async function init(navigation) {
     if (Globals.checkIfStuck === undefined) {
         Globals.checkIfStuck = setInterval(checkIfStuck, 5000);
     }
+ 
 
     /* Use our native C++ func to process blocks, provided we're on android */
     /* TODO: iOS support */
@@ -339,12 +340,11 @@ export class MainScreen extends React.PureComponent {
 
     async updateBalance() {
 
-        if (Globals.coinPrice == 0) {
-            const tmpPrice = await getCoinPriceFromAPI();
 
-            if (tmpPrice !== undefined) {
-                Globals.coinPrice = tmpPrice;
-            }
+        const tmpPrice = await getCoinPriceFromAPI();
+
+        if (tmpPrice !== undefined) {
+            Globals.coinPrice = tmpPrice;
         }
 
         const unreads = await getUnreadMessages();
@@ -411,25 +411,10 @@ export class MainScreen extends React.PureComponent {
         initBackgroundSync();
         let flipFlop = false;
 
-        let keepAnimating = () => {
+        setInterval(async () => {
+          this.updateBalance();
+        }, 60000);
 
-          Animated.timing(this.animatedValue, {
-            toValue: flipFlop ? 0 : 224,
-            duration: 30000
-          }).start(() => {
-            flipFlop = flipFlop ? false : true;
-            keepAnimating();
-          });
-
-        }
-
-          Animated.timing(this.animatedValue, {
-            toValue: 224,
-            duration: 30000
-          }).start(() => {
-            keepAnimating();
-
-      });
     }
 
     componentWillUnmount() {
@@ -805,15 +790,12 @@ class BalanceComponentNoTranslation extends React.Component {
             expandedBalance: false,
         };
 
-        // this.animation = new Animated.Value(0);
-
         this.balanceRef = (ref) => this.balance = ref;
         this.valueRef = (ref) => this.value = ref;
     }
 
 
         componentWillMount() {
-          // this.animatedValue = new Animated.Value(0);
         }
 
 
@@ -821,31 +803,11 @@ class BalanceComponentNoTranslation extends React.Component {
 
               let flipFlop = false;
 
-            //   let keepAnimating = () => {
-
-            //     Animated.timing(this.animatedValue, {
-            //       toValue: flipFlop ? 0 : 224,
-            //       duration: 10000
-            //     }).start(() => {
-            //       flipFlop = flipFlop ? false : true;
-            //       keepAnimating();
-            //     });
-
-            //   }
-
-            //     Animated.timing(this.animatedValue, {
-            //       toValue: 224,
-            //       duration: 10000
-            //     }).start(() => {
-            //       keepAnimating();
-
-            // });
             }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.unlockedBalance !== this.props.unlockedBalance ||
             nextProps.lockedBalance !== this.props.lockedBalance) {
-            // this.balance.bounce(800);
         }
     }
 
