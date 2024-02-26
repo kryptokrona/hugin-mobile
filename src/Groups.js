@@ -205,7 +205,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.group}
-                                subtitle={item.lastMessage ? <Text><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text style={{fontFamily: 'Montserrat-Regular'}}>{" " + item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
+                                subtitle={item.lastMessage ? <View><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text ellipsizeMode='tail' numberOfLines={1} style={{fontFamily: 'Montserrat-Regular'}}>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></View> : t('noMessages')}
                                 chevron={item.read == '1' ? false : newMessageIndicator }
                                 leftIcon={
                                     <Image
