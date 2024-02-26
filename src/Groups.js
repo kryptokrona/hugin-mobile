@@ -811,7 +811,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
         Globals.updateGroupsFunctions.push(async () => {
             this.setState({
-                messages: await getGroupMessages(this.state.key)
+                messages: await getGroupMessages(this.state.key, this.state.messages.length)
             })
         });
 
@@ -1047,7 +1047,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
              Keyboard.dismiss();
              this.state.input.current._textInput.clear();
 
-             let updated_messages = await getGroupMessages(this.state.key);
+             let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
              if (!updated_messages) {
                updated_messages = [];
              }
@@ -1074,7 +1074,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              if (result.success) {
 
-                    updated_messages = await getGroupMessages(this.state.key);
+                    updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
                     this.setState({
                         messages: updated_messages,
                         messageHasLength: false,
@@ -1083,7 +1083,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
 
              } else {
-                updated_messages = await getGroupMessages(this.state.key);
+                updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
                 updated_messages.push({
                     address: Globals.wallet.getPrimaryAddress(),
                     nickname: Globals.preferences.nickname,
@@ -1196,7 +1196,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                         fontSize: 12,
                         fontFamily: 'Montserrat-Bold'
                       }}>
-                        
+
                     {t('loadMore')}
 
                       </Text>
