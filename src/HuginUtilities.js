@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
 
 /**
  * Save wallet in background
@@ -437,7 +437,11 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
-  if (!Globals.preferences.cacheEnabled) return;
+  if (Globals.preferences.cacheEnabled != "true") {
+    Globals.preferences.cacheEnabled = 'true';
+    savePreferencesToDatabase(Globals.preferences);
+    toastPopUp('API sending enabled. Please try again. You can turn this off on the settings page.')
+  };
 
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
@@ -450,8 +454,8 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     },
     body: JSON.stringify({payload: payload_hex}),
   });
-  console.log(response.json());
-  return response.json();
+  const response_json = await response.json();
+  return response_json;
 
 }
 
@@ -588,10 +592,10 @@ export async function sendGroupsMessage(message, group, reply=false) {
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
-      console.log('Failed to send with Hugin API..');
+      console.log('Failed to send with Hugin API..', err);
     }
   } else optimizeMessages(10);
-  
+  console.log(result);
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
