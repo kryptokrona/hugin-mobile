@@ -1037,14 +1037,14 @@ async function checkIfStuck() {
 async function backgroundSyncMessages(navigation) {
 
 
-  if (Globals.syncingMessagesCount > 3) {
-    Globals.syncingMessages = false;
-    Globals.syncingMessagesCount = 0;
-  }
+//   if (Globals.syncingMessagesCount > 3) {
+//     Globals.syncingMessages = false;
+//     Globals.syncingMessagesCount = 0;
+//   }
 
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
-    Globals.syncingMessagesCount += 1;
+    // Globals.syncingMessagesCount += 1;
     return;
   } else {
     console.log('Commencing message sync.');
