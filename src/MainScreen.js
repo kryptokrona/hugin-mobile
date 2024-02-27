@@ -1088,20 +1088,24 @@ async function backgroundSyncMessages(navigation) {
 
           console.log(`Checking tx with hash ${thisHash}`);
 
-          await saveKnownTransaction(thisHash);
+          
+          if (Globals.knownTXs.indexOf(thisHash) != -1) continue;
 
-
-          if (Globals.knownTXs.indexOf(thisHash) === -1) {
-                       Globals.knownTXs.push(thisHash);
-                     } else {
-                       continue;
-                     }
 
           if (thisExtra.length > 66) {
 
-            let message = await getMessage(thisExtra, thisHash, navigation);
+           
+            try {
+                let message = await getMessage(thisExtra, thisHash, navigation);
+            } catch (err) {
+
+            }
+            await saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
 
           } else {
+            await saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
             continue;
           }
 
