@@ -7,7 +7,7 @@ import * as Animatable from 'react-native-animatable';
 
 import React from 'react';
 import TextTicker from 'react-native-text-ticker';
-import { optimizeMessages, getBestNode } from './HuginUtilities';
+import { optimizeMessages, getBestNode, getBestCache } from './HuginUtilities';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -22,7 +22,7 @@ import i18next from './i18n';
 import fetch from './fetchWithTimeout'
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
-    AppState, RefreshControl, useColorScheme
+    AppState, RefreshControl, useColorScheme, Switch
 } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
@@ -54,11 +54,11 @@ export class FaqScreen extends React.Component {
     }
 
     render() {
-        let arrivalTime = getArrivalTime(['minutes','seconds']);
+        let arrivalTime = getArrivalTime(['minutes', 'seconds']);
         /* Chop the '!' off the end */
         arrivalTime = arrivalTime.substr(0, arrivalTime.length - 1);
 
-        return(
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
@@ -67,11 +67,11 @@ export class FaqScreen extends React.Component {
                     alignItems: 'flex-start',
                     justifyContent: 'flex-start',
                 }}
-                style={{
-                    marginTop: 60,
-                    marginLeft: 30,
-                    marginRight: 15,
-                }}>
+                    style={{
+                        marginTop: 60,
+                        marginLeft: 30,
+                        marginRight: 15,
+                    }}>
                     <Text style={{
                         fontSize: 24,
                         color: this.props.screenProps.theme.primaryColour,
@@ -219,13 +219,13 @@ export class DisableDozeScreenNoTranslation extends React.Component {
     }
 
     render() {
-        let arrivalTime = getArrivalTime(['minutes','seconds']);
+        let arrivalTime = getArrivalTime(['minutes', 'seconds']);
         /* Chop the '!' off the end */
         arrivalTime = arrivalTime.substr(0, arrivalTime.length - 1);
 
         const { t } = this.props;
 
-        return(
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
@@ -234,11 +234,11 @@ export class DisableDozeScreenNoTranslation extends React.Component {
                     alignItems: 'flex-start',
                     justifyContent: 'flex-start',
                 }}
-                style={{
-                    marginTop: 60,
-                    marginLeft: 30,
-                    marginRight: 15,
-                }}>
+                    style={{
+                        marginTop: 60,
+                        marginLeft: 30,
+                        marginRight: 15,
+                    }}>
                     <Text
                         style={{
                             fontSize: 24,
@@ -248,7 +248,7 @@ export class DisableDozeScreenNoTranslation extends React.Component {
                     >
                         {this.state.dozeDisabled
                             ? t('dozeDisabled')
-                            : t('dozeEnabled') }
+                            : t('dozeEnabled')}
                     </Text>
 
                     <Text style={{
@@ -257,7 +257,7 @@ export class DisableDozeScreenNoTranslation extends React.Component {
                         fontSize: 16,
                     }}>
 
-                        {t('disableDozeText').replace(/{Config.appName}/g, Config.appName).replace(/{\n\n}/g,'\n\n')}
+                        {t('disableDozeText').replace(/{Config.appName}/g, Config.appName).replace(/{\n\n}/g, '\n\n')}
 
                         <Text
                             style={{
@@ -306,12 +306,12 @@ export class LoggingScreen extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <View style={{ backgroundColor: this.props.screenProps.theme.backgroundColour, flex: 1 }}>
                 <ScrollView
                     ref={ref => this.scrollView = ref}
                     onContentSizeChange={(contentWidth, contentHeight) => {
-                        this.scrollView.scrollToEnd({animated: true});
+                        this.scrollView.scrollToEnd({ animated: true });
                     }}
                     style={{
                         marginTop: 50,
@@ -321,7 +321,7 @@ export class LoggingScreen extends React.Component {
                     }}
                 >
                     {this.state.logs.map((value, index) => {
-                        return(
+                        return (
                             <Text key={index} style={{ color: this.props.screenProps.theme.slightlyMoreVisibleColour }}>
                                 {value}
                             </Text>
@@ -330,11 +330,11 @@ export class LoggingScreen extends React.Component {
                 </ScrollView>
 
                 <CopyButton
-                                style={{position: "absolute", bottom: 25, right: 20}}
-                                data={JSON.stringify(this.state.logs)}
-                                name='Logs'
-                                {...this.props}
-                            />
+                    style={{ position: "absolute", bottom: 25, right: 20 }}
+                    data={JSON.stringify(this.state.logs)}
+                    name='Logs'
+                    {...this.props}
+                />
 
             </View>
         );
@@ -358,7 +358,7 @@ export class ExportKeysScreen extends React.Component {
     }
 
     async componentDidMount() {
-    const [mnemonicSeed, error] = await Globals.wallet.getMnemonicSeed();
+        const [mnemonicSeed, error] = await Globals.wallet.getMnemonicSeed();
 
         this.setState({
             mnemonicSeed,
@@ -385,7 +385,7 @@ export class ExportKeysScreen extends React.Component {
                 {...this.props}
             />;
 
-        return(
+        return (
             <View style={{
                 justifyContent: 'flex-start',
                 flex: 1,
@@ -490,7 +490,7 @@ export class SwapCurrencyScreen extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
@@ -502,13 +502,13 @@ export class SwapCurrencyScreen extends React.Component {
                     <FlatList
                         data={Constants.currencies}
                         keyExtractor={item => item.ticker}
-                        renderItem={({item}) => (
+                        renderItem={({ item }) => (
                             <ListItem
                                 title={item.coinName}
-                                style={{borderBottomWidth: 0}}
+                                style={{ borderBottomWidth: 0 }}
                                 subtitle={item.symbol + ' / ' + item.ticker.toUpperCase()}
                                 leftIcon={
-                                    <View style={{width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
+                                    <View style={{ width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
                                         <Text style={{ fontSize: 25, color: this.props.screenProps.theme.primaryColour }}>
                                             {item.symbol}
                                         </Text>
@@ -529,7 +529,7 @@ export class SwapCurrencyScreen extends React.Component {
                                     this.props.navigation.dispatch(navigateWithDisabledBack('Settings'));
 
                                     /* And go back to the main screen. */
-                                    this.props.navigation.navigate('Main', { reloadBalance: true } );
+                                    this.props.navigation.navigate('Main', { reloadBalance: true });
                                 }}
                             />
                         )}
@@ -550,7 +550,7 @@ export class SwapLanguageScreen extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
@@ -564,13 +564,13 @@ export class SwapLanguageScreen extends React.Component {
                     <FlatList
                         data={Constants.languages}
                         keyExtractor={item => item.langCode}
-                        renderItem={({item}) => (
+                        renderItem={({ item }) => (
                             <ListItem
                                 title={item.language}
-                                style={{borderBottomWidth: 0}}
+                                style={{ borderBottomWidth: 0 }}
                                 subtitle={item.langCode}
                                 leftIcon={
-                                    <View style={{width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
+                                    <View style={{ width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
                                         <Text style={{ fontSize: 25, color: this.props.screenProps.theme.primaryColour }}>
                                             {item.flag}
                                         </Text>
@@ -591,7 +591,7 @@ export class SwapLanguageScreen extends React.Component {
                                     this.props.navigation.dispatch(navigateWithDisabledBack('Settings'));
 
                                     /* And go back to the main screen. */
-                                    this.props.navigation.navigate('Main', { reloadBalance: true } );
+                                    this.props.navigation.navigate('Main', { reloadBalance: true });
                                 }}
                             />
                         )}
@@ -619,8 +619,8 @@ class SwapNodeScreenNoTranslation extends React.Component {
             * (lowest first), then name */
             nodes: _.orderBy(
                 Globals.daemons,
-                ['online',  'availability', 'fee.amount',   'name'],
-                ['desc',    'desc',         'asc',          'asc']
+                ['online', 'availability', 'fee.amount', 'name'],
+                ['desc', 'desc', 'asc', 'asc']
             ),
 
             selectedNode: Globals.preferences.node,
@@ -639,18 +639,18 @@ class SwapNodeScreenNoTranslation extends React.Component {
         await Globals.updateNodeList();
 
         for (node in Globals.daemons) {
-          let this_node = Globals.daemons[node];
-          console.log('this_node', this_node);
-          let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
+            let this_node = Globals.daemons[node];
+            console.log('this_node', this_node);
+            let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
             try {
                 let ping = await fetch(nodeURL, {
-                method: 'GET'
-              }, 1000);
-              console.log(ping);
-              this_node.online = true;
+                    method: 'GET'
+                }, 1000);
+                console.log(ping);
+                this_node.online = true;
             } catch (err) {
-              console.log('Cannot connect to node..');
-              this_node.online = false;
+                console.log('Cannot connect to node..');
+                this_node.online = false;
             }
 
 
@@ -661,8 +661,8 @@ class SwapNodeScreenNoTranslation extends React.Component {
 
             nodes: _.orderBy(
                 Globals.daemons,
-                ['online',  'availability', 'fee.amount',   'name'],
-                ['desc',    'desc',         'asc',          'asc']
+                ['online', 'availability', 'fee.amount', 'name'],
+                ['desc', 'desc', 'asc', 'asc']
             ),
 
             forceUpdate: prevState.forceUpdate + 1,
@@ -690,8 +690,8 @@ class SwapNodeScreenNoTranslation extends React.Component {
 
     render() {
 
-      const { t } = this.props;
-        return(
+        const { t } = this.props;
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1
@@ -711,121 +711,121 @@ class SwapNodeScreenNoTranslation extends React.Component {
                     }
                 >
 
-                <View style={{
-                    backgroundColor: this.props.screenProps.theme.backgroundColour,
-                    marginHorizontal: 20,
-                }}>
-                <Text style={{
-                    fontSize: 20,
-                    textAlign: 'center',
-                    color: this.props.screenProps.theme.primaryColour,
-                }}>
-                    {t('useCustomNode')}
-                </Text>
-                <Text style={{
-                    fontSize: 12,
-                    color: this.props.screenProps.theme.primaryColour,
-                    textAlign: 'center',
-                    marginBottom: 5
-                }}>
-                    {t('customNodeFormat')}
-                </Text>
-                </View>
-                <Input
-                    ref={this.state.input}
-                    containerStyle={{
-                        width: '100%',
-                    }}
-                    inputContainerStyle={{
-                        backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
-                        borderWidth: 0,
-                        borderColor: 'transparent',
-                        borderRadius: 15,
-                        width: '100%',
-                        height: 40,
-                        padding: 15
-                    }}
-                    inputStyle={{
-                        color: this.props.screenProps.theme.primaryColour,
-                        fontFamily: 'Montserrat-Regular',
-                        fontSize: 15
-                    }}
-                    placeholder={this.state.selectedNode}
-                    onSubmitEditing={async (e) => {
-                        // if (this.props.onChange) {
-                        //     this.props.onChange(text);
-                        // }
-                          let text = e.nativeEvent.text;
-                          text = text.split(':');
-                          let node = {url: text[0], port: text[1], ssl: text[2]};
-
-                          this.swapNode(node);
-                          // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
-                          // let updated_messages = await getMessages();
-                          // let temp_timestamp = Date.now();
-                          // updated_messages.push({
-                          //     conversation: this.state.address,
-                          //     type: 'sent',
-                          //     message: checkText(text),
-                          //     timestamp: temp_timestamp
-                          // });
-                          //
-                          // this.setState({
-                          //   messages: updated_messages
-                          // })
-                          // this.state.input.current.clear();
-                          //
-                          // let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-                          // await removeMessage(temp_timestamp);
-                          // if (success) {
-                          // let updated_messages = await getMessages();
-                          //
-                          //   this.setState({
-                          //     messages: updated_messages
-                          //   })
-                          //   // this.state.input.current.clear();
-                          // }
-                    }}
-                    onChangeText={(text) => {
-                        if (this.props.onChange) {
-                            this.props.onChange(text);
-                        }
-                    }}
-                    errorMessage={this.props.error}
-                />
-                <Text style={{
-                    fontSize: 20,
-                    color: this.props.screenProps.theme.primaryColour,
-                    textAlign: 'center'
-                }}>
-                    {t('or')}
-                </Text>
-                <View
-                style={{
-                    marginVertical: 20,
-                    marginHorizontal: 20,
-                    marginTop: 5
-                }}
-                >
-                    <Button
-                        title={t('autoSelectNode')}
-                        onPress={async () => {
-                          const best_node = await getBestNode();
-                          console.log('getBestNode', best_node);
-                            this.setState({
-                                node: best_node,
-                            });
-                            this.swapNode(best_node);
-                        }}
-                        color={this.props.screenProps.theme.buttonColour}
-                        titleStyle={{
+                    <View style={{
+                        backgroundColor: this.props.screenProps.theme.backgroundColour,
+                        marginHorizontal: 20,
+                    }}>
+                        <Text style={{
+                            fontSize: 20,
+                            textAlign: 'center',
                             color: this.props.screenProps.theme.primaryColour,
-                            fontSize: 13
+                        }}>
+                            {t('useCustomNode')}
+                        </Text>
+                        <Text style={{
+                            fontSize: 12,
+                            color: this.props.screenProps.theme.primaryColour,
+                            textAlign: 'center',
+                            marginBottom: 5
+                        }}>
+                            {t('customNodeFormat')}
+                        </Text>
+                    </View>
+                    <Input
+                        ref={this.state.input}
+                        containerStyle={{
+                            width: '100%',
                         }}
-                        type="clear"
-                    />
+                        inputContainerStyle={{
+                            backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+                            borderWidth: 0,
+                            borderColor: 'transparent',
+                            borderRadius: 15,
+                            width: '100%',
+                            height: 40,
+                            padding: 15
+                        }}
+                        inputStyle={{
+                            color: this.props.screenProps.theme.primaryColour,
+                            fontFamily: 'Montserrat-Regular',
+                            fontSize: 15
+                        }}
+                        placeholder={this.state.selectedNode}
+                        onSubmitEditing={async (e) => {
+                            // if (this.props.onChange) {
+                            //     this.props.onChange(text);
+                            // }
+                            let text = e.nativeEvent.text;
+                            text = text.split(':');
+                            let node = { url: text[0], port: text[1], ssl: text[2] };
 
-                  </View>
+                            this.swapNode(node);
+                            // toastPopUp('Sending message: ' + text + " to " + this.state.address + " with msg key " + this.state.paymentID);
+                            // let updated_messages = await getMessages();
+                            // let temp_timestamp = Date.now();
+                            // updated_messages.push({
+                            //     conversation: this.state.address,
+                            //     type: 'sent',
+                            //     message: checkText(text),
+                            //     timestamp: temp_timestamp
+                            // });
+                            //
+                            // this.setState({
+                            //   messages: updated_messages
+                            // })
+                            // this.state.input.current.clear();
+                            //
+                            // let success = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
+                            // await removeMessage(temp_timestamp);
+                            // if (success) {
+                            // let updated_messages = await getMessages();
+                            //
+                            //   this.setState({
+                            //     messages: updated_messages
+                            //   })
+                            //   // this.state.input.current.clear();
+                            // }
+                        }}
+                        onChangeText={(text) => {
+                            if (this.props.onChange) {
+                                this.props.onChange(text);
+                            }
+                        }}
+                        errorMessage={this.props.error}
+                    />
+                    <Text style={{
+                        fontSize: 20,
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'center'
+                    }}>
+                        {t('or')}
+                    </Text>
+                    <View
+                        style={{
+                            marginVertical: 20,
+                            marginHorizontal: 20,
+                            marginTop: 5
+                        }}
+                    >
+                        <Button
+                            title={t('autoSelectNode')}
+                            onPress={async () => {
+                                const best_node = await getBestNode();
+                                console.log('getBestNode', best_node);
+                                this.setState({
+                                    node: best_node,
+                                });
+                                this.swapNode(best_node);
+                            }}
+                            color={this.props.screenProps.theme.buttonColour}
+                            titleStyle={{
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 13
+                            }}
+                            type="clear"
+                        />
+
+                    </View>
 
                     {this.state.nodes.length > 0 ?
 
@@ -833,24 +833,24 @@ class SwapNodeScreenNoTranslation extends React.Component {
                             backgroundColor: this.props.screenProps.theme.backgroundColour,
                             borderTopWidth: 0
                         }}>
-                        <Text style={{
-                            fontSize: 20,
-                            color: this.props.screenProps.theme.primaryColour,
-                            textAlign: 'center',
+                            <Text style={{
+                                fontSize: 20,
+                                color: this.props.screenProps.theme.primaryColour,
+                                textAlign: 'center',
 
-                        }}>
-                            {t('pickNodeList')}
-                        </Text>
-                        <Text style={{
-                            fontSize: 10,
-                            color: this.props.screenProps.theme.primaryColour,
-                            textAlign: 'center',
-                            marginBottom: 5
-                        }}>
-                            {t('pullToCheck')}
-                        </Text>
+                            }}>
+                                {t('pickNodeList')}
+                            </Text>
+                            <Text style={{
+                                fontSize: 10,
+                                color: this.props.screenProps.theme.primaryColour,
+                                textAlign: 'center',
+                                marginBottom: 5
+                            }}>
+                                {t('pullToCheck')}
+                            </Text>
                             <FlatList
-                                style={{marginHorizontal: 20}}
+                                style={{ marginHorizontal: 20 }}
                                 extraData={this.state.forceUpdate}
                                 data={this.state.nodes}
                                 keyExtractor={(item) => item.url + item.port}
@@ -868,15 +868,15 @@ class SwapNodeScreenNoTranslation extends React.Component {
                                                 borderRadius: 45
                                             }}>
                                             </View> :
-                                            <View style={{
-                                                width: 5,
-                                                height: 5,
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: item.online ? '#33ff33' : '#ff0000',
-                                                borderRadius: 45
-                                            }}>
-                                            </View>
+                                                <View style={{
+                                                    width: 5,
+                                                    height: 5,
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    backgroundColor: item.online ? '#33ff33' : '#ff0000',
+                                                    borderRadius: 45
+                                                }}>
+                                                </View>
                                         }
                                         titleStyle={{
                                             color: this.state.selectedNode === item.url + ':' + item.port + ":" + item.ssl
@@ -894,10 +894,12 @@ class SwapNodeScreenNoTranslation extends React.Component {
                                                     'Use offline node?',
                                                     'Are you sure you want to attempt to connect to a node which is reporting as offline?',
                                                     [
-                                                        {text: 'Yes', onPress: () => {
-                                                            this.swapNode(item);
-                                                        }},
-                                                        {text: 'Cancel', style: 'cancel'},
+                                                        {
+                                                            text: 'Yes', onPress: () => {
+                                                                this.swapNode(item);
+                                                            }
+                                                        },
+                                                        { text: 'Cancel', style: 'cancel' },
                                                     ],
                                                 );
                                             } else {
@@ -927,6 +929,340 @@ class SwapNodeScreenNoTranslation extends React.Component {
     }
 }
 export const SwapNodeScreen = withTranslation()(SwapNodeScreenNoTranslation)
+
+class SwapAPIScreenNoTranslation extends React.Component {
+    static navigationOptions = {
+        title: 'Available APIs'
+    };
+
+    constructor(props) {
+        super(props);
+
+        this.refresh = this.refresh.bind(this);
+        this.swapAPI = this.swapAPI.bind(this);
+
+        console.log(Globals.preferences.cache);
+        console.log(Globals.preferences);
+
+        this.state = {
+            /* Sort by online nodes, then uptime (highest first), then fee
+            * (lowest first), then name */
+            apis: Globals.caches,
+
+            selectedAPI: Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache,
+
+            forceUpdate: 0,
+
+            refreshing: false,
+
+            enabled: Globals.preferences.cacheEnabled == "true" ? true : false
+        };
+    }
+
+    async componentDidMount() {
+        await Globals.updateCacheList();
+        this.setState({ apis: Globals.caches });
+        console.log(this.state);
+    }
+
+    async refresh() {
+        this.setState({
+            refreshing: true,
+        });
+
+        await Globals.updateCacheList();
+
+        for (api in Globals.caches) {
+            let this_api = Globals.caches[api];
+            let nodeURL = this_api.url + '/api/v1/info';
+            console.log('Trying to connect to..', nodeURL);
+            try {
+                let ping = await fetch(nodeURL, {
+                    method: 'GET'
+                }, 3000);
+                console.log(ping);
+                this_api.online = true;
+            } catch (err) {
+                console.log('Cannot connect to node..', err);
+                this_api.online = false;
+            }
+
+
+        }
+
+        this.setState((prevState) => ({
+            refreshing: false,
+
+            apis: Globals.caches,
+
+            forceUpdate: prevState.forceUpdate + 1,
+        }));
+
+    }
+
+    async swapAPI(node) {
+        toastPopUp(i18next.t('swappingAPI'));
+
+
+        Globals.preferences.cache = node.url;
+
+        this.setState((prevState) => ({
+            selectedAPI: Globals.preferences.cache,
+            forceUpdate: prevState.forceUpdate + 1,
+        }));
+
+        savePreferencesToDatabase(Globals.preferences);
+
+        toastPopUp(i18next.t('APISwapped'));
+    }
+
+    render() {
+
+        const { t } = this.props;
+        return (
+            <View style={{
+                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                flex: 1
+            }}>
+
+            <View style={{ width: '100%', marginTop: 50, justifyContent: "center", alignItems: "center" }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Switch
+                        value={this.state.enabled}
+                        onValueChange={(value) => {
+                            this.setState({
+                                enabled: value
+                            });
+                            console.log(value);
+                            if (value) {
+                                Globals.preferences.cacheEnabled = 'true';
+                            } else {
+                                Globals.preferences.cacheEnabled = 'false';
+                            }
+                            savePreferencesToDatabase(Globals.preferences);
+                        }}
+                        style={{ marginRight: 15 }}
+                    />
+                    <Text style={{
+                        fontSize: 15,
+                        color: this.props.screenProps.primaryColour,
+                        fontFamily: "Montserrat-Regular",
+                    }}>
+                        {t('enableAPI')}
+                    </Text>
+                </View>
+            </View>
+
+                {this.state.enabled && 
+                
+                    <ScrollView
+                        style={{
+                            backgroundColor: this.props.screenProps.theme.backgroundColour,
+                            flex: 1,
+                            marginTop: 50,
+                        }}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={this.state.refreshing}
+                                onRefresh={this.refresh}
+                                title={t('updatingAPIs')}
+                            />
+                        }
+                    >
+
+                        <View style={{
+                            backgroundColor: this.props.screenProps.theme.backgroundColour,
+                            marginHorizontal: 20,
+                        }}>
+                            <Text style={{
+                                fontSize: 20,
+                                textAlign: 'center',
+                                color: this.props.screenProps.theme.primaryColour,
+                            }}>
+                                {t('useCustomAPI')}
+                            </Text>
+                            <Text style={{
+                                fontSize: 12,
+                                color: this.props.screenProps.theme.primaryColour,
+                                textAlign: 'center',
+                                marginBottom: 5
+                            }}>
+                                {t('customAPIFormat')}
+                            </Text>
+                        </View>
+                        <Input
+                            ref={this.state.input}
+                            containerStyle={{
+                                width: '100%',
+                            }}
+                            inputContainerStyle={{
+                                backgroundColor: this.props.screenProps.theme.backgroundEmphasis,
+                                borderWidth: 0,
+                                borderColor: 'transparent',
+                                borderRadius: 15,
+                                width: '100%',
+                                height: 40,
+                                padding: 15
+                            }}
+                            inputStyle={{
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontFamily: 'Montserrat-Regular',
+                                fontSize: 15
+                            }}
+                            placeholder={this.state.selectedAPI}
+                            onSubmitEditing={async (e) => {
+
+                                let text = e.nativeEvent.text;
+                                let api = { url: text };
+
+                                this.swapAPI(api);
+
+                            }}
+                            onChangeText={(text) => {
+                                if (this.props.onChange) {
+                                    this.props.onChange(text);
+                                }
+                            }}
+                            errorMessage={this.props.error}
+                        />
+                        <Text style={{
+                            fontSize: 20,
+                            color: this.props.screenProps.theme.primaryColour,
+                            textAlign: 'center'
+                        }}>
+                            {t('or')}
+                        </Text>
+                        <View
+                            style={{
+                                marginVertical: 20,
+                                marginHorizontal: 20,
+                                marginTop: 5
+                            }}
+                        >
+                            <Button
+                                title={t('autoSelectAPI')}
+                                onPress={async () => {
+                                    const best_api = await getBestCache();
+                                    this.setState({
+                                        api: best_api,
+                                    });
+                                    this.swapAPI(best_api);
+                                }}
+                                color={this.props.screenProps.theme.buttonColour}
+                                titleStyle={{
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    fontSize: 13
+                                }}
+                                type="clear"
+                            />
+
+                        </View>
+
+                        {this.state.apis.length > 0 ?
+
+                            <List style={{
+                                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                                borderTopWidth: 0
+                            }}>
+                                <Text style={{
+                                    fontSize: 20,
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    textAlign: 'center',
+
+                                }}>
+                                    {t('pickAPIList')}
+                                </Text>
+                                <Text style={{
+                                    fontSize: 10,
+                                    color: this.props.screenProps.theme.primaryColour,
+                                    textAlign: 'center',
+                                    marginBottom: 5
+                                }}>
+                                    {t('pullToCheck')}
+                                </Text>
+                                <FlatList
+                                    style={{ marginHorizontal: 20 }}
+                                    extraData={this.state.forceUpdate}
+                                    data={this.state.apis}
+                                    keyExtractor={(item) => item.url}
+                                    renderItem={({ item }) => (
+                                        <ListItem
+                                            title={item.name}
+                                            subtitle={`URL: ${item.url}`}
+                                            leftIcon={
+                                                item.online == undefined ? <View style={{
+                                                    width: 5,
+                                                    height: 5,
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    backgroundColor: '#555555',
+                                                    borderRadius: 45
+                                                }}>
+                                                </View> :
+                                                    <View style={{
+                                                        width: 5,
+                                                        height: 5,
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        backgroundColor: item.online ? '#33ff33' : '#ff0000',
+                                                        borderRadius: 45
+                                                    }}>
+                                                    </View>
+                                            }
+                                            titleStyle={{
+                                                color: this.state.selectedAPI === item.url
+                                                    ? this.props.screenProps.theme.primaryColour
+                                                    : this.props.screenProps.theme.slightlyMoreVisibleColour,
+                                            }}
+                                            subtitleStyle={{
+                                                color: this.state.selectedAPI === item.url
+                                                    ? this.props.screenProps.theme.primaryColour
+                                                    : this.props.screenProps.theme.slightlyMoreVisibleColour,
+                                            }}
+                                            onPress={async () => {
+                                                if (!item.online) {
+                                                    Alert.alert(
+                                                        'Use offline API?',
+                                                        'Are you sure you want to attempt to connect to a API which is reporting as offline?',
+                                                        [
+                                                            {
+                                                                text: 'Yes', onPress: () => {
+                                                                    this.swapAPI(item);
+                                                                }
+                                                            },
+                                                            { text: 'Cancel', style: 'cancel' },
+                                                        ],
+                                                    );
+                                                } else {
+                                                    this.swapAPI(item);
+                                                }
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </List> :
+                            <View style={{
+                                backgroundColor: this.props.screenProps.theme.backgroundColour,
+                                marginHorizontal: 20,
+                            }}>
+                                <Text style={{
+                                    fontSize: 20,
+                                    color: this.props.screenProps.theme.primaryColour,
+                                }}>
+                                    {t('noAPIs')}
+                                </Text>
+                            </View>
+                        }
+
+                    </ScrollView>
+
+                }
+                
+            </View>
+        );
+    }
+}
+export const SwapAPIScreen = withTranslation()(SwapAPIScreenNoTranslation)
 
 export class OptimizeScreen extends React.Component {
     static navigationOptions = ({ navigation, screenProps }) => ({
@@ -988,7 +1324,7 @@ export class OptimizeScreen extends React.Component {
     }
 
     render() {
-        return(
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 flex: 1,
@@ -1054,80 +1390,80 @@ export class SettingsScreenNoTranslation extends React.Component {
     }
 
     render() {
-      let getColor = (item) => {
-        switch(item.title) {
-           case "Language":
-              return "#5f86f2";
-              break;
-           case t('backupKeys'):
-              return "#a65ff2";
-              break;
-            case t('viewLogs'):
-               return "#f25fd0";
-               break;
-           case t('rewindWallet'):
-              return "#f25f61";
-              break;
-          case t('resetWallet'):
-             return "#f25f61";
-             break;
-           case t('backgroundSyncing'):
-              return "#f2cb5f";
-              break;
-          case t('swapNode'):
-             return "#abf25f";
-             break;
-         case t('swapCurrency'):
-            return "#5ff281";
-            break;
-          case t('limitData'):
-             return "#5ff2f0";
-             break;
-           case "Enable dark mode":
-              return "#5f86f2";
-              break;
-          case t('enablePin'):
-             return "#a65ff2";
-             break;
-             case t('changeLoginMethod'):
-                return "#f25fd0";
-                break;
-                case t('enableNotifications'):
-                   return "#f25f61";
-                   break;
-                 case t('scanCoinbase'):
+        let getColor = (item) => {
+            switch (item.title) {
+                case "Language":
+                    return "#5f86f2";
+                    break;
+                case t('backupKeys'):
+                    return "#a65ff2";
+                    break;
+                case t('viewLogs'):
+                    return "#f25fd0";
+                    break;
+                case t('rewindWallet'):
+                    return "#f25f61";
+                    break;
+                case t('resetWallet'):
+                    return "#f25f61";
+                    break;
+                case t('backgroundSyncing'):
                     return "#f2cb5f";
                     break;
-                   case t('enableAutoOptimization'):
-                      return "#abf25f";
-                      break;
-                      case t('manualOptimization'):
-                         return "#5ff281";
-                         break;
-                         case "View Kryptokrona Mobile Wallet on Google Play":
-                            return "#5ff2f0";
-                            break;
-                          case "View Kryptokrona Mobile Wallet on Github":
-                             return "#5f86f2";
-                             break;
-                            case t('resyncWallet'):
-                               return "#a65ff2";
-                               break;
-                               case t('deleteAccount'):
-                                  return "#f25fd0";
-                                  break;
-                                  case "Kryptokrona Mobile Wallet":
-                                     return "#f25f61";
-                                     break;
-                             default:
-                             return this.props.screenProps.theme.foregroundColour
+                case t('swapNode'):
+                    return "#abf25f";
+                    break;
+                case t('swapCurrency'):
+                    return "#5ff281";
+                    break;
+                case t('limitData'):
+                    return "#5ff2f0";
+                    break;
+                case "Enable dark mode":
+                    return "#5f86f2";
+                    break;
+                case t('enablePin'):
+                    return "#a65ff2";
+                    break;
+                case t('changeLoginMethod'):
+                    return "#f25fd0";
+                    break;
+                case t('enableNotifications'):
+                    return "#f25f61";
+                    break;
+                case t('scanCoinbase'):
+                    return "#f2cb5f";
+                    break;
+                case t('enableAutoOptimization'):
+                    return "#abf25f";
+                    break;
+                case t('manualOptimization'):
+                    return "#5ff281";
+                    break;
+                case "View Kryptokrona Mobile Wallet on Google Play":
+                    return "#5ff2f0";
+                    break;
+                case "View Kryptokrona Mobile Wallet on Github":
+                    return "#5f86f2";
+                    break;
+                case t('resyncWallet'):
+                    return "#a65ff2";
+                    break;
+                case t('deleteAccount'):
+                    return "#f25fd0";
+                    break;
+                case "Kryptokrona Mobile Wallet":
+                    return "#f25f61";
+                    break;
+                default:
+                    return this.props.screenProps.theme.foregroundColour
 
+
+            }
 
         }
-
-      }
-      const { t } = this.props;
-        return(
+        const { t } = this.props;
+        return (
             <View style={{
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
                 borderColor: this.props.screenProps.theme.backgroundColour,
@@ -1135,17 +1471,17 @@ export class SettingsScreenNoTranslation extends React.Component {
                 borderWidth: 0,
                 paddingTop: 15
             }}>
-            <Text style={{
-                marginLeft: 35,
-                marginBottom: 5,
-                color: this.props.screenProps.theme.primaryColour,
-                fontSize: 24,
-                fontFamily: "Montserrat-SemiBold"
-            }}>
-                {t('settingsTitle')}
-            </Text>
+                <Text style={{
+                    marginLeft: 35,
+                    marginBottom: 5,
+                    color: this.props.screenProps.theme.primaryColour,
+                    fontSize: 24,
+                    fontFamily: "Montserrat-SemiBold"
+                }}>
+                    {t('settingsTitle')}
+                </Text>
                 <ScrollView
-                showsVerticalScrollIndicator={false}>
+                    showsVerticalScrollIndicator={false}>
                     <FlatList
                         ItemSeparatorComponent={null}
                         data={[
@@ -1246,6 +1582,17 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                                 onClick: () => {
                                     this.props.navigation.navigate('SwapNode')
+                                },
+                            },
+                            {
+                                title: t('swapAPI'),
+                                description: t('swapAPIDescr'),
+                                icon: {
+                                    iconName: 'ios-swap',
+                                    IconType: Ionicons,
+                                },
+                                onClick: () => {
+                                    this.props.navigation.navigate('SwapAPI')
                                 },
                             },
                             // {
@@ -1420,11 +1767,11 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     // optimizeWallet(this.props.navigation);
                                     const result = await optimizeMessages(10, true);
                                     if (result === true) {
-                                      toastPopUp(i18next.t('optimizationComplete'));
+                                        toastPopUp(i18next.t('optimizationComplete'));
                                     } else if (result === false) {
-                                      toastPopUp(i18next.t('optimizationFailed'));
+                                        toastPopUp(i18next.t('optimizationFailed'));
                                     } else {
-                                      toastPopUp(i18next.t('cancelOptimize').replace(/{inputs.length}/g, result));
+                                        toastPopUp(i18next.t('cancelOptimize').replace(/{inputs.length}/g, result));
                                     }
                                 },
 
@@ -1528,18 +1875,20 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     iconName: 'info',
                                     IconType: SimpleLineIcons,
                                 },
-                                onClick: () => {},
+                                onClick: () => { },
                             },
                         ]}
                         keyExtractor={item => item.title}
-                        renderItem={({item}) => (
+                        renderItem={({ item }) => (
                             <ListItem
                                 title={item.title}
                                 noBorder
                                 subtitle={item.description}
-                                style={{borderBottomWidth: 0,
-                                  marginLeft: 25,
-                                  marginRight: 25}}
+                                style={{
+                                    borderBottomWidth: 0,
+                                    marginLeft: 25,
+                                    marginRight: 25
+                                }}
                                 titleStyle={{
                                     color: this.props.screenProps.theme.primaryColour,
                                     borderBottomWidth: 0,
@@ -1551,13 +1900,13 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     fontFamily: 'Montserrat-Regular'
                                 }}
                                 leftIcon={
-                                    <View style={{borderBottomWidth: 0, color: 'magenta', width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
-                                        <item.icon.IconType name={item.icon.iconName} size={25} color={getColor(item)}/>
+                                    <View style={{ borderBottomWidth: 0, color: 'magenta', width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                                        <item.icon.IconType name={item.icon.iconName} size={25} color={getColor(item)} />
                                     </View>
                                 }
                                 rightIcon={item.checkbox &&
-                                    <View style={{borderBottomWidth: 0, width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10}}>
-                                        <MaterialIcons name={item.checked ? 'check-box' : 'check-box-outline-blank'} size={25} color={this.props.screenProps.theme.primaryColour}/>
+                                    <View style={{ borderBottomWidth: 0, width: 30, alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
+                                        <MaterialIcons name={item.checked ? 'check-box' : 'check-box-outline-blank'} size={25} color={this.props.screenProps.theme.primaryColour} />
                                     </View>
                                 }
                                 onPress={item.onClick}
@@ -1582,28 +1931,30 @@ function deleteWallet(navigation) {
         i18next.t('deleteWarningPromptTitle'),
         i18next.t('deleteWarningSubtitle'),
         [
-            {text: i18next.t('delete'), onPress: () => {
-                (async () => {
-                    /* Disabling saving */
-                    clearInterval(Globals.backgroundSaveTimer);
+            {
+                text: i18next.t('delete'), onPress: () => {
+                    (async () => {
+                        /* Disabling saving */
+                        clearInterval(Globals.backgroundSaveTimer);
 
-                    clearInterval(Globals.backgroundSyncMessagesTimer);
+                        clearInterval(Globals.backgroundSyncMessagesTimer);
 
-                    Globals.syncingMessages = false;
+                        Globals.syncingMessages = false;
 
-                    Globals.backgroundSyncMessagesTimer = undefined;
+                        Globals.backgroundSyncMessagesTimer = undefined;
 
-                    await setHaveWallet(false);
+                        await setHaveWallet(false);
 
-                    Globals.wallet.stop();
+                        Globals.wallet.stop();
 
-                    Globals.reset();
+                        Globals.reset();
 
-                    /* And head back to the wallet choose screen */
-                    navigation.navigate('Login');
-                })();
-            }},
-            {text: i18next.t('cancel'), style: 'cancel'},
+                        /* And head back to the wallet choose screen */
+                        navigation.navigate('Login');
+                    })();
+                }
+            },
+            { text: i18next.t('cancel'), style: 'cancel' },
         ],
     );
 }
@@ -1613,12 +1964,14 @@ function resetWallet(navigation) {
         i18next.t('resyncTitle'),
         i18next.t('resyncSubtitle'),
         [
-            {text: i18next.t('resync'), onPress: () => {
-                Globals.wallet.rescan();
-                toastPopUp(i18next.t('resyncNotif'));
-                navigation.navigate('Main', { reloadBalance: true } );
-            }},
-            {text: i18next.t('cancel'), style: 'cancel'},
+            {
+                text: i18next.t('resync'), onPress: () => {
+                    Globals.wallet.rescan();
+                    toastPopUp(i18next.t('resyncNotif'));
+                    navigation.navigate('Main', { reloadBalance: true });
+                }
+            },
+            { text: i18next.t('cancel'), style: 'cancel' },
         ],
     );
 }
@@ -1628,21 +1981,23 @@ function rewindWallet(navigation) {
         i18next.t('rewindTitle'),
         i18next.t('rewindSubtitle'),
         [
-            {text: i18next.t('rewind'), onPress: () => {
-                const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
+            {
+                text: i18next.t('rewind'), onPress: () => {
+                    const [walletBlockCount] = Globals.wallet.getSyncStatus();
 
-                let rewindHeight = walletBlockCount;
+                    let rewindHeight = walletBlockCount;
 
-                if (walletBlockCount > 5000) {
-                    rewindHeight = walletBlockCount - 5000;
+                    if (walletBlockCount > 5000) {
+                        rewindHeight = walletBlockCount - 5000;
+                    }
+
+                    Globals.wallet.rewind(rewindHeight);
+
+                    toastPopUp(i18next.t('rewindNotif'));
+                    navigation.navigate('Main', { reloadBalance: true });
                 }
-
-                Globals.wallet.rewind(rewindHeight);
-
-                toastPopUp(i18next.t('rewindNotif'));
-                navigation.navigate('Main', { reloadBalance: true } );
-            }},
-            {text: i18next.t('cancel'), style: 'cancel'},
+            },
+            { text: i18next.t('cancel'), style: 'cancel' },
         ],
     );
 }
@@ -1652,14 +2007,16 @@ function recoverWallet(navigation) {
         i18next.t('recoverWalletTitle'),
         i18next.t('recoverWalletDescr'),
         [
-            {text: i18next.t('ok'), onPress: () => {
-                const [ walletBlockCount ] = Globals.wallet.getSyncStatus();
-                Globals.wallet.reset(walletBlockCount - 1);
+            {
+                text: i18next.t('ok'), onPress: () => {
+                    const [walletBlockCount] = Globals.wallet.getSyncStatus();
+                    Globals.wallet.reset(walletBlockCount - 1);
 
-                toastPopUp('Wallet recovery initiated');
-                navigation.navigate('Main', { reloadBalance: true } );
-            }},
-            {text: i18next.t('cancel'), style: 'cancel'},
+                    toastPopUp('Wallet recovery initiated');
+                    navigation.navigate('Main', { reloadBalance: true });
+                }
+            },
+            { text: i18next.t('cancel'), style: 'cancel' },
         ],
     );
 }
@@ -1669,10 +2026,12 @@ function optimizeWallet(navigation) {
         'Optimize Wallet?',
         'Are you sure you want to attempt to optimize your wallet? This may lock your funds for some time.',
         [
-            {text: 'Optimize', onPress: () => {
-                navigation.navigate('Optimize');
-            }},
-            {text: 'Cancel', style: 'cancel'},
+            {
+                text: 'Optimize', onPress: () => {
+                    navigation.navigate('Optimize');
+                }
+            },
+            { text: 'Cancel', style: 'cancel' },
         ],
     );
 }

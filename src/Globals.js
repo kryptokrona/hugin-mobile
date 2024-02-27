@@ -52,6 +52,7 @@ class globals {
             node: Config.defaultDaemon.getConnectionString(),
             language: 'en',
             cache: Config.defaultCache,
+            cacheEnabled: 'true',
             nickname: 'Anonymous'
         };
 

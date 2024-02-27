@@ -105,6 +105,8 @@ if (recommended_node == undefined) {
 
 export async function getBestCache() {
 
+  console.log('Getting best cache..')
+
   let recommended_cache = undefined;
 
   await Globals.updateCacheList();
@@ -116,12 +118,18 @@ export async function getBestCache() {
   for (cache in caches) {
     let this_cache = caches[cache];
     let cacheURL = `${this_cache.url}/api/v1/info`;
+    console.log('Trying ', this_cache)
     try {
       const resp = await fetch(cacheURL, {
          method: 'GET'
-      }, 1000);
-     if (resp.ok) {
-       recommended_cache = this_cache;
+      }, 3000);
+      if (!resp.ok) {continue}
+      recommended_cache = this_cache;
+      const json = await resp.json();
+      console.log(json);
+     if (json.status == "online") {
+       
+       console.log(this_cache);
        return(this_cache);
      }
   } catch (e) {
@@ -376,7 +384,7 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
   }
 
-  if (optimizing === true) return
+  if (optimizing === true) return "";
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
 
@@ -430,6 +438,9 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 export async function sendMessageWithHuginAPI(payload_hex) {
 
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+  console.log('Sending messag with', cacheURL);
+
   const response = await fetch(`${cacheURL}/api/v1/posts`, {
     method: 'POST', // or 'PUT'
     headers: {
@@ -437,6 +448,7 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     },
     body: JSON.stringify({payload: payload_hex}),
   });
+  console.log(response.json());
   return response.json();
 
 }

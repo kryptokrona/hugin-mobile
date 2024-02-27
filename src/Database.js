@@ -162,7 +162,9 @@ async function createTables(DB) {
                 theme TEXT,
                 pinconfirmation BOOLEAN,
                 language TEXT,
-                nickname TEXT
+                nickname TEXT,
+                cache TEXT,
+                cacheenabled TEXT
             )`
         );
 
@@ -334,6 +336,21 @@ async function createTables(DB) {
   
           }
 
+          if (dbVersion === 7) {
+            tx.executeSql(
+              `ALTER TABLE
+                  preferences
+              ADD
+                  cache TEXT default '${Config.defaultCache}'`
+            );
+            tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    cacheenabled text default "true"`
+              );
+        }
+
         /* Setup default preference values */
         tx.executeSql(
             `INSERT OR IGNORE INTO preferences (
@@ -399,7 +416,7 @@ async function createTables(DB) {
 
 
         tx.executeSql(
-            `PRAGMA user_version = 7`
+            `PRAGMA user_version = 8`
         );
     });
 
@@ -434,7 +451,9 @@ export async function savePreferencesToDatabase(preferences) {
                 authmethod = ?,
                 node = ?,
                 language = ?,
-                nickname = ?
+                nickname = ?,
+                cache = ?,
+                cacheenabled = ?
             WHERE
                 id = 0`,
             [
@@ -448,7 +467,9 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.authenticationMethod,
                 preferences.node,
                 preferences.language,
-                preferences.nickname
+                preferences.nickname,
+                preferences.cache,
+                preferences.cacheEnabled
             ]
         );
     });
@@ -467,7 +488,9 @@ export async function loadPreferencesFromDatabase() {
             authmethod,
             node,
             language,
-            nickname
+            nickname,
+            cache,
+            cacheenabled
         FROM
             preferences
         WHERE
@@ -488,7 +511,9 @@ export async function loadPreferencesFromDatabase() {
             authenticationMethod: item.authmethod,
             node: item.node,
             language: item.language,
-            nickname: item.nickname
+            nickname: item.nickname,
+            cache: item.cache,
+            cacheEnabled: item.cacheenabled
         }
     }
 
@@ -730,6 +755,9 @@ export async function markGroupConversationAsRead(group) {
   );
 
 });
+
+Globals.unreadMessages = await getUnreadMessages();
+Globals.updateGroupsFunction();
 
 
 }
@@ -1171,7 +1199,7 @@ LIMIT ${limit}`
     let count_raw = 0;
 
     if (count && count.rows && count.rows.length) {
-        console.log(count, rand);
+
         const res = [];
 
         for (let i = 0; i < count.rows.length; i++) {
