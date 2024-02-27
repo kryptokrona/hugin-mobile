@@ -455,6 +455,8 @@ export async function sendMessageWithHuginAPI(payload_hex) {
 
 export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=1) {
 
+  return;
+
     if(first) {
       latest_board_message_timestamp = await getLatestBoardMessage();
     }
