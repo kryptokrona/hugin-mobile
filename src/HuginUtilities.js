@@ -437,6 +437,8 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
+  if (!Globals.preferences.cacheEnabled) return;
+
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
   console.log('Sending messag with', cacheURL);
