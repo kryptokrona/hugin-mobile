@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage } from './Database';
 
 /**
  * Save wallet in background
@@ -459,79 +459,80 @@ export async function sendMessageWithHuginAPI(payload_hex) {
 
 }
 
-export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=1) {
+export async function cacheSync(latest_board_message_timestamp=0, first=true, page=1) {
 
-  return;
+  console.log('Global timestamp', Globals.lastMessageTimestamp);
 
     if(first) {
-      latest_board_message_timestamp = await getLatestBoardMessage();
+      latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
     }
+
+    if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
-    fetch(`${cacheURL}/api/v1/posts?from=${latest_board_message_timestamp}&to=${Date.now() / 1000}&size=50&page=` + page)
+    fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
     .then((response) => response.json())
     .then(async (json) => {
 
-      const items = json.posts;
-
+      const items = json.encrypted_group_posts;
 
       for (item in items) {
 
-        if (items[item].time < latest_board_message_timestamp) {
-          return;
-        }
+        if (await groupMessageExists(items[item].tx_timestamp)) continue;
 
-        const fromMyself = items[item].key == Globals.wallet.getPrimaryAddress() ? true : false;
-
-        const message = items[item].message;
-        const address = items[item].key;
-        const signature = items[item].signature;
-        const board = items[item].board;
-        const timestamp = items[item].time;
-        const nickname = items[item].nickname;
-        const reply = items[item].reply_tx_hash;
-        const hash = items[item].tx_hash;
-        const sent = fromMyself ? true : false;
-
-        if (await boardsMessageExists(hash)) {
-          continue;
-          return;
-        }
-
-        if (fromMyself) {
-          silent = true;
-        } else {
-          silent = false;
-        }
-
-        saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
-
-        if (!nickname) {
-          nickname = 'Anonymous';
-        }
-
-
-
-
-        const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
-          return sub.board == board;
-        })
-
-        if (latest_board_message_timestamp != 0 && !fromMyself && subscriptionList.length > 0 )  {
-          PushNotification.localNotification({
-              title: nickname + ' in ' + board,//'Incoming transaction received!',
-              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-              message: message,
-              data: timestamp,
-              userInfo: board,
-              // largeIconUrl: get_avatar(payload_json.from, 64),
-          });
-        }
+        let groupMessage = await getGroupMessage({
+          sb: items[item].tx_sb,
+          t: items[item].tx_timestamp,
+          hash: items[item].tx_hash
+        });
 
       }
-      if (json.current_page != json.total_pages) {
-            cacheSync(silent, latest_board_message_timestamp, false, page+1);
+      if (json.current_page < json.total_pages) {
+            cacheSync(latest_board_message_timestamp, false, page+1);
+      } else {
+        Globals.lastMessageTimestamp = items.slice(-1)[0].created_at + 1;
+      }
+    })
+
+}
+
+export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true, page=1) {
+
+  console.log('Global timestamp', Globals.lastDMTimestamp);
+
+    if(first) {
+      latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
+    }
+
+    if (Globals.lastDMTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastDMTimestamp;
+
+    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+    console.log(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
+    fetch(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
+    .then((response) => response.json())
+    .then(async (json) => {
+      console.log(json);
+      const items = json.encrypted_posts;
+      
+      for (item in items) {
+
+        if (await messageExists(items[item].tx_timestamp)) continue;
+
+        let dirtified_json = "000000000000000000000000000000000000000000000000000000000000000000" + JSON.stringify({
+          box: items[item].tx_box,
+          t: items[item].tx_timestamp,
+          hash: items[item].tx_hash
+        });
+
+        let message = await getMessage(dirtified_json);
+
+      }
+      if (json.current_page < json.total_pages) {
+            cacheSyncDMs(latest_board_message_timestamp, false, page+1);
+      } else {
+        Globals.lastDMTimestamp = items.slice(-1)[0].created_at + 1;
       }
     })
 
@@ -740,6 +741,8 @@ export async function getExtra(hash){
 }
 
 async function getGroupMessage(tx) {
+
+  console.log('Trying to decrypt', tx);
 
   let decryptBox = false;
 

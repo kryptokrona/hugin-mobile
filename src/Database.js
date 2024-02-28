@@ -1634,20 +1634,48 @@ export async function removeBoard(board) {
 
 }
 
-export async function getLatestBoardMessage() {
+export async function getLatestGroupMessage() {
 
     const [data] = await database.executeSql(
         `SELECT
             timestamp
         FROM
-            boards_message_db
+            privateboards_messages_db
         ORDER BY
             timestamp
         DESC
         LIMIT
             1`
     );
-    console.log('Got ' + data.rows.length + " board messages");
+
+    let timestamp = 0;
+    if (data && data.rows && data.rows.length) {
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            timestamp = item.timestamp;
+            return timestamp;
+        }
+
+    }
+    return timestamp;
+
+}
+
+export async function getLatestMessage() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            message_db
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+            1`
+    );
+
     let timestamp = 0;
     if (data && data.rows && data.rows.length) {
 

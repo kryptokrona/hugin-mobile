@@ -112,6 +112,12 @@ class globals {
 
         this.speakerOn = true;
 
+        this.notificationQueue = [];
+
+        this.lastMessageTimestamp = 0;
+
+        this.lastDMTimestamp = 0;
+
     }
 
     reset() {

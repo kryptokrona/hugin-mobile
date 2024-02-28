@@ -31,7 +31,7 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
-import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
+import { getBestCache, cacheSync, cacheSyncDMs, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
 import { Globals, initGlobals } from './Globals';
@@ -97,6 +97,8 @@ async function init(navigation) {
     if (Globals.backgroundSyncMessagesTimer === undefined) {
       Globals.backgroundSyncMessagesTimer = setInterval(function() {
         backgroundSyncMessages(navigation);
+        //cacheSync(false);
+
       }, 10000);
     }
 
@@ -1050,11 +1052,41 @@ async function backgroundSyncMessages(navigation) {
     console.log('Commencing message sync.');
   }
   Globals.syncingMessages = true;
+  console.log(Globals.preferences);
+  if (Globals.preferences.cacheEnabled == "true") {
 
+    cacheSync();
+
+    cacheSyncDMs();
+
+    if (Globals.notificationQueue.length > 2) {
+
+        PushNotification.localNotification({
+            title: "New messages received!",
+            message: `You've received ${Globals.notificationQueue.length} new messages.`
+        });
+
+    } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
+        for (n in Globals.notificationQueue) {
+            PushNotification.localNotification({
+                    title: Globals.notificationQueue[n].title,
+                    message: Globals.notificationQueue[n].message,
+                    data: Globals.notificationQueue[n].data,
+                    userInfo: Globals.notificationQueue[n].userInfo,
+                    largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
+                });
+        }
+    }
+    Globals.notificationQueue = [];
+    Globals.syncingMessages = false;
+    Globals.knownTXs = await getKnownTransactions();
+    return;
+
+  }
+
+  
 
   try {
-
-  cacheSync(false);
 
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let knownTXs = await getKnownTransactions();
@@ -1100,11 +1132,11 @@ async function backgroundSyncMessages(navigation) {
             } catch (err) {
 
             }
-            await saveKnownTransaction(thisHash);
+            saveKnownTransaction(thisHash);
             if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
 
           } else {
-            await saveKnownTransaction(thisHash);
+            saveKnownTransaction(thisHash);
             if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
             continue;
           }
