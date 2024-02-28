@@ -97,7 +97,7 @@ async function init(navigation) {
     if (Globals.backgroundSyncMessagesTimer === undefined) {
       Globals.backgroundSyncMessagesTimer = setInterval(function() {
         backgroundSyncMessages(navigation);
-      }, 5000);
+      }, 10000);
     }
 
     if (Globals.checkIfStuck === undefined) {
