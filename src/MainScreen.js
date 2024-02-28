@@ -1115,7 +1115,26 @@ async function backgroundSyncMessages(navigation) {
         }
 
         }
-        console.log('Syncing complete!');
+        console.log('Syncing complete!', Globals.notificationQueue);
+        if (Globals.notificationQueue.length > 2) {
+
+            PushNotification.localNotification({
+                title: "New messages received!",
+                message: `You've received ${Globals.notificationQueue.length} new messages.`
+            });
+
+        } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
+            for (n in Globals.notificationQueue) {
+                PushNotification.localNotification({
+                        title: Globals.notificationQueue[n].title,
+                        message: Globals.notificationQueue[n].message,
+                        data: Globals.notificationQueue[n].data,
+                        userInfo: Globals.notificationQueue[n].userInfo,
+                        largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
+                    });
+            }
+        }
+        Globals.notificationQueue = [];
         Globals.syncingMessages = false;
         Globals.knownTXs = await getKnownTransactions();
 
@@ -1126,5 +1145,7 @@ async function backgroundSyncMessages(navigation) {
   console.log('Message sync failed: ', err);
   Globals.syncingMessages = false;
 }
+
+
 
 }

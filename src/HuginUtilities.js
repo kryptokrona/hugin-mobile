@@ -805,14 +805,16 @@ async function getGroupMessage(tx) {
   const groupname = await getGroupName(key);
 
     if (Globals.activeChat != key && !from_myself) {
-      PushNotification.localNotification({
-          title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
+
+      Globals.notificationQueue.push({
+        title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
           //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
           message: payload_json.m,
           data: tx.t,
           userInfo: group_object[0],
-          largeIconUrl: get_avatar(from, 64),
+          largeIconUrl: get_avatar(from, 64)
       });
+
     }
 
   return payload_json;
@@ -996,7 +998,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
               }) } else {
                 // use URL to 
               }
-            if (!from_myself) {
+            if (!from_myself && !missed) {
 
                 console.log('Notifying call..')
                 PushNotification.localNotification({
@@ -1006,6 +1008,16 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
                   userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
                   largeIconUrl: get_avatar(payload_json.from, 64),
               })
+              
+            } else if(!from_myself && missed) {
+              Globals.notificationQueue.push({
+                title: from,
+                  //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                  message: 'Call missed',
+                  data: payload_json.t,
+                  userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
+                  largeIconUrl: get_avatar(payload_json.from, 64),
+              });
               
             }
           payload_json.msg = 'Call received';
@@ -1028,13 +1040,13 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
 
           if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
-            PushNotification.localNotification({
-                title: from,
-                message: payload_json.msg,
-                data: payload_json.t,
-                userInfo: from_payee,
-                largeIconUrl: get_avatar(payload_json.from, 64),
-            });
+            Globals.notificationQueue.push({
+                  title: from,
+                  message: payload_json.msg,
+                  data: payload_json.t,
+                  userInfo: from_payee,
+                  largeIconUrl: get_avatar(payload_json.from, 64),
+              });
           }
 
         resolve(payload_json);
