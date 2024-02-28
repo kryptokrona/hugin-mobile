@@ -809,19 +809,21 @@ export class GroupChatScreenNoTranslation extends React.Component {
         }
 
 
-        Globals.updateGroupsFunctions.push(async () => {
-            this.setState({
-                messages: await getGroupMessages(this.state.key, this.state.messages.length)
-            })
-        });
+
 
     }
 
     async componentDidMount() {
 
-        await markGroupConversationAsRead(this.state.key);
+        markGroupConversationAsRead(this.state.key);
 
         let messages = await getGroupMessages(this.state.key, 25);
+
+        Globals.updateGroupsFunctions.push(async () => {
+            this.setState({
+                messages: await getGroupMessages(this.state.key, this.state.messages.length)
+            })
+        });
 
         if (!messages) {
           messages = [];
@@ -838,6 +840,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
     async componentWillUnmount() {
 
         Globals.activeChat = '';
+        Globals.updateGroupsFunctions.pop();
 
     }
 
