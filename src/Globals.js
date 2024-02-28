@@ -114,9 +114,9 @@ class globals {
 
         this.notificationQueue = [];
 
-        this.lastMessageTimestamp = 0;
+        this.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
 
-        this.lastDMTimestamp = 0;
+        this.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
 
     }
 

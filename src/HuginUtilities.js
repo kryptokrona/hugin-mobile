@@ -470,7 +470,7 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
     if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
-
+    console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
     fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
     .then((response) => response.json())
     .then(async (json) => {
@@ -491,7 +491,7 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
       if (json.current_page < json.total_pages) {
             cacheSync(latest_board_message_timestamp, false, page+1);
       } else {
-        Globals.lastMessageTimestamp = items.slice(-1)[0].created_at + 1;
+        Globals.lastMessageTimestamp = (parseInt(items.slice(-1)[0].created_at) + 1) * 1000;
       }
     })
 
@@ -532,7 +532,7 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
       if (json.current_page < json.total_pages) {
             cacheSyncDMs(latest_board_message_timestamp, false, page+1);
       } else {
-        Globals.lastDMTimestamp = items.slice(-1)[0].created_at + 1;
+        Globals.lastDMTimestamp = (parseInt(items.slice(-1)[0].created_at) + 1) * 1000;
       }
     })
 
