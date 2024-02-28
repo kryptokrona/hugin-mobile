@@ -164,7 +164,7 @@ async function createTables(DB) {
                 language TEXT,
                 nickname TEXT,
                 cache TEXT,
-                cacheenabled TEXT
+                cacheenabled TEXT default "true"
             )`
         );
 
@@ -412,8 +412,19 @@ async function createTables(DB) {
                 ],
             );
         }
-
-
+        // Remove old messages
+        tx.executeSql(`
+        DELETE FROM privateboards_messages_db
+        WHERE rowid IN (
+            SELECT rowid
+            FROM privateboards_messages_db AS p1
+            WHERE (
+                SELECT COUNT(*)
+                FROM privateboards_messages_db AS p2
+                WHERE p1.board = p2.board AND p2.timestamp > p1.timestamp
+            ) >= 1000
+        )
+        `);
 
         tx.executeSql(
             `PRAGMA user_version = 8`
@@ -1507,20 +1518,7 @@ export async function getUnreadMessages() {
 
   console.log('Getting unreads..');
 
-  const [data] = await database.executeSql(
-      `
-      SELECT COUNT(*)
-      FROM boards_message_db
-      WHERE
-      read != "1"
-      `
-  );
-
   let unread_messages = {};
-
-  if (data && data.rows && data.rows.length) {
-    unread_messages.boards = data.rows.item(0)['COUNT(*)'];
-  }
 
   const [data_groups] = await database.executeSql(
       `
