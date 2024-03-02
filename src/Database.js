@@ -226,7 +226,8 @@ async function createTables(DB) {
             `CREATE TABLE IF NOT EXISTS privateboards (
                 name TEXT,
                 key TEXT,
-                latestmessage INT default 0
+                latestmessage INT default 0,
+                UNIQUE (key)
             )`
         );
 
@@ -242,7 +243,8 @@ async function createTables(DB) {
                 timestamp TEXT,
                 read BOOLEAN default 1,
                 hash TEXT,
-                reply TEXT
+                reply TEXT,
+                UNIQUE (timestamp)
             )`
         );
 
@@ -349,7 +351,58 @@ async function createTables(DB) {
                 ADD
                     cacheenabled text default "true"`
               );
+              
+
+              tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS privateboards_messages_db2 (
+                    board TEXT,
+                    nickname TEXT,
+                    address TEXT,
+                    type TEXT,
+                    message TEXT,
+                    timestamp TEXT,
+                    read BOOLEAN default 1,
+                    hash TEXT,
+                    reply TEXT,
+                    UNIQUE (timestamp)
+                )`
+            );
+
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db2 SELECT * FROM privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
+                board TEXT,
+                nickname TEXT,
+                address TEXT,
+                type TEXT,
+                message TEXT,
+                timestamp TEXT,
+                read BOOLEAN default 1,
+                hash TEXT,
+                reply TEXT,
+                UNIQUE (timestamp)
+            )`
+        );
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db SELECT * FROM privateboards_messages_db2`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db2`
+        );
+
         }
+
+
 
         /* Setup default preference values */
         tx.executeSql(
