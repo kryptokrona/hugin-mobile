@@ -600,6 +600,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
+    Globals.lastMessageTimestamp = timestamp;
   }
   return result;
 }
@@ -698,6 +699,7 @@ if (result.success) {
   }
   saveMessage(receiver, 'sent', message, timestamp);
   backgroundSave();
+  Globals.lastMessageTimestamp = timestamp;
 } 
 
 return result;
@@ -741,6 +743,8 @@ export async function getExtra(hash){
 }
 
 async function getGroupMessage(tx) {
+
+  if (await groupMessageExists(tx.t)) return;
 
   console.log('Trying to decrypt', tx);
 
