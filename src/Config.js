@@ -60,6 +60,11 @@ const Config = new function() {
     this.daemonUpdateInterval = 10 * 1000;
 
     /**
+     * After how long the "deadnode" event will be emitted
+     */
+    this.maxLastFetchedBlockInterval = 60 * 10;
+
+    /**
      * How often to check on locked transactions
      */
     this.lockedTransactionsCheckInterval = 10 * 1000;
