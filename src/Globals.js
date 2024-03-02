@@ -15,11 +15,10 @@ import NetInfo from "@react-native-community/netinfo";
 import { getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
-
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
-import { getBestCache } from './HuginUtilities';
+import { getMessage, sendNotifications } from './HuginUtilities';
 import offline_node_list from './nodes.json';
 import offline_cache_list from './apis.json';
 import offline_groups_list from './groups.json';
@@ -117,6 +116,12 @@ class globals {
         this.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
 
         this.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+
+        this.webSocketStatus = 'offline';
+
+        this.socket = undefined;
+
+        this.initalSyncOccurred = false;
 
     }
 
@@ -340,7 +345,47 @@ function updateConnection(connection) {
 
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
+
+   export function startWebsocket() {
+    console.log('CacheNabled:', Globals.preferences.cacheEnabled)
+    if (Globals.preferences.cacheEnabled != "true") return;
+    const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
+    console.log(socketURL);
+    Globals.socket = new WebSocket(socketURL);
+
+    // Open connection wit Cache
+    Globals.socket.onopen = () => {
+        console.log(`Connected 🤖`)
+        Globals.webSocketStatus = 'online';
+    }
+
+    Globals.socket.onclose = (e) => {
+        Globals.webSocketStatus = 'offline';
+        console.log('Connection closed')
+        startWebsocket();
+    }
+
+// Listen for messages
+    Globals.socket.onmessage = async (e) => {
+        let data = e.data
+
+        try {
+
+            let json = JSON.parse(data)
+            console.log(json);
+            await getMessage(json);
+            sendNotifications();
+
+        } catch (err) {
+            console.log(err)
+        }
+
+    }
+   }
+
 export async function initGlobals() {
+
+    console.log('Initing globals..');
 
     const payees = await loadPayeeDataFromDatabase();
 
@@ -382,4 +427,8 @@ export async function initGlobals() {
 
     await Globals.updateNodeList();
     await Globals.updateGroupsList();
+    console.log('CacheNabled:', Globals.preferences.cacheEnabled)
+    if (Globals.preferences.cacheEnabled ) {
+     startWebsocket();
+    }
 }

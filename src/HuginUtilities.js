@@ -142,14 +142,34 @@ export async function getBestCache() {
 function trimExtra (extra) {
 
   try {
+    const timestamp = extra.t;
+    if (timestamp) return extra;
+    
+  } catch (err) {
+    console.log(err);
+  }
 
+  try {
+    const parsed = JSON.parse(extra);
+    return parsed
+  } catch (e) {
+    console.log(e);
+  }
+
+  try {
     let payload = fromHex(extra.substring(66));
     let payload_json = JSON.parse(payload);
-    return fromHex(extra.substring(66))
+    return payload_json
 
   } catch (e) {
-    return fromHex(Buffer.from(extra.substring(78)).toString())
+    console.log(e)
 
+  }
+
+  try {
+    return JSON.parse(fromHex(Buffer.from(extra.substring(78)).toString()))
+  } catch(e) {
+    console.log(e);
   }
 
 }
@@ -461,6 +481,8 @@ export async function sendMessageWithHuginAPI(payload_hex) {
 
 export async function cacheSync(latest_board_message_timestamp=0, first=true, page=1) {
 
+  return new Promise(async (resolve, reject) => {
+
   console.log('Global timestamp', Globals.lastMessageTimestamp);
 
     if(first) {
@@ -476,7 +498,7 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
     .then(async (json) => {
 
       const items = json.encrypted_group_posts;
-
+      Globals.lastMessageTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       for (item in items) {
 
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
@@ -489,15 +511,19 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
 
       }
       if (json.current_page < json.total_pages) {
-            cacheSync(latest_board_message_timestamp, false, page+1);
+            await cacheSync(latest_board_message_timestamp, false, page+1);
+            resolve(true);
       } else {
-        Globals.lastMessageTimestamp = (parseInt(items.slice(-1)[0].created_at) + 1) * 1000;
+        console.log('Returning..')
+        resolve(true);
       }
     })
-
+});
 }
 
 export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true, page=1) {
+
+  return new Promise(async (resolve, reject) => {
 
   console.log('Global timestamp', Globals.lastDMTimestamp);
 
@@ -520,22 +546,24 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
 
         if (await messageExists(items[item].tx_timestamp)) continue;
 
-        let dirtified_json = "000000000000000000000000000000000000000000000000000000000000000000" + JSON.stringify({
+        let this_json = {
           box: items[item].tx_box,
           t: items[item].tx_timestamp,
           hash: items[item].tx_hash
-        });
+        };
 
-        let message = await getMessage(dirtified_json);
+        let message = await getMessage(this_json);
 
       }
       if (json.current_page < json.total_pages) {
-            cacheSyncDMs(latest_board_message_timestamp, false, page+1);
+            await cacheSyncDMs(latest_board_message_timestamp, false, page+1);
+            resolve(true);
       } else {
-        Globals.lastDMTimestamp = (parseInt(items.slice(-1)[0].created_at) + 1) * 1000;
+        Globals.lastDMTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
+        resolve(true);
       }
     })
-
+  });
 }
 
 export async function createGroup() {
@@ -836,17 +864,9 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
   return new Promise(async (resolve, reject) => {
 
-    let data = trimExtra(extra);
+    let tx = trimExtra(extra);
 
-    let tx = JSON.parse(data);
-        // if (tx.m || tx.b || tx.brd) {
-        //   reject();
-        //   tx.hash = hash;
-        //   if (await boardsMessageExists(hash)) {
-        //     reject();
-        //   }
-        //   getBoardsMessage(tx);
-        // }
+    console.log('Trimmed', tx)
 
         if (tx.sb) {
 
@@ -1064,4 +1084,27 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
 });
 
+}
+
+export async function sendNotifications() {
+  console.log('Sending', Globals.notificationQueue);
+  if (Globals.notificationQueue.length > 2) {
+
+      PushNotification.localNotification({
+          title: "New messages received!",
+          message: `You've received ${Globals.notificationQueue.length} new messages.`
+      });
+
+  } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
+      for (n in Globals.notificationQueue) {
+          PushNotification.localNotification({
+                  title: Globals.notificationQueue[n].title,
+                  message: Globals.notificationQueue[n].message,
+                  data: Globals.notificationQueue[n].data,
+                  userInfo: Globals.notificationQueue[n].userInfo,
+                  largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
+              });
+      }
+  }
+  Globals.notificationQueue = [];
 }

@@ -31,10 +31,10 @@ import Config from './Config';
 
 import { Styles } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
-import { getBestCache, cacheSync, cacheSyncDMs, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
+import { getBestCache, cacheSync, cacheSyncDMs, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage, sendNotifications } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
-import { Globals, initGlobals } from './Globals';
+import { Globals, initGlobals, startWebsocket } from './Globals';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
@@ -59,6 +59,7 @@ String.prototype.hashCode = function() {
     }
     return hash;
 }
+
 
 async function init(navigation) {
   
@@ -94,6 +95,8 @@ async function init(navigation) {
         Globals.backgroundSaveTimer = setInterval(backgroundSave, Config.walletSaveFrequency);
     }
 
+    
+
     if (Globals.backgroundSyncMessagesTimer === undefined) {
       Globals.backgroundSyncMessagesTimer = setInterval(function() {
         backgroundSyncMessages(navigation);
@@ -101,6 +104,8 @@ async function init(navigation) {
 
       }, 10000);
     }
+    
+    
 
     if (Globals.checkIfStuck === undefined) {
         Globals.checkIfStuck = setInterval(checkIfStuck, 5000);
@@ -112,13 +117,12 @@ async function init(navigation) {
     if (Platform.OS === 'android') {
         Globals.wallet.setBlockOutputProcessFunc(processBlockOutputs);
     }
+
     initGlobals();
 
     const recommended_node = await getBestCache();
 
     Globals.preferences.cache = recommended_node.url;
-
-    cacheSync(true);
 
     PushNotification.configure({
         onNotification: handleNotification,
@@ -874,24 +878,26 @@ class BalanceComponentNoTranslation extends React.Component {
         return(
             <View style={{alignItems: 'center'}}>
             {/* <Animated.View */}
-            <View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%'}}>
+            <View style={{textAlign: 'center', alignItems: 'center', marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+  
                     <Text style={{
                         color: 'white',
                         fontSize: 64,
                         fontFamily: 'icomoon',
-                        position: 'absolute',
-                        top: 23,
-                        left: 5
+                        marginBottom: -20,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        marginRight: 10
                     }}>
                         
                     </Text>
-                    <View style={{marginLeft: 64, marginBottom: 10}} ref={this.balanceRef}>
-                        {this.state.expandedBalance ? expandedBalance : compactBalance}
+                    <View style={{marginBottom: 8}}>
+                    {this.state.expandedBalance ? expandedBalance : compactBalance}
+                    </View>
                     </View>
                     {parseInt(this.props.lockedBalance) > 0 &&
                     <Text style={{color: 'white'}}>+ {prettyPrintAmount(this.props.lockedBalance, Config).slice(0,-4)}</Text>}
-            </View>
-            {/* </Animated.View> */}
+
 
             <OpenURLButton></OpenURLButton>
 <Text>
@@ -1038,46 +1044,26 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages(navigation) {
 
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled) startWebsocket();
+    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred) return;
 
-//   if (Globals.syncingMessagesCount > 3) {
-//     Globals.syncingMessages = false;
-//     Globals.syncingMessagesCount = 0;
-//   }
+    Globals.initalSyncOccurred = true;
 
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
     // Globals.syncingMessagesCount += 1;
     return;
   } else {
-    console.log('Commencing message sync.');
+    console.log('Commencing message sync.', Globals.syncingMessages);
   }
   Globals.syncingMessages = true;
-  console.log(Globals.preferences);
+
   if (Globals.preferences.cacheEnabled == "true") {
 
-    cacheSync();
-
-    cacheSyncDMs();
-
-    if (Globals.notificationQueue.length > 2) {
-
-        PushNotification.localNotification({
-            title: "New messages received!",
-            message: `You've received ${Globals.notificationQueue.length} new messages.`
-        });
-
-    } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
-        for (n in Globals.notificationQueue) {
-            PushNotification.localNotification({
-                    title: Globals.notificationQueue[n].title,
-                    message: Globals.notificationQueue[n].message,
-                    data: Globals.notificationQueue[n].data,
-                    userInfo: Globals.notificationQueue[n].userInfo,
-                    largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
-                });
-        }
-    }
-    Globals.notificationQueue = [];
+    await cacheSync();
+    await cacheSyncDMs();
+    console.log('Returned with', Globals.notificationQueue)
+    sendNotifications();
     Globals.syncingMessages = false;
     Globals.knownTXs = await getKnownTransactions();
     return;
@@ -1087,7 +1073,7 @@ async function backgroundSyncMessages(navigation) {
   
 
   try {
-
+    
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let knownTXs = await getKnownTransactions();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
@@ -1148,25 +1134,7 @@ async function backgroundSyncMessages(navigation) {
 
         }
         console.log('Syncing complete!', Globals.notificationQueue);
-        if (Globals.notificationQueue.length > 2) {
-
-            PushNotification.localNotification({
-                title: "New messages received!",
-                message: `You've received ${Globals.notificationQueue.length} new messages.`
-            });
-
-        } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
-            for (n in Globals.notificationQueue) {
-                PushNotification.localNotification({
-                        title: Globals.notificationQueue[n].title,
-                        message: Globals.notificationQueue[n].message,
-                        data: Globals.notificationQueue[n].data,
-                        userInfo: Globals.notificationQueue[n].userInfo,
-                        largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
-                    });
-            }
-        }
-        Globals.notificationQueue = [];
+        sendNotifications();
         Globals.syncingMessages = false;
         Globals.knownTXs = await getKnownTransactions();
 
@@ -1177,7 +1145,6 @@ async function backgroundSyncMessages(navigation) {
   console.log('Message sync failed: ', err);
   Globals.syncingMessages = false;
 }
-
 
 
 }
