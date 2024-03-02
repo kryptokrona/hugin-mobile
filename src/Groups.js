@@ -833,13 +833,13 @@ export class GroupChatScreenNoTranslation extends React.Component {
           messages: messages
         });
 
-        Globals.activeChat = this.state.key;
+        Globals.activeGroup = this.state.key;
 
     }
 
     async componentWillUnmount() {
 
-        Globals.activeChat = '';
+        Globals.activeGroup = '';
         Globals.updateGroupsFunctions.pop();
 
     }

@@ -811,7 +811,7 @@ async function getGroupMessage(tx) {
 
   const groupname = await getGroupName(key);
 
-    if (Globals.activeChat != key && !from_myself) {
+    if (Globals.activeGroup != key && !from_myself) {
 
       Globals.notificationQueue.push({
         title: `${nickname} in ${groupname}`,//'Incoming transaction received!',

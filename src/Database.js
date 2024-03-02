@@ -677,7 +677,7 @@ export async function deleteKnownTransaction(txhash) {
 
 export async function saveGroupMessage(group, type, message, timestamp, nickname, address, reply, hash) {
 
-  const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
+  const read = (address == Globals?.wallet.getPrimaryAddress() || Globals?.activeGroup == group ? 1 : 0);
 
   console.log('Saving group message', group, type, message, timestamp, nickname, address, read);
 

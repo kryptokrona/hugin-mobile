@@ -92,7 +92,7 @@ class globals {
 
         this.activeChat = '';
 
-        this.activeBoard = '';
+        this.activeGroup = '';
 
         this.language = 'en-US';
 
