@@ -19,6 +19,7 @@ import fr from "./i18n/fr.json";
 import mai from "./i18n/mai.json";
 import bho from "./i18n/bho.json";
 import gu from './i18n/gu.json';
+import ben from "./i18n/ben.json";
 
 
 import { Globals } from "./Globals";
@@ -98,6 +99,9 @@ i18next
       },
       gu: {
         translation: gu,
+      },
+      ben: {
+        translation: ben,
       }
     },
   });
