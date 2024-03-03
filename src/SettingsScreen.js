@@ -955,7 +955,9 @@ class SwapAPIScreenNoTranslation extends React.Component {
 
             refreshing: false,
 
-            enabled: Globals.preferences.cacheEnabled == "true" ? true : false
+            enabled: Globals.preferences.cacheEnabled == "true" ? true : false,
+
+            autoPickCache: Globals.preferences.autoPickCache == "true" ? true : false
         };
     }
 
@@ -1052,8 +1054,36 @@ class SwapAPIScreenNoTranslation extends React.Component {
                     </Text>
                 </View>
             </View>
-
-                {this.state.enabled && 
+            {this.state.enabled && 
+            <View style={{ width: '100%', marginTop: 50, justifyContent: "center", alignItems: "center" }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Switch
+                        value={this.state.autoPickCache}
+                        onValueChange={(value) => {
+                            this.setState({
+                                autoPickCache: value
+                            });
+                            console.log(value);
+                            if (value) {
+                                Globals.preferences.autoPickCache = 'true';
+                            } else {
+                                Globals.preferences.autoPickCache = 'false';
+                            }
+                            savePreferencesToDatabase(Globals.preferences);
+                        }}
+                        style={{ marginRight: 15 }}
+                    />
+                    <Text style={{
+                        fontSize: 15,
+                        color: this.props.screenProps.primaryColour,
+                        fontFamily: "Montserrat-Regular",
+                    }}>
+                        {t('autoPickAPI')}
+                    </Text>
+                </View>
+            </View>
+    }
+     {this.state.enabled &&            
                 
                     <ScrollView
                         style={{

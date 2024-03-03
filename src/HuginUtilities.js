@@ -103,7 +103,9 @@ if (recommended_node == undefined) {
 
 }
 
-export async function getBestCache() {
+export async function getBestCache(onlyOnline=true) {
+
+  if (Globals.preferences.autoPickCache != 'true') return;
 
   console.log('Getting best cache..')
 
@@ -127,15 +129,23 @@ export async function getBestCache() {
       recommended_cache = this_cache;
       const json = await resp.json();
       console.log(json);
-     if (json.status == "online") {
-       
+     if (json.status == "online" && onlyOnline) {
        console.log(this_cache);
-       return(this_cache);
+       Globals.preferences.cache = recommended_cache.url;
+       return this_cache;
+     } else {
+      Globals.preferences.cache = recommended_cache.url;
+      return this_cache
      }
   } catch (e) {
     console.log(e);
   }
 }
+
+toastPopUp('No online APIs!');
+Globals.preferences.cache = false;
+return false;
+
 
 }
 
@@ -498,6 +508,7 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
     .then(async (json) => {
 
       const items = json.encrypted_group_posts;
+      if (!items.length) resolve(true);
       Globals.lastMessageTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       for (item in items) {
 
@@ -510,6 +521,7 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
         });
 
       }
+      if (json.total_pages == 0) resolve(true);
       if (json.current_page < json.total_pages) {
             await cacheSync(latest_board_message_timestamp, false, page+1);
             resolve(true);
@@ -524,7 +536,8 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
 export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true, page=1) {
 
   return new Promise(async (resolve, reject) => {
-
+    try {
+    
   console.log('Global timestamp', Globals.lastDMTimestamp);
 
     if(first) {
@@ -540,21 +553,25 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
     .then((response) => response.json())
     .then(async (json) => {
       console.log(json);
+      console.log('We have items');
       const items = json.encrypted_posts;
-      
+      if (!items.length) resolve(true);
+      Globals.lastDMTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
+      console.log('Looping items');
       for (item in items) {
 
         if (await messageExists(items[item].tx_timestamp)) continue;
-
+        console.log('Item doesnt exist');
         let this_json = {
           box: items[item].tx_box,
           t: items[item].tx_timestamp,
           hash: items[item].tx_hash
         };
-
+        console.log('Getting message')
         let message = await getMessage(this_json);
-
+        console.log('Message gotten')
       }
+      if (json.total_pages == 0) resolve(true);
       if (json.current_page < json.total_pages) {
             await cacheSyncDMs(latest_board_message_timestamp, false, page+1);
             resolve(true);
@@ -563,6 +580,9 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
         resolve(true);
       }
     })
+  } catch (e) {
+    console.log(e);
+  }
   });
 }
 

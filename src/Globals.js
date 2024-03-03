@@ -52,6 +52,7 @@ class globals {
             language: 'en',
             cache: Config.defaultCache,
             cacheEnabled: 'true',
+            autoPickCache: 'true',
             nickname: 'Anonymous'
         };
 
@@ -122,6 +123,8 @@ class globals {
         this.socket = undefined;
 
         this.initalSyncOccurred = false;
+
+        this.websockets = 0;
 
     }
 
@@ -346,7 +349,13 @@ function updateConnection(connection) {
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
 
-   export function startWebsocket() {
+   export async function startWebsocket() {
+
+    console.log('websockets online', Globals.websockets)
+
+    if (Globals.websockets) return;
+    
+
     console.log('CacheNabled:', Globals.preferences.cacheEnabled)
     if (Globals.preferences.cacheEnabled != "true") return;
     const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
@@ -355,11 +364,15 @@ function updateConnection(connection) {
 
     // Open connection wit Cache
     Globals.socket.onopen = () => {
+        Globals.websockets++;
         console.log(`Connected 🤖`)
         Globals.webSocketStatus = 'online';
+
     }
 
     Globals.socket.onclose = (e) => {
+        if (Globals.websockets > 0) Globals.websockets--;
+        
         Globals.webSocketStatus = 'offline';
         console.log('Connection closed')
         startWebsocket();

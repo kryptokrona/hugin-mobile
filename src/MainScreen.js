@@ -120,9 +120,7 @@ async function init(navigation) {
 
     initGlobals();
 
-    const recommended_node = await getBestCache();
-
-    Globals.preferences.cache = recommended_node.url;
+    getBestCache();
 
     PushNotification.configure({
         onNotification: handleNotification,
@@ -1043,9 +1041,18 @@ async function checkIfStuck() {
 }
 
 async function backgroundSyncMessages(navigation) {
-
-    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled) startWebsocket();
-    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred) return;
+    // Add check if websocket // cache is working
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled) {
+        await startWebsocket();
+        if (Globals.webSocketStatus == 'online') return;
+    }
+    console.log('Globals.initalSyncOccurred', Globals.initalSyncOccurred);
+    console.log('Globals.webSocketStatus', Globals.webSocketStatus);
+    
+    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred) {
+        Globals.syncingMessages = false;
+        return;
+    }
 
     Globals.initalSyncOccurred = true;
 

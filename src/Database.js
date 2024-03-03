@@ -164,7 +164,8 @@ async function createTables(DB) {
                 language TEXT,
                 nickname TEXT,
                 cache TEXT,
-                cacheenabled TEXT default "true"
+                cacheenabled TEXT default "true",
+                autopickcache TEXT default "true"
             )`
         );
 
@@ -351,6 +352,13 @@ async function createTables(DB) {
                 ADD
                     cacheenabled text default "true"`
               );
+
+              tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    autopickcache text default "true"`
+              );
               
 
               tx.executeSql(
@@ -402,7 +410,62 @@ async function createTables(DB) {
 
         }
 
+        if (dbVersion == 8) {
 
+            tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    autopickcache text default "true"`
+              );
+
+            tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS privateboards_messages_db2 (
+                    board TEXT,
+                    nickname TEXT,
+                    address TEXT,
+                    type TEXT,
+                    message TEXT,
+                    timestamp TEXT,
+                    read BOOLEAN default 1,
+                    hash TEXT,
+                    reply TEXT,
+                    UNIQUE (timestamp)
+                )`
+            );
+
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db2 SELECT * FROM privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
+                board TEXT,
+                nickname TEXT,
+                address TEXT,
+                type TEXT,
+                message TEXT,
+                timestamp TEXT,
+                read BOOLEAN default 1,
+                hash TEXT,
+                reply TEXT,
+                UNIQUE (timestamp)
+            )`
+        );
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db SELECT * FROM privateboards_messages_db2`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db2`
+        );
+        }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -517,7 +580,8 @@ export async function savePreferencesToDatabase(preferences) {
                 language = ?,
                 nickname = ?,
                 cache = ?,
-                cacheenabled = ?
+                cacheenabled = ?,
+                autopickcache = ?
             WHERE
                 id = 0`,
             [
@@ -533,7 +597,8 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.language,
                 preferences.nickname,
                 preferences.cache,
-                preferences.cacheEnabled
+                preferences.cacheEnabled,
+                preferences.autoPickCache
             ]
         );
     });
@@ -554,7 +619,8 @@ export async function loadPreferencesFromDatabase() {
             language,
             nickname,
             cache,
-            cacheenabled
+            cacheenabled,
+            autopickcache
         FROM
             preferences
         WHERE
@@ -577,7 +643,8 @@ export async function loadPreferencesFromDatabase() {
             language: item.language,
             nickname: item.nickname,
             cache: item.cache,
-            cacheEnabled: item.cacheenabled
+            cacheEnabled: item.cacheenabled,
+            autoPickCache: item.autopickcache
         }
     }
 
