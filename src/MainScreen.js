@@ -1042,30 +1042,34 @@ async function checkIfStuck() {
 async function backgroundSyncMessages(navigation) {
 
     // Add check if websocket // cache is working
-    
-    try {
-        const cacheURL = `${Globals.preferences.cache}/api/v1/info`;
-        console.log('trying to get ', cacheURL);
-        const resp = await fetch(cacheURL, {
-           method: 'GET'
-        }, 3000);
-        console.log(resp);
-        if (!resp.ok) {
-            Globals.APIOnline = false;
-        } else {
-            Globals.APIOnline = true;
+    if (Globals.preferences.cacheEnabled == "true") {
+
+        try {
+            const cacheURL = `${Globals.preferences.cache}/api/v1/info`;
+            console.log('trying to get ', cacheURL);
+            const resp = await fetch(cacheURL, {
+            method: 'GET'
+            }, 3000);
+            if (!resp.ok) {
+                Globals.APIOnline = false;
+            } else {
+                Globals.APIOnline = true;
+            }
+        } catch (e) {
+        console.log(e);
+        Globals.APIOnline = false;
         }
-    } catch (e) {
-      console.log(e);
-      Globals.APIOnline = false;
     }
 
-    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
+    console.log('API is ', Globals.APIOnline);
+
+
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled == "true" && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
         startWebsocket();
-        if (Globals.webSocketStatus == 'online') return;
+        if (Globals.webSocketStatus == 'online' && Globals.websocketEnabled == 'true') return;
     }
     
-    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred) {
+    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred && Globals.websocketEnabled == 'true') {
         Globals.syncingMessages = false;
         return;
     }
@@ -1074,11 +1078,11 @@ async function backgroundSyncMessages(navigation) {
 
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
-    // Globals.syncingMessagesCount += 1;
     return;
   } else {
     console.log('Commencing message sync.', Globals.syncingMessages);
   }
+
   Globals.syncingMessages = true;
 
   if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
@@ -1143,7 +1147,7 @@ async function backgroundSyncMessages(navigation) {
             try {
                 let message = await getMessage(thisExtra, thisHash, navigation);
             } catch (err) {
-
+                console.log(err);
             }
             saveKnownTransaction(thisHash);
             if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);

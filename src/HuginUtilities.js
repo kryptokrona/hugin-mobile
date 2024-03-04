@@ -510,7 +510,11 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
     .then(async (json) => {
 
       const items = json.encrypted_group_posts;
-      if (!items.length) resolve(true);
+      if (!items.length) {
+        resolve(true);
+        return;
+      }
+    
       Globals.lastMessageTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       for (item in items) {
 
@@ -557,7 +561,10 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
       console.log(json);
       console.log('We have items');
       const items = json.encrypted_posts;
-      if (!items.length) resolve(true);
+      if (!items.length) {
+        resolve(true);
+        return;
+      }
       Globals.lastDMTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       console.log('Looping items');
       for (item in items) {
@@ -940,6 +947,8 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           }
         }
 
+        console.log('Thats cool we keep goinbg')
+
         let i = 0;
 
         let payees = await loadPayeeDataFromDatabase();
@@ -964,7 +973,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
         
         if (!decryptBox) {
           console.log('No encrypted message found.. Sad!')
-          reject();
+          resolve();
           return;
         }
 
