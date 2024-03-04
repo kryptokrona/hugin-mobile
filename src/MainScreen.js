@@ -119,7 +119,6 @@ async function init(navigation) {
     }
 
     initGlobals();
-
     getBestCache();
 
     PushNotification.configure({
@@ -1041,13 +1040,28 @@ async function checkIfStuck() {
 }
 
 async function backgroundSyncMessages(navigation) {
+
     // Add check if websocket // cache is working
-    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled) {
+    
+    try {
+        const cacheURL = `${Globals.cache}/api/v1/info`;
+        const resp = await fetch(cacheURL, {
+           method: 'GET'
+        }, 3000);
+        if (!resp.ok) {
+            Globals.APIOnline = false;
+        } else {
+            Globals.APIOnline = true;
+        }
+    } catch (e) {
+      console.log(e);
+      Globals.APIOnline = false;
+    }
+
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled && Globals.APIOnline) {
         await startWebsocket();
         if (Globals.webSocketStatus == 'online') return;
     }
-    console.log('Globals.initalSyncOccurred', Globals.initalSyncOccurred);
-    console.log('Globals.webSocketStatus', Globals.webSocketStatus);
     
     if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred) {
         Globals.syncingMessages = false;
@@ -1065,7 +1079,9 @@ async function backgroundSyncMessages(navigation) {
   }
   Globals.syncingMessages = true;
 
-  if (Globals.preferences.cacheEnabled == "true") {
+  if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
+
+    console.log('Syncing from API..');
 
     await cacheSync();
     await cacheSyncDMs();
@@ -1080,6 +1096,8 @@ async function backgroundSyncMessages(navigation) {
   
 
   try {
+
+        console.log('Syncing from node..');
     
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let knownTXs = await getKnownTransactions();
