@@ -1044,10 +1044,12 @@ async function backgroundSyncMessages(navigation) {
     // Add check if websocket // cache is working
     
     try {
-        const cacheURL = `${Globals.cache}/api/v1/info`;
+        const cacheURL = `${Globals.preferences.cache}/api/v1/info`;
+        console.log('trying to get ', cacheURL);
         const resp = await fetch(cacheURL, {
            method: 'GET'
         }, 3000);
+        console.log(resp);
         if (!resp.ok) {
             Globals.APIOnline = false;
         } else {
@@ -1058,8 +1060,8 @@ async function backgroundSyncMessages(navigation) {
       Globals.APIOnline = false;
     }
 
-    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled && Globals.APIOnline) {
-        await startWebsocket();
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
+        startWebsocket();
         if (Globals.webSocketStatus == 'online') return;
     }
     
