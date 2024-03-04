@@ -596,7 +596,8 @@ export async function savePreferencesToDatabase(preferences) {
                 nickname = ?,
                 cache = ?,
                 cacheenabled = ?,
-                autopickcache = ?
+                autopickcache = ?,
+                websocketenabled = ?
             WHERE
                 id = 0`,
             [
@@ -613,7 +614,8 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.nickname,
                 preferences.cache,
                 preferences.cacheEnabled,
-                preferences.autoPickCache
+                preferences.autoPickCache,
+                preferences.websocketEnabled
             ]
         );
     });
@@ -709,6 +711,16 @@ export async function saveKnownTransaction(txhash) {
           ]
       );
   });
+
+}
+
+export function emptyKnownTXs() {
+
+    database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM knownTXs`
+        );
+    });
 
 }
 

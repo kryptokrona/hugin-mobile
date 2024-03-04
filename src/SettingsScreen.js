@@ -38,7 +38,7 @@ import { Styles } from './Styles';
 import { Globals } from './Globals';
 import { Authenticate } from './Authenticate';
 import { SeedComponent, CopyButton } from './SharedComponents';
-import { savePreferencesToDatabase, setHaveWallet } from './Database';
+import { savePreferencesToDatabase, setHaveWallet, emptyKnownTXs } from './Database';
 
 import {
     navigateWithDisabledBack, toastPopUp, getArrivalTime,
@@ -1045,6 +1045,7 @@ class SwapAPIScreenNoTranslation extends React.Component {
                                 Globals.preferences.cacheEnabled = 'true';
                             } else {
                                 Globals.preferences.cacheEnabled = 'false';
+                                Globals.APIOnline = false;
                             }
                             savePreferencesToDatabase(Globals.preferences);
                         }}
@@ -1840,32 +1841,6 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
 
                             },
-                            // {
-                            //     title: `View ${Config.appName} on ${Platform.OS === 'ios' ? 'the App Store' : 'Google Play'}`,
-                            //     description: 'Leave a rating or send the link to your friends',
-                            //     icon: {
-                            //         iconName: Platform.OS === 'ios' ? 'app-store' : 'google-play',
-                            //         IconType: Entypo,
-                            //     },
-                            //     onClick: () => {
-                            //         const link = Platform.OS === 'ios' ? Config.appStoreLink : Config.googlePlayLink;
-                            //
-                            //         Linking.openURL(link)
-                            //                .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err));
-                            //     },
-                            // },
-                            // {
-                            //     title: `Find ${Config.appName} on Github`,
-                            //     description: 'View the source code and give feedback',
-                            //     icon: {
-                            //         iconName: 'github',
-                            //         IconType: AntDesign,
-                            //     },
-                            //     onClick: () => {
-                            //         Linking.openURL(Config.repoLink)
-                            //                .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err))
-                            //     },
-                            // },
                             {
                                 title: t('resyncWallet'),
                                 description: t('resyncWalletDescr'),
@@ -1911,6 +1886,21 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                             },
                             {
+                                title: t('clearKnownMessages'),
+                                description: t('clearKnownMessagesDescr'),
+                                icon: {
+                                    iconName: 'delete',
+                                    IconType: AntDesign,
+                                },
+                                onClick: () => {
+                                        Globals.knownTXs = [];
+                                        Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+                                        Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+                                        emptyKnownTXs();
+
+                                },
+                            },
+                            {
                                 title: t('deleteWallet'),
                                 description: t('deleteWalletDescr'),
                                 icon: {
@@ -1930,6 +1920,32 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     } else {
                                         deleteWallet(this.props.navigation)
                                     }
+                                },
+                            },
+                            {
+                                title: `View ${Config.appName} on ${Platform.OS === 'ios' ? 'the App Store' : 'Google Play'}`,
+                                description: 'Leave a rating or send the link to your friends',
+                                icon: {
+                                    iconName: Platform.OS === 'ios' ? 'app-store' : 'google-play',
+                                    IconType: Entypo,
+                                },
+                                onClick: () => {
+                                    const link = Platform.OS === 'ios' ? Config.appStoreLink : Config.googlePlayLink;
+                            
+                                    Linking.openURL(link)
+                                           .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err));
+                                },
+                            },
+                            {
+                                title: `Find ${Config.appName} on Github`,
+                                description: 'View the source code and give feedback',
+                                icon: {
+                                    iconName: 'github',
+                                    IconType: AntDesign,
+                                },
+                                onClick: () => {
+                                    Linking.openURL(Config.repoLink)
+                                           .catch((err) => Globals.logger.addLogMessage('Failed to open url: ' + err))
                                 },
                             },
                             {
