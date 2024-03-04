@@ -53,6 +53,7 @@ class globals {
             cache: Config.defaultCache,
             cacheEnabled: 'true',
             autoPickCache: 'true',
+            websocketEnabled: 'true',
             nickname: 'Anonymous'
         };
 
@@ -339,7 +340,7 @@ function updateConnection(connection) {
 
     console.log('websockets online', Globals.websockets)
 
-    if (Globals.websockets) return;
+    if (Globals.websockets || Globals.preferences.websocketEnabled != 'true') return;
     
 
     console.log('CacheNabled:', Globals.preferences.cacheEnabled)

@@ -959,7 +959,10 @@ class SwapAPIScreenNoTranslation extends React.Component {
 
             enabled: Globals.preferences.cacheEnabled == "true" ? true : false,
 
-            autoPickCache: Globals.preferences.autoPickCache == "true" ? true : false
+            autoPickCache: Globals.preferences.autoPickCache == "true" ? true : false,
+
+            websocketEnabled: Globals.preferences.websocketEnabled == "true" ? true : false
+
         };
     }
 
@@ -1057,7 +1060,8 @@ class SwapAPIScreenNoTranslation extends React.Component {
                 </View>
             </View>
             {this.state.enabled && 
-            <View style={{ width: '100%', marginTop: 50, justifyContent: "center", alignItems: "center" }}>
+            <>
+            <View style={{ width: '100%', marginTop: 10, justifyContent: "center", alignItems: "center" }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Switch
                         value={this.state.autoPickCache}
@@ -1084,6 +1088,34 @@ class SwapAPIScreenNoTranslation extends React.Component {
                     </Text>
                 </View>
             </View>
+            <View style={{ width: '100%', marginTop: 10, justifyContent: "center", alignItems: "center" }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Switch
+                        value={this.state.websocketEnabled}
+                        onValueChange={(value) => {
+                            this.setState({
+                                websocketEnabled: value
+                            });
+                            console.log(value);
+                            if (value) {
+                                Globals.preferences.websocketEnabled = 'true';
+                            } else {
+                                Globals.preferences.websocketEnabled = 'false';
+                            }
+                            savePreferencesToDatabase(Globals.preferences);
+                        }}
+                        style={{ marginRight: 15 }}
+                    />
+                    <Text style={{
+                        fontSize: 15,
+                        color: this.props.screenProps.primaryColour,
+                        fontFamily: "Montserrat-Regular",
+                    }}>
+                        {t('enableWebsocket')}
+                    </Text>
+                </View>
+            </View>
+            </>
     }
      {this.state.enabled &&            
                 

@@ -165,7 +165,8 @@ async function createTables(DB) {
                 nickname TEXT,
                 cache TEXT,
                 cacheenabled TEXT default "true",
-                autopickcache TEXT default "true"
+                autopickcache TEXT default "true",
+                websocketenabled TEXT default "true"
             )`
         );
 
@@ -359,6 +360,13 @@ async function createTables(DB) {
                 ADD
                     autopickcache text default "true"`
               );
+
+              tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    websocketenabled text default "true"`
+              );
               
 
               tx.executeSql(
@@ -412,7 +420,14 @@ async function createTables(DB) {
 
         if (dbVersion == 8) {
 
-            tx.executeSql(
+              tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    websocketenabled text default "true"`
+              );
+
+              tx.executeSql(
                 `ALTER TABLE
                     preferences
                 ADD
@@ -620,7 +635,8 @@ export async function loadPreferencesFromDatabase() {
             nickname,
             cache,
             cacheenabled,
-            autopickcache
+            autopickcache,
+            websocketenabled
         FROM
             preferences
         WHERE
@@ -644,7 +660,8 @@ export async function loadPreferencesFromDatabase() {
             nickname: item.nickname,
             cache: item.cache,
             cacheEnabled: item.cacheenabled,
-            autoPickCache: item.autopickcache
+            autoPickCache: item.autopickcache,
+            websocketEnabled: item.websocketenabled
         }
     }
 
