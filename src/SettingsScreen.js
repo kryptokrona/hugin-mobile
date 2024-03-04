@@ -614,6 +614,8 @@ class SwapNodeScreenNoTranslation extends React.Component {
         this.refresh = this.refresh.bind(this);
         this.swapNode = this.swapNode.bind(this);
 
+        console.log('Globals.daemons', Globals.daemons);    
+
         this.state = {
             /* Sort by online nodes, then uptime (highest first), then fee
             * (lowest first), then name */
@@ -962,7 +964,7 @@ class SwapAPIScreenNoTranslation extends React.Component {
     }
 
     async componentDidMount() {
-        await Globals.updateCacheList();
+        await Globals.updateNodeList();
         this.setState({ apis: Globals.caches });
         console.log(this.state);
     }
@@ -972,7 +974,7 @@ class SwapAPIScreenNoTranslation extends React.Component {
             refreshing: true,
         });
 
-        await Globals.updateCacheList();
+        await Globals.updateNodeList();
 
         for (api in Globals.caches) {
             let this_api = Globals.caches[api];

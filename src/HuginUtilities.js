@@ -111,11 +111,13 @@ export async function getBestCache(onlyOnline=true) {
 
   let recommended_cache = undefined;
 
-  await Globals.updateCacheList();
+  await Globals.updateNodeList();
 
   let cache_requests = [];
 
-  let caches = Globals.caches.sort((a, b) => 0.5 - Math.random());
+  let caches = Globals.caches.slice();
+  caches.sort((a, b) => 0.5 - Math.random());
+  caches.unshift({url: Globals.preferences.cache});
 
   for (cache in caches) {
     let this_cache = caches[cache];
@@ -143,7 +145,7 @@ export async function getBestCache(onlyOnline=true) {
 }
 
 toastPopUp('No online APIs!');
-Globals.preferences.cache = false;
+Globals.APIOnline = false;
 return false;
 
 

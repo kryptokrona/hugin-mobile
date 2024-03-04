@@ -52,7 +52,7 @@ const Config = new function() {
     /**
      * How often to process blocks, in millseconds
      */
-    this.syncThreadInterval = 4;
+    this.syncThreadInterval = 1000;
 
     /**
      * How often to update the daemon info, in milliseconds
@@ -252,11 +252,10 @@ const Config = new function() {
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
     this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json';
-
-    /**
-    * A Url to fetch Hugin Caches from.
-    */
-    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json';
+    this.nodeListURLs = [
+        'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json',
+        'https://kryptokrona.se/nodes.json'
+    ];
 
     /**
     * A Url to fetch Hugin Caches from.

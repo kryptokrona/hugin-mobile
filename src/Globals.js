@@ -20,7 +20,7 @@ import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
 import { getMessage, sendNotifications } from './HuginUtilities';
 import offline_node_list from './nodes.json';
-import offline_cache_list from './apis.json';
+import offline_cache_list from './nodes.json';
 import offline_groups_list from './groups.json';
 
 class globals {
@@ -125,6 +125,8 @@ class globals {
         this.initalSyncOccurred = false;
 
         this.websockets = 0;
+
+        this.APIOnline;
 
     }
 
@@ -271,45 +273,29 @@ class globals {
     }
 
     async updateNodeList() {
+        let i = 0;
+        while (Config.nodeListURLs.length > i) { 
         try {
             const data = await request({
                 json: true,
                 method: 'GET',
                 timeout: Config.requestTimeout,
-                url: Config.nodeListURL,
+                url: Config.nodeListURLs[i],
             });
 
             if (data.nodes) {
                 this.daemons = data.nodes;
-            } else {
-              this.daemons = offline_node_list.nodes;
-            }
+                this.caches = data.apis;
+                return;
+            } 
         } catch (error) {
           console.log(offline_node_list);
             this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
-            this.daemons = offline_node_list.nodes;
         }
+        i++;
     }
-
-    async updateCacheList() {
-        try {
-            const data = await request({
-                json: true,
-                method: 'GET',
-                timeout: Config.requestTimeout,
-                url: Config.nodeListURL,
-            });
-            console.log(data);
-            if (data.apis) {
-                this.caches = data.apis;
-            } else {
-              this.caches = offline_node_list.apis;
-            }
-        } catch (error) {
-          console.log(offline_cache_list);
-            this.logger.addLogMessage('Failed to get api list from API: ' + error.toString());
-            this.daemons = offline_cache_list.apis;
-        }
+    this.daemons = offline_node_list.nodes;
+    this.caches = offline_node_list.apis;
     }
 
     async updateGroupsList() {
@@ -357,6 +343,7 @@ function updateConnection(connection) {
     
 
     console.log('CacheNabled:', Globals.preferences.cacheEnabled)
+    console.log(Globals.preferences.cache);
     if (Globals.preferences.cacheEnabled != "true") return;
     const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
     console.log(socketURL);
@@ -440,8 +427,5 @@ export async function initGlobals() {
 
     await Globals.updateNodeList();
     await Globals.updateGroupsList();
-    console.log('CacheNabled:', Globals.preferences.cacheEnabled)
-    if (Globals.preferences.cacheEnabled ) {
-     startWebsocket();
-    }
+
 }
