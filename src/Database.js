@@ -1293,32 +1293,34 @@ export async function getGroupMessages(group=false, limit=25) {
 
     const [data] = await database.executeSql(
         `
-        SELECT 
-    pm.nickname,
-    pm.type,
-    pm.message,
-    pm.timestamp,
-    pm.board,
-    pm.address,
-    pm.hash,
-    pm.reply,
-    COALESCE(rc.reply_count, 0) AS replies
-FROM 
-    privateboards_messages_db pm
-LEFT JOIN (
-    SELECT 
-        reply,
-        COUNT(*) AS reply_count
+            SELECT 
+        pm.nickname,
+        pm.type,
+        pm.message,
+        pm.timestamp,
+        pm.board,
+        pm.address,
+        pm.hash,
+        pm.reply,
+        COALESCE(rc.reply_count, 0) AS replies
     FROM 
-        privateboards_messages_db
-    GROUP BY 
-        reply
-) rc ON pm.hash = rc.reply
-WHERE 
-    pm.reply = '' ${group ? ' AND pm.board = "' + group + '"' : ''}
-ORDER BY 
-    pm.timestamp DESC
-LIMIT ${limit}`
+        privateboards_messages_db pm
+        LEFT JOIN (
+            SELECT 
+                reply,
+                COUNT(*) AS reply_count
+            FROM 
+                privateboards_messages_db
+            WHERE 
+                reply != ''
+            GROUP BY 
+                reply
+        ) rc ON pm.hash = rc.reply
+    WHERE 
+        pm.reply = '' ${group ? ' AND pm.board = "' + group + '"' : ''}
+    ORDER BY 
+        pm.timestamp DESC
+    LIMIT ${limit}`
     );
 
     const [count] = await database.executeSql(
