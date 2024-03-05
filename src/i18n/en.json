@@ -192,5 +192,10 @@
   autoSelectAPI: "Select API automatically",
   pickAPIList: "Public APIs",
   swappingAPI: "Swapping API..",
-  APISwapped: "API successfully swapped!"
+  APISwapped: "API successfully swapped!",
+  autoPickAPI: "Automatically choose an online API",
+  enableWebsocket: "Enable websocket connection",
+  clearKnownMessages: "Empty known messages list",
+  clearKnownMessagesDescr: "This will resync all messages from the past 24h",
+  alreadyOptimizing: "Already optimizing. Please wait until the ongoing optimization completes."
 }

@@ -400,9 +400,9 @@ async function optimizeTimer() {
 
 export async function optimizeMessages(nbrOfTxs, force=false) {
 
-  if (!Globals?.wallet) { return }
+  if (!Globals?.wallet) { return false }
 
-  console.log('Optimizing messages..');
+  console.log('Optimizing messages..', force);
 
   if (Globals.wallet.subWallets.getAddresses().length === 1) {
 
@@ -411,12 +411,12 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
     const [address, error] = await Globals.wallet.importSubWallet(deterministicPrivateKey.private_key);
     
     if (error) {
-       return;
+       return false;
     }
 
   }
 
-  if (optimizing === true) return "";
+  if (optimizing === true) return 1;
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
 
@@ -426,7 +426,7 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
   if (inputs.length > 8 && !force) {
     Globals.logger.addLogMessage(`Already have ${inputs.length} available inputs. Skipping optimization.`);
-    return inputs.length;
+    return 2;
   }
 
   let payments = [];
@@ -601,6 +601,8 @@ export async function createGroup() {
 
 export async function sendGroupsMessage(message, group, reply=false) {
 
+  console.log('reply', reply)
+
   const my_address = Globals.wallet.getPrimaryAddress();
 
   const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
@@ -625,6 +627,8 @@ export async function sendGroupsMessage(message, group, reply=false) {
     reply = '';
   }
 
+  console.log(message_json)
+
   const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
 
   const secretbox = nacl.secretbox(payload_unencrypted, nonce, hexToUint(group));
@@ -647,6 +651,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
       Buffer.from(payload_encrypted_hex, 'hex')
   );
   if (!result.success) {
+    optimizeMessages(10, true);
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
@@ -739,6 +744,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
+      optimizeMessages(10, true);
       console.log(result);
       try {
         result = await sendMessageWithHuginAPI(payload_hex);

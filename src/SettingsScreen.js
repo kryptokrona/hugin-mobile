@@ -619,11 +619,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
         this.state = {
             /* Sort by online nodes, then uptime (highest first), then fee
             * (lowest first), then name */
-            nodes: _.orderBy(
-                Globals.daemons,
-                ['online', 'availability', 'fee.amount', 'name'],
-                ['desc', 'desc', 'asc', 'asc']
-            ),
+            nodes: Globals.daemons,
 
             selectedNode: Globals.preferences.node,
 
@@ -661,11 +657,7 @@ class SwapNodeScreenNoTranslation extends React.Component {
         this.setState((prevState) => ({
             refreshing: false,
 
-            nodes: _.orderBy(
-                Globals.daemons,
-                ['online', 'availability', 'fee.amount', 'name'],
-                ['desc', 'desc', 'asc', 'asc']
-            ),
+            nodes: Globals.daemons,
 
             forceUpdate: prevState.forceUpdate + 1,
         }));
@@ -957,11 +949,11 @@ class SwapAPIScreenNoTranslation extends React.Component {
 
             refreshing: false,
 
-            enabled: Globals.preferences.cacheEnabled == "true" ? true : false,
+            enabled: Globals.preferences?.cacheEnabled == "true" ? true : false,
 
-            autoPickCache: Globals.preferences.autoPickCache == "true" ? true : false,
+            autoPickCache: Globals.preferences?.autoPickCache == "true" ? true : false,
 
-            websocketEnabled: Globals.preferences.websocketEnabled == "true" ? true : false
+            websocketEnabled: Globals.preferences?.websocketEnabled == "true" ? true : false
 
         };
     }
@@ -1835,6 +1827,8 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         toastPopUp(i18next.t('optimizationComplete'));
                                     } else if (result === false) {
                                         toastPopUp(i18next.t('optimizationFailed'));
+                                    } else if (result == 1) {
+                                        toastPopUp(i18next.t('alreadyOptimizing'));
                                     } else {
                                         toastPopUp(i18next.t('cancelOptimize').replace(/{inputs.length}/g, result));
                                     }
@@ -1896,6 +1890,7 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         Globals.knownTXs = [];
                                         Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
                                         Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+                                        Globals.notificationQueue = false;
                                         emptyKnownTXs();
 
                                 },
