@@ -129,6 +129,8 @@ class globals {
 
         this.APIOnline;
 
+        this.messagesLoaded = 0;
+
     }
 
     reset() {

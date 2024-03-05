@@ -821,7 +821,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
         Globals.updateGroupsFunctions.push(async () => {
             this.setState({
-                messages: await getGroupMessages(this.state.key, this.state.messages.length)
+                messages: await getGroupMessages(this.state.key, Globals.messagesLoaded + 1)
             })
         });
 
@@ -832,6 +832,8 @@ export class GroupChatScreenNoTranslation extends React.Component {
         this.setState({
           messages: messages
         });
+
+        Globals.messagesLoaded = messages.length;
 
         Globals.activeGroup = this.state.key;
 
@@ -869,22 +871,12 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
               items.push(
                 <TouchableOpacity onPress={async () => {
-                if (thisMessage.reply && thisMessage.reply != 0) {
 
-                    
-                this.state.replies = await getReplies(thisMessage.reply);
+                    console.log(thisMessage);
 
-                const op = await getGroupsMessage(thisMessage.reply);
-                if (op.length == 0) {
-                    return;
-                }
-                this.setActivePost(op[0]);
-
-                } else {
                 this.state.replies = await getReplies(thisMessage.hash);
                 this.setActivePost(thisMessage);
 
-                }
                 this.setMessageModalVisible(true);
 
                 }}>
@@ -994,6 +986,9 @@ export class GroupChatScreenNoTranslation extends React.Component {
             }
 
             const submitReply = async (text) => {
+
+                console.log(this.state.activePost.hash);
+                return;
                 
                 Keyboard.dismiss();
                 this.setState({reply: '', replyHasLength: false, replying: false});
@@ -1083,6 +1078,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                         messageHasLength: false,
                         sending: false
                       });
+                      Globals.messagesLoaded = updated_messages.length;
 
 
              } else {
@@ -1101,6 +1097,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     messageHasLength: false,
                     sending: false
                   });
+                  Globals.messagesLoaded = updated_messages.length;
 
              }
            }
@@ -1187,6 +1184,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 onPress={async () => {
                     
                     let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length + 25);
+                    Globals.messagesLoaded = updated_messages.length;
                     this.setState({
                     messages: updated_messages,
                     messageHasLength: false
