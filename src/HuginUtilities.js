@@ -491,11 +491,12 @@ export async function sendMessageWithHuginAPI(payload_hex) {
 
 }
 
-export async function cacheSync(latest_board_message_timestamp=0, first=true, page=1) {
+export async function cacheSync(first=true, page=1) {
 
   return new Promise(async (resolve, reject) => {
 
   console.log('Global timestamp', Globals.lastMessageTimestamp);
+  
 
     if(first) {
       latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
@@ -514,8 +515,6 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
         resolve(true);
         return;
       }
-    
-      Globals.lastMessageTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       for (item in items) {
 
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
@@ -528,18 +527,20 @@ export async function cacheSync(latest_board_message_timestamp=0, first=true, pa
 
       }
       if (json.total_pages == 0) resolve(true);
+
       if (json.current_page < json.total_pages) {
-            await cacheSync(latest_board_message_timestamp, false, page+1);
+            await cacheSync(false, page+1);
             resolve(true);
       } else {
         console.log('Returning..')
+        Globals.lastMessageTimestamp = Date.now();
         resolve(true);
       }
     })
 });
 }
 
-export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true, page=1) {
+export async function cacheSyncDMs(first=true, page=1) {
 
   return new Promise(async (resolve, reject) => {
     try {
@@ -565,7 +566,6 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
         resolve(true);
         return;
       }
-      Globals.lastDMTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
       console.log('Looping items');
       for (item in items) {
 
@@ -582,10 +582,10 @@ export async function cacheSyncDMs(latest_board_message_timestamp=0, first=true,
       }
       if (json.total_pages == 0) resolve(true);
       if (json.current_page < json.total_pages) {
-            await cacheSyncDMs(latest_board_message_timestamp, false, page+1);
+            await cacheSyncDMs(false, page+1);
             resolve(true);
       } else {
-        Globals.lastDMTimestamp = (parseInt(items[0].created_at) + 1) * 1000;
+        Globals.lastDMTimestamp = Date.now();
         resolve(true);
       }
     })
