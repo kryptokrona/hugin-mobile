@@ -197,5 +197,6 @@
   enableWebsocket: "Enable websocket connection",
   clearKnownMessages: "Empty known messages list",
   clearKnownMessagesDescr: "This will resync all messages from the past 24h",
-  alreadyOptimizing: "Already optimizing. Please wait until the ongoing optimization completes."
+  alreadyOptimizing: "Already optimizing. Please wait until the ongoing optimization completes.",
+  deleteContactWarning: "Are you sure you want to delete this contact?"
 }
