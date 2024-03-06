@@ -986,9 +986,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
             }
 
             const submitReply = async (text) => {
-
-                console.log(this.state.activePost.hash);
-                return;
                 
                 Keyboard.dismiss();
                 this.setState({reply: '', replyHasLength: false, replying: false});
@@ -1182,7 +1179,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     alignItems: 'center',
                     justifyContent: 'center'}}
                 onPress={async () => {
-                    
+                    console.log('Loading:' , this.state.messages.length + 25)
                     let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length + 25);
                     Globals.messagesLoaded = updated_messages.length;
                     this.setState({

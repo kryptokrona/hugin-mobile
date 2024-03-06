@@ -131,6 +131,8 @@ class globals {
 
         this.messagesLoaded = 0;
 
+        this.lastSyncEvent = Date.now();
+
     }
 
     reset() {

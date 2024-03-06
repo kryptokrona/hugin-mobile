@@ -81,7 +81,7 @@ async function init(navigation) {
     });
 
     Globals.wallet.on('deadnode', () => {
-        toastPopUp(i18next.t('nodeOfflineWarning'), false);
+       // toastPopUp(i18next.t('nodeOfflineWarning'), false);
     });
 
     Globals.wallet.setLoggerCallback((prettyMessage, message) => {
@@ -1041,6 +1041,10 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages(navigation) {
 
+    const syncingHasStalled = (Date.now - Globals.lastSyncEvent > 1000 * 60 );
+
+    if (syncingHasStalled ) Globals.syncingMessages = false;
+
     // Add check if websocket // cache is working
     if (Globals.preferences.cacheEnabled == "true") {
 
@@ -1130,6 +1134,8 @@ async function backgroundSyncMessages(navigation) {
         for (transaction in transactions) {
 
           try {
+
+            Globals.lastSyncEvent = Date.now();
 
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
 

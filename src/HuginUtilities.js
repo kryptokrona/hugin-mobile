@@ -517,6 +517,8 @@ export async function cacheSync(first=true, page=1) {
       }
       for (item in items) {
 
+        Globals.lastSyncEvent = Date.now();
+
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
 
         let groupMessage = await getGroupMessage({
@@ -568,6 +570,8 @@ export async function cacheSyncDMs(first=true, page=1) {
       }
       console.log('Looping items');
       for (item in items) {
+
+        Globals.lastSyncEvent = Date.now();
 
         if (await messageExists(items[item].tx_timestamp)) continue;
         console.log('Item doesnt exist');
@@ -909,7 +913,8 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
             reject();
             return;
           }
-          tx.hash = hash;
+          if (!tx.hash) tx.hash = hash;
+          
           let groupMessage = await getGroupMessage(tx);
           resolve(groupMessage);
         }
