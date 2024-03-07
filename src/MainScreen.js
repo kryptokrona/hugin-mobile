@@ -29,7 +29,7 @@ import { Address } from 'kryptokrona-utils';
 
 import Config from './Config';
 
-import { Styles } from './Styles';
+import { Styles, unread_counter_style, unread_counter_text_style } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
 import { getBestCache, cacheSync, cacheSyncDMs, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage, sendNotifications } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
@@ -451,26 +451,6 @@ export class MainScreen extends React.PureComponent {
             flex: 1,
             alignContent: 'center'
           }
-
-          const unread_counter_style = {
-            borderRadius: 15,
-            minWidth: 28,
-            height: 28,
-            backgroundColor: 'red',
-            color: 'white',
-            padding: 4,
-            borderWidth: 5,
-            marginTop: -10,
-            marginRight: -10
-          };
-
-          const unread_counter_text_style = {
-            fontSize: 14,
-            lineHeight: 14,
-            fontFamily: 'Montserrat-Bold',
-            color: 'white',
-            textAlign: 'center'
-          };
 
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
@@ -1041,7 +1021,11 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages(navigation) {
 
-    const syncingHasStalled = (Date.now - Globals.lastSyncEvent > 1000 * 60 );
+    const syncingHasStalled = (Date.now() - Globals.lastSyncEvent > 1000 * 60 );
+
+    console.log('Has syncing stalled?', syncingHasStalled);
+    console.log(Date.now() - Globals.lastSyncEvent);
+    console.log(Globals.lastSyncEvent);
 
     if (syncingHasStalled ) Globals.syncingMessages = false;
 

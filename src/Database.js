@@ -418,69 +418,6 @@ async function createTables(DB) {
 
         }
 
-        if (dbVersion == 8) {
-
-              tx.executeSql(
-                `ALTER TABLE
-                    preferences
-                ADD
-                    websocketenabled text default "true"`
-              );
-
-              tx.executeSql(
-                `ALTER TABLE
-                    preferences
-                ADD
-                    autopickcache text default "true"`
-              );
-
-            tx.executeSql(
-                `CREATE TABLE IF NOT EXISTS privateboards_messages_db2 (
-                    board TEXT,
-                    nickname TEXT,
-                    address TEXT,
-                    type TEXT,
-                    message TEXT,
-                    timestamp TEXT,
-                    read BOOLEAN default 1,
-                    hash TEXT,
-                    reply TEXT,
-                    UNIQUE (timestamp)
-                )`
-            );
-
-
-        tx.executeSql(
-            `REPLACE INTO privateboards_messages_db2 SELECT * FROM privateboards_messages_db`
-        );
-
-        tx.executeSql(
-            `DROP TABLE privateboards_messages_db`
-        );
-
-        tx.executeSql(
-            `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
-                board TEXT,
-                nickname TEXT,
-                address TEXT,
-                type TEXT,
-                message TEXT,
-                timestamp TEXT,
-                read BOOLEAN default 1,
-                hash TEXT,
-                reply TEXT,
-                UNIQUE (timestamp)
-            )`
-        );
-
-        tx.executeSql(
-            `REPLACE INTO privateboards_messages_db SELECT * FROM privateboards_messages_db2`
-        );
-
-        tx.executeSql(
-            `DROP TABLE privateboards_messages_db2`
-        );
-        }
 
         /* Setup default preference values */
         tx.executeSql(
@@ -1135,6 +1072,7 @@ export async function loadGroupsDataFromDatabase() {
         const groups = data.rows.raw();
 
         let latestMessages = await getLatestGroupMessages();
+        let unreads = await getUnreadsPerGroup();
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
@@ -1145,7 +1083,8 @@ export async function loadGroupsDataFromDatabase() {
                 lastMessage: latestMessage.length ? latestMessage[0].message : false,
                 lastMessageNickname: latestMessage.length ? latestMessage[0].nickname : false,
                 lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
-                read: latestMessage.length ? latestMessage[0].read : true
+                read: latestMessage.length ? latestMessage[0].read : true,
+                unreads: unreads[item.key]
             })
 
           }
@@ -1319,6 +1258,8 @@ export async function getMessages(conversation=false, limit=25) {
 }
 
 export async function getGroupMessages(group=false, limit=25) {
+
+    if (limit < 25) limit = 25;
 
     const [data] = await database.executeSql(
         `
@@ -1700,6 +1641,47 @@ export async function getUnreadMessages() {
   return unread_messages;
 
 }
+
+
+export async function getUnreadsPerGroup() {
+
+    console.log('Getting unreads grouped..');
+  
+    let unread_messages = {};
+
+        const [data_groups] = await database.executeSql(
+            `
+            SELECT board, COUNT(*)
+            FROM privateboards_messages_db
+            WHERE read != "1"
+            GROUP BY board;
+            `
+        );
+
+
+
+    console.log(data_groups);
+
+    const unreads = {};
+
+    
+  
+    if (data_groups && data_groups.rows && data_groups.rows.length) {
+
+        for (let i = 0; i < data_groups.rows.length; i++) {
+
+            const item = data_groups.rows.item(i);
+            console.log(item);
+            unreads[item.board] = item['COUNT(*)'];
+
+        }
+    }
+  
+    return unreads;
+  
+  }
+
+  
 
 export async function getBoardSubscriptions() {
 
