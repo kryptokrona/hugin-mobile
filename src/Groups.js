@@ -25,7 +25,7 @@ import Config from './Config';
 import ListItem from './ListItem';
 import List from './ListContainer';
 
-import { Styles } from './Styles';
+import { Styles, unread_counter_style, unread_counter_text_style } from './Styles';
 
 import Moment from 'react-moment';
 
@@ -206,7 +206,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                             <ListItem
                                 title={item.group}
                                 subtitle={item.lastMessage ? <View><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text ellipsizeMode='tail' numberOfLines={1} style={{fontFamily: 'Montserrat-Regular'}}>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></View> : t('noMessages')}
-                                chevron={item.read == '1' ? false : newMessageIndicator }
+                                chevron={item.read == '1' ? false : <View style={[unread_counter_style, {borderColor: "#171717", marginTop: 1, marginRight: 5}]}><Text style={unread_counter_text_style}>{item.unreads}</Text></View> }
                                 leftIcon={
                                     <Image
                                       style={{width: 50, height: 50}}
