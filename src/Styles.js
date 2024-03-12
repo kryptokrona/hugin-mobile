@@ -35,6 +35,26 @@ export const Styles = StyleSheet.create({
     }
 });
 
+export const unread_counter_style = {
+    borderRadius: 15,
+    minWidth: 28,
+    height: 28,
+    backgroundColor: 'red',
+    color: 'white',
+    padding: 4,
+    borderWidth: 5,
+    marginTop: -10,
+    marginRight: -10
+  };
+
+ export const unread_counter_text_style = {
+    fontSize: 14,
+    lineHeight: 14,
+    fontFamily: 'Montserrat-Bold',
+    color: 'white',
+    textAlign: 'center'
+  };
+
 export const legacyRNElementsColors = {
     primary: "#9E9E9E",
     primary1: "#4d86f7",

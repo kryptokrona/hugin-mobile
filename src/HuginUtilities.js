@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestBoardMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, boardsMessageExists } from './Database';
+import { savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage } from './Database';
 
 /**
  * Save wallet in background
@@ -56,16 +56,11 @@ const xkrUtils = new CryptoNote()
 const crypto = new Crypto()
 
 import {
+  delay,
     toastPopUp,
 } from './Utilities';
 
-
-function tryNode(this_node) {
-    return new Promise((resolve) => {
-
-
-  });
-}
+let optimizing = false
 
 export async function getBestNode(ssl=true) {
 
@@ -108,97 +103,135 @@ if (recommended_node == undefined) {
 
 }
 
+export async function getBestCache(onlyOnline=true) {
 
-export async function getBestCache() {
+  if (Globals.preferences.autoPickCache != 'true') return;
+
+  console.log('Getting best cache..')
 
   let recommended_cache = undefined;
 
-  await Globals.updateCacheList();
+  await Globals.updateNodeList();
 
   let cache_requests = [];
 
-  let caches = Globals.caches.sort((a, b) => 0.5 - Math.random());
+  let caches = Globals.caches.slice();
+  caches.sort((a, b) => 0.5 - Math.random());
+  caches.unshift({url: Globals.preferences.cache});
 
   for (cache in caches) {
     let this_cache = caches[cache];
-    let cacheURL = `${this_cache.url}/api/v1/posts`;
+    let cacheURL = `${this_cache.url}/api/v1/info`;
+    console.log('Trying ', this_cache)
     try {
       const resp = await fetch(cacheURL, {
          method: 'GET'
-      }, 1000);
-     if (resp.ok) {
-       recommended_cache = this_cache;
-       return(this_cache);
+      }, 3000);
+      if (!resp.ok) {continue}
+      recommended_cache = this_cache;
+      const json = await resp.json();
+      console.log(json);
+     if (json.status == "online" && onlyOnline) {
+       console.log(this_cache);
+       Globals.preferences.cache = recommended_cache.url;
+       return this_cache;
+     } else {
+      Globals.preferences.cache = recommended_cache.url;
+      return this_cache
      }
   } catch (e) {
     console.log(e);
   }
 }
 
+toastPopUp('No online APIs!');
+Globals.APIOnline = false;
+return false;
+
+
 }
 
 function trimExtra (extra) {
 
   try {
+    const timestamp = extra.t;
+    if (timestamp) return extra;
+    
+  } catch (err) {
+    console.log(err);
+  }
 
+  try {
+    const parsed = JSON.parse(extra);
+    return parsed
+  } catch (e) {
+    console.log(e);
+  }
+
+  try {
     let payload = fromHex(extra.substring(66));
     let payload_json = JSON.parse(payload);
-    return fromHex(extra.substring(66))
+    return payload_json
 
   } catch (e) {
-    return fromHex(Buffer.from(extra.substring(78)).toString())
+    console.log(e)
 
+  }
+
+  try {
+    return JSON.parse(fromHex(Buffer.from(extra.substring(78)).toString()))
+  } catch(e) {
+    console.log(e);
   }
 
 }
 
+PushNotification.configure({
+    onNotification: handleNotification,
 
-    PushNotification.configure({
-      onNotification: handleNotification,
+      permissions: {
+          alert: true,
+          badge: true,
+          sound: true,
+      },
 
-        permissions: {
-            alert: true,
-            badge: true,
-            sound: true,
-        },
+      popInitialNotification: true,
 
-        popInitialNotification: true,
+      requestPermissions: true,
 
-        requestPermissions: true,
+  });
+  function handleNotification(notification) {
 
-    });
-    function handleNotification(notification) {
+    if (notification.transaction != undefined) {
+      return;
+    }
 
-      if (notification.transaction != undefined) {
-        return;
-      }
-  
-      let payee = notification.userInfo;
-  
-      if (payee.address) {
-  
-        payee = new URLSearchParams(payee).toString();
-  
-        let url = 'xkr://'.replace('address=', '') + payee;
-  
-        Linking.openURL(url);
-  
-      } else if (payee.key) {
-  
-        let url = `xkr://?group=${payee.key}`;
-  
-        Linking.openURL(url);
-  
-      } else {
-  
-        let url = 'xkr://?board=' + payee;
-  
-        Linking.openURL(url);
-  
-  
-      }
-  
-  }
+    let payee = notification.userInfo;
+
+    if (payee.address) {
+
+      payee = new URLSearchParams(payee).toString();
+
+      let url = 'xkr://'.replace('address=', '') + payee;
+
+      Linking.openURL(url);
+
+    } else if (payee.key) {
+
+      let url = `xkr://?group=${payee.key}`;
+
+      Linking.openURL(url);
+
+    } else {
+
+      let url = 'xkr://?board=' + payee;
+
+      Linking.openURL(url);
+
+
+    }
+
+}
 
 export function intToRGB(int) {
 
@@ -217,14 +250,11 @@ export function intToRGB(int) {
   }
 }
 
-
-
 export function hashCode(str) {
 		let hash = Math.abs(str.hashCode())*0.007812499538;
     return Math.floor(hash);
 
 }
-
 
 export function get_avatar(hash, size) {
 
@@ -325,12 +355,11 @@ export function nonceFromTimestamp(tmstmp) {
   }
 
   return nonce;
-  }
+}
 
 export function hexToUint(hexString) {
 return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }
-
 
 export function getKeyPair() {
   // return new Promise((resolve) => setTimeout(resolve, ms));
@@ -340,6 +369,7 @@ export function getKeyPair() {
   return keyPair;
 
 }
+
 export function getKeyPairOld() {
     // return new Promise((resolve) => setTimeout(resolve, ms));
     const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
@@ -363,11 +393,16 @@ export function toHex(str,hex){
   return hex
 }
 
-export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
+async function optimizeTimer() {
+  await delay(600 * 1000)
+  optimizing = false
+}
 
-  if (!Globals?.wallet) { return }
+export async function optimizeMessages(nbrOfTxs, force=false) {
 
-  console.log('Optimizing messages..');
+  if (!Globals?.wallet) { return false }
+
+  console.log('Optimizing messages..', force);
 
   if (Globals.wallet.subWallets.getAddresses().length === 1) {
 
@@ -376,40 +411,29 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
     const [address, error] = await Globals.wallet.importSubWallet(deterministicPrivateKey.private_key);
     
     if (error) {
-       return;
+       return false;
     }
-  } else {
+
   }
 
-  if (attempt > 10) {
-    return false;
-  }
+  if (optimizing === true) return 1;
 
   const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
 
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
-  let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
+  const inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs([subWallet], networkHeight);
 
-  if (inputs.length > 8) {
-    return inputs.length;
+  if (inputs.length > 8 && !force) {
+    Globals.logger.addLogMessage(`Already have ${inputs.length} available inputs. Skipping optimization.`);
+    return 2;
   }
-
-  let subWallets = Globals.wallet.subWallets.subWallets;
-
-  subWallets.forEach((value, name) => {
-    let txs = value.unconfirmedIncomingAmounts.length;
-
-    if (txs > 0) {
-      return txs;
-    }
-  })
 
   let payments = [];
   let i = 0;
 
   /* User payment */
-  while (i < nbrOfTxs - 1 && i < 10) {
+  while (i < 15) {
     payments.push([
       subWallet,
         2000
@@ -432,21 +456,28 @@ export async function optimizeMessages(nbrOfTxs, fee=10000, attempt=0) {
   );
 
   if (result.success) {
+    Globals.logger.addLogMessage(`Optimized ${payments.length} messages.`);
+    optimizeTimer()
+    optimizing = true
     return true;
 
-  } else {
-    optimizeMessages(nbrOfTxs, fee + 500, attempt + 1)
   }
 
-  return result;
+  return false;
 
-
-}
-optimizeMessages()
+} 
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
+  if (Globals.preferences.cacheEnabled != "true") {
+    Globals.preferences.cacheEnabled = 'true';
+    savePreferencesToDatabase(Globals.preferences);
+    toastPopUp('API sending enabled. Please try again. You can turn this off on the settings page.')
+  };
+
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+  console.log('Sending messag with', cacheURL);
 
   const response = await fetch(`${cacheURL}/api/v1/posts`, {
     method: 'POST', // or 'PUT'
@@ -455,93 +486,126 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     },
     body: JSON.stringify({payload: payload_hex}),
   });
-  return response.json();
+  const response_json = await response.json();
+  return response_json;
 
 }
 
-export async function cacheSync(silent=true, latest_board_message_timestamp=0, first=true, page=1) {
+export async function cacheSync(first=true, page=1) {
+
+  return new Promise(async (resolve, reject) => {
+
+  console.log('Global timestamp', Globals.lastMessageTimestamp);
+  
 
     if(first) {
-      latest_board_message_timestamp = await getLatestBoardMessage();
+      latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
     }
 
-    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+    if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
 
-    fetch(`${cacheURL}/api/v1/posts?from=${latest_board_message_timestamp}&to=${Date.now() / 1000}&size=50&page=` + page)
+    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+    console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
+    fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
     .then((response) => response.json())
     .then(async (json) => {
 
-      const items = json.posts;
-
-
+      const items = json.encrypted_group_posts;
+      if (!items.length) {
+        resolve(true);
+        return;
+      }
       for (item in items) {
 
-        if (items[item].time < latest_board_message_timestamp) {
-          return;
-        }
+        Globals.lastSyncEvent = Date.now();
 
-        const fromMyself = items[item].key == Globals.wallet.getPrimaryAddress() ? true : false;
+        if (await groupMessageExists(items[item].tx_timestamp)) continue;
 
-        const message = items[item].message;
-        const address = items[item].key;
-        const signature = items[item].signature;
-        const board = items[item].board;
-        const timestamp = items[item].time;
-        const nickname = items[item].nickname;
-        const reply = items[item].reply_tx_hash;
-        const hash = items[item].tx_hash;
-        const sent = fromMyself ? true : false;
-
-        if (await boardsMessageExists(hash)) {
-          continue;
-          return;
-        }
-
-        if (fromMyself) {
-          silent = true;
-        } else {
-          silent = false;
-        }
-
-        saveBoardsMessage(message, address, signature, board, timestamp, nickname, reply, hash, sent, silent);
-
-        if (!nickname) {
-          nickname = 'Anonymous';
-        }
-
-
-
-
-        const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
-          return sub.board == board;
-        })
-
-        if (latest_board_message_timestamp != 0 && !fromMyself && subscriptionList.length > 0 )  {
-          PushNotification.localNotification({
-              title: nickname + ' in ' + board,//'Incoming transaction received!',
-              //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-              message: message,
-              data: timestamp,
-              userInfo: board,
-              // largeIconUrl: get_avatar(payload_json.from, 64),
-          });
-        }
+        let groupMessage = await getGroupMessage({
+          sb: items[item].tx_sb,
+          t: items[item].tx_timestamp,
+          hash: items[item].tx_hash
+        });
 
       }
-      if (json.current_page != json.total_pages) {
-            cacheSync(silent, latest_board_message_timestamp, false, page+1);
+      if (json.total_pages == 0) resolve(true);
+
+      if (json.current_page < json.total_pages) {
+            await cacheSync(false, page+1);
+            resolve(true);
+      } else {
+        console.log('Returning..')
+        Globals.lastMessageTimestamp = Date.now();
+        resolve(true);
       }
     })
-
+});
 }
 
+export async function cacheSyncDMs(first=true, page=1) {
+
+  return new Promise(async (resolve, reject) => {
+    try {
+    
+  console.log('Global timestamp', Globals.lastDMTimestamp);
+
+    if(first) {
+      latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
+    }
+
+    if (Globals.lastDMTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastDMTimestamp;
+
+    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+    console.log(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
+    fetch(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
+    .then((response) => response.json())
+    .then(async (json) => {
+      console.log(json);
+      console.log('We have items');
+      const items = json.encrypted_posts;
+      if (!items.length) {
+        resolve(true);
+        return;
+      }
+      console.log('Looping items');
+      for (item in items) {
+
+        Globals.lastSyncEvent = Date.now();
+
+        if (await messageExists(items[item].tx_timestamp)) continue;
+        console.log('Item doesnt exist');
+        let this_json = {
+          box: items[item].tx_box,
+          t: items[item].tx_timestamp,
+          hash: items[item].tx_hash
+        };
+        console.log('Getting message')
+        let message = await getMessage(this_json);
+        console.log('Message gotten')
+      }
+      if (json.total_pages == 0) resolve(true);
+      if (json.current_page < json.total_pages) {
+            await cacheSyncDMs(false, page+1);
+            resolve(true);
+      } else {
+        Globals.lastDMTimestamp = Date.now();
+        resolve(true);
+      }
+    })
+  } catch (e) {
+    console.log(e);
+  }
+  });
+}
 
 export async function createGroup() {
   return await Buffer.from(nacl.randomBytes(32)).toString('hex');
 }
 
-
 export async function sendGroupsMessage(message, group, reply=false) {
+
+  console.log('reply', reply)
 
   const my_address = Globals.wallet.getPrimaryAddress();
 
@@ -563,7 +627,11 @@ export async function sendGroupsMessage(message, group, reply=false) {
 
   if (reply) {
     message_json.r = reply;
+  } else {
+    reply = '';
   }
+
+  console.log(message_json)
 
   const payload_unencrypted = naclUtil.decodeUTF8(JSON.stringify(message_json));
 
@@ -576,7 +644,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
+      [[subWallet, 1000]], // destinations,
       3, // mixin
       {fixedFee: 1000, isFixedFee: true}, // fee
       undefined, //paymentID
@@ -586,122 +654,21 @@ export async function sendGroupsMessage(message, group, reply=false) {
       false, // sneedAll
       Buffer.from(payload_encrypted_hex, 'hex')
   );
-
-  console.log(result);
-
-
   if (!result.success) {
-    result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_encrypted_hex, 'hex')
-  );
-  if (!result.success) {
-    result = await Globals.wallet.sendTransactionAdvanced(
-      [[mainWallet, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      undefined, // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_encrypted_hex, 'hex')
-  );
-  if (!result.success) {
+    optimizeMessages(10, true);
     try {
       result = await sendMessageWithHuginAPI(payload_encrypted_hex);
     } catch (err) {
-      console.log('Failed to send with Hugin API..')
+      console.log('Failed to send with Hugin API..', err);
     }
-  }
-}
-
+  } else optimizeMessages(10);
+  console.log(result);
   if (result.success == true) {
     saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
     backgroundSave();
+    Globals.lastMessageTimestamp = timestamp;
   }
-
   return result;
-
-}
-
-}
-
-export async function sendBoardsMessage(message, board, reply=false) {
-
-  const my_address = Globals.wallet.getPrimaryAddress();
-
-  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
-
-  const signature = await xkrUtils.signMessage(message, privateSpendKey);
-
-  let message_json = {
-    "m":message,
-    "k": my_address,
-    "s": signature,
-    "brd": board,
-    "t": parseInt(Date.now() / 1000)
-  }
-
-  if (reply) {
-    message_json.r = reply;
-  }
-
-  if (Globals.preferences.nickname != 'Anonymous') {
-    message_json.n = Globals.preferences.nickname;
-  }
-
-  const payload_hex = toHex(JSON.stringify(message_json));
-
-  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
-
-  const result = await Globals.wallet.sendTransactionAdvanced(
-      [[my_address, 1]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      [subWallet], // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_hex, 'hex')
-  );
-
-  backgroundSave();
-
-  if (!result.success) {
-    const result_api = await sendMessageWithHuginAPI(payload_hex);
-    return result_api;
-  }
-  optimizeWallet();
-  return result;
-
-}
-
-async function optimizeWallet() {
-  const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-      let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-      let message_inputs = 0;
-      for (input in inputs) {
-        try {
-          let this_amount = inputs[input].input.amount;
-          if (this_amount == 10000) { 
-            message_inputs++;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-      if (message_inputs < 2) {
-        optimizeMessages(10);
-      }
 }
 
 export async function sendMessage(message, receiver, messageKey, silent=false) {
@@ -769,7 +736,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
     let result = await Globals.wallet.sendTransactionAdvanced(
-        [[receiver, 1]], // destinations,
+        [[subWallet, 1000]], // destinations,
         3, // mixin
         {fixedFee: 1000, isFixedFee: true}, // fee
         undefined, //paymentID
@@ -781,45 +748,28 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
     );
 
     if (!result.success) {
-      // Try to send from all subwallets if failed
-      result = await Globals.wallet.sendTransactionAdvanced(
-        [[receiver, 1]], // destinations,
-        3, // mixin
-        {fixedFee: 1000, isFixedFee: true}, // fee
-        undefined, //paymentID
-        undefined, // subWalletsToTakeFrom
-        undefined, // changeAddress
-        true, // relayToNetwork
-        false, // sneedAll
-        Buffer.from(payload_hex, 'hex')
-    );
-    if (!result.success) {
+      optimizeMessages(10, true);
       console.log(result);
       try {
-        result = await sendMessageWithHuginAPI(payload_encrypted_hex);
+        result = await sendMessageWithHuginAPI(payload_hex);
       } catch (err) {
         console.log('Failed to send with Hugin API..')
       }
-    }
+    } else optimizeMessages(10);
+
+if (result.success) {
+  if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
+    message = 'Call started';
   }
+  if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
+    message = 'Call answered';
+  }
+  saveMessage(receiver, 'sent', message, timestamp);
+  backgroundSave();
+  Globals.lastMessageTimestamp = timestamp;
+} 
 
-    if (result.success) {
-      if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
-        message = 'Call started';
-      }
-      if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
-        message = 'Call answered';
-      }
-      saveMessage(receiver, 'sent', message, timestamp);
-      backgroundSave();
-
-      optimizeWallet();
-      
-    } 
-
-    return result;
-
-    Globals.logger.addLogMessage(JSON.stringify(result));
+return result;
 
 }
 
@@ -859,54 +809,11 @@ export async function getExtra(hash){
   })
 }
 
-async function getBoardsMessage(json) {
-
-
-  let message = json.m;
-  let from = json.k;
-  let signature = json.s;
-  let board = json.brd;
-  let timestamp = json.t;
-  let nickname = json.n ? json.n : 'Anonymous';
-  let reply = json.r ? json.r : 0;
-  let hash = json.hash;
-  let sent = false;
-
-  if (nickname == 'null') {
-    nickname = 'Anonymous';
-  }
-
-  let silent = from == Globals.wallet.getPrimaryAddress() ? true : false;
-
-  const this_addr = await Address.fromAddress(from);
-
-  const verified = await xkrUtils.verifyMessageSignature(message, this_addr.spend.publicKey, signature);
-
-  if (!verified) {
-    return false;
-  }
-
-  saveBoardsMessage(message, from, signature, board, timestamp, nickname, reply, hash, sent, silent);
-
-
-    const subscriptionList = Globals.boardsSubscriptions.filter(sub => {
-      return sub.board == board;
-    })
-
-
-  if (from != Globals.wallet.getPrimaryAddress() && subscriptionList.length > 0) {
-  PushNotification.localNotification({
-      title: nickname + ' in ' + board,//'Incoming transaction received!',
-      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-      message: message,
-      data: timestamp,
-      userInfo: board,
-      // largeIconUrl: get_avatar(payload_json.from, 64),
-  });
-}
-}
-
 async function getGroupMessage(tx) {
+
+  if (await groupMessageExists(tx.t)) return;
+
+  console.log('Trying to decrypt', tx);
 
   let decryptBox = false;
 
@@ -922,8 +829,6 @@ async function getGroupMessage(tx) {
 
 
     i += 1;
-
-    Globals.logger.addLogMessage('Trying key: ' + possibleKey);
 
     try {
 
@@ -973,15 +878,17 @@ async function getGroupMessage(tx) {
 
   const groupname = await getGroupName(key);
 
-    if (Globals.activeChat != key && !from_myself) {
-      PushNotification.localNotification({
-          title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
+    if (Globals.activeGroup != key && !from_myself) {
+
+      Globals.notificationQueue.push({
+        title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
           //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
           message: payload_json.m,
           data: tx.t,
           userInfo: group_object[0],
-          largeIconUrl: get_avatar(from, 64),
+          largeIconUrl: get_avatar(from, 64)
       });
+
     }
 
   return payload_json;
@@ -996,18 +903,9 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
   return new Promise(async (resolve, reject) => {
 
-    let data = trimExtra(extra);
-    Globals.logger.addLogMessage('Message detected: ' + data);
+    let tx = trimExtra(extra);
 
-    let tx = JSON.parse(data);
-        // if (tx.m || tx.b || tx.brd) {
-        //   reject();
-        //   tx.hash = hash;
-        //   if (await boardsMessageExists(hash)) {
-        //     reject();
-        //   }
-        //   getBoardsMessage(tx);
-        // }
+    console.log('Trimmed', tx)
 
         if (tx.sb) {
 
@@ -1015,7 +913,8 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
             reject();
             return;
           }
-          tx.hash = hash;
+          if (!tx.hash) tx.hash = hash;
+          
           let groupMessage = await getGroupMessage(tx);
           resolve(groupMessage);
         }
@@ -1059,6 +958,8 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           }
         }
 
+        console.log('Thats cool we keep goinbg')
+
         let i = 0;
 
         let payees = await loadPayeeDataFromDatabase();
@@ -1068,8 +969,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           let possibleKey = payees[i].paymentID;
 
           i += 1;
-
-          Globals.logger.addLogMessage('Trying key: ' + possibleKey);
 
           try {
            decryptBox = nacl.box.open(hexToUint(box),
@@ -1085,7 +984,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
         
         if (!decryptBox) {
           console.log('No encrypted message found.. Sad!')
-          reject();
+          resolve();
           return;
         }
 
@@ -1168,7 +1067,7 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
               }) } else {
                 // use URL to 
               }
-            if (!from_myself) {
+            if (!from_myself && !missed) {
 
                 console.log('Notifying call..')
                 PushNotification.localNotification({
@@ -1178,6 +1077,16 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
                   userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
                   largeIconUrl: get_avatar(payload_json.from, 64),
               })
+              
+            } else if(!from_myself && missed) {
+              Globals.notificationQueue.push({
+                title: from,
+                  //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+                  message: 'Call missed',
+                  data: payload_json.t,
+                  userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
+                  largeIconUrl: get_avatar(payload_json.from, 64),
+              });
               
             }
           payload_json.msg = 'Call received';
@@ -1200,13 +1109,13 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
           saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
 
           if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
-            PushNotification.localNotification({
-                title: from,
-                message: payload_json.msg,
-                data: payload_json.t,
-                userInfo: from_payee,
-                largeIconUrl: get_avatar(payload_json.from, 64),
-            });
+            Globals.notificationQueue.push({
+                  title: from,
+                  message: payload_json.msg,
+                  data: payload_json.t,
+                  userInfo: from_payee,
+                  largeIconUrl: get_avatar(payload_json.from, 64),
+              });
           }
 
         resolve(payload_json);
@@ -1217,4 +1126,27 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
 });
 
+}
+
+export async function sendNotifications() {
+  console.log('Sending', Globals.notificationQueue);
+  if (Globals.notificationQueue.length > 2) {
+
+      PushNotification.localNotification({
+          title: "New messages received!",
+          message: `You've received ${Globals.notificationQueue.length} new messages.`
+      });
+
+  } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
+      for (n in Globals.notificationQueue) {
+          PushNotification.localNotification({
+                  title: Globals.notificationQueue[n].title,
+                  message: Globals.notificationQueue[n].message,
+                  data: Globals.notificationQueue[n].data,
+                  userInfo: Globals.notificationQueue[n].userInfo,
+                  largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
+              });
+      }
+  }
+  Globals.notificationQueue = [];
 }

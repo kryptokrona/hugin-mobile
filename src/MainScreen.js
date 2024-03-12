@@ -29,12 +29,12 @@ import { Address } from 'kryptokrona-utils';
 
 import Config from './Config';
 
-import { Styles } from './Styles';
+import { Styles, unread_counter_style, unread_counter_text_style } from './Styles';
 import { handleURI, toastPopUp, prettyPrintAmountMainScreen } from './Utilities';
-import { getBestCache, cacheSync, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage } from './HuginUtilities';
+import { getBestCache, cacheSync, cacheSyncDMs, getKeyPair, getMessage, getExtra, optimizeMessages, intToRGB, hashCode, get_avatar, sendMessage, sendNotifications } from './HuginUtilities';
 import { ProgressBar } from './ProgressBar';
 import { getKnownTransactions, deleteKnownTransaction, saveKnownTransaction, getUnreadMessages, boardsMessageExists, getBoardsMessage, savePreferencesToDatabase, saveToDatabase, loadPayeeDataFromDatabase } from './Database';
-import { Globals, initGlobals } from './Globals';
+import { Globals, initGlobals, startWebsocket } from './Globals';
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 import { initBackgroundSync } from './BackgroundSync';
 import { CopyButton, OneLineText } from './SharedComponents';
@@ -60,6 +60,7 @@ String.prototype.hashCode = function() {
     return hash;
 }
 
+
 async function init(navigation) {
   
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
@@ -75,31 +76,12 @@ async function init(navigation) {
 
     Globals.wallet.on('incomingtx', async (transaction) => {
         sendNotification(transaction);
-        const [walletHeight, localHeight, networkHeight] = Globals.wallet.getSyncStatus();
-        let inputs = await Globals.wallet.subWallets.getSpendableTransactionInputs(Globals.wallet.subWallets.getAddresses(), networkHeight);
-        let message_inputs = 0;
-        for (input in inputs) {
-          try {
-
-            let this_amount = inputs[input].input.amount;
-
-            if (this_amount == 10000) {
-              message_inputs++;
-            }
-          } catch (err) {
-            continue;
-          }
-        }
-        console.log('message_inputs', message_inputs);
-        if (message_inputs < 2) {
-          optimizeMessages(10);
-
-        }
-
+        optimizeMessages(10);
+        backgroundSave();
     });
 
     Globals.wallet.on('deadnode', () => {
-        toastPopUp(i18next.t('nodeOfflineWarning'), false);
+       // toastPopUp(i18next.t('nodeOfflineWarning'), false);
     });
 
     Globals.wallet.setLoggerCallback((prettyMessage, message) => {
@@ -113,15 +95,22 @@ async function init(navigation) {
         Globals.backgroundSaveTimer = setInterval(backgroundSave, Config.walletSaveFrequency);
     }
 
+    
+
     if (Globals.backgroundSyncMessagesTimer === undefined) {
       Globals.backgroundSyncMessagesTimer = setInterval(function() {
         backgroundSyncMessages(navigation);
-      }, 5000);
+        //cacheSync(false);
+
+      }, 10000);
     }
+    
+    
 
     if (Globals.checkIfStuck === undefined) {
         Globals.checkIfStuck = setInterval(checkIfStuck, 5000);
     }
+ 
 
     /* Use our native C++ func to process blocks, provided we're on android */
     /* TODO: iOS support */
@@ -130,14 +119,7 @@ async function init(navigation) {
     }
 
     initGlobals();
-
-    const recommended_node = await getBestCache();
-
-    Globals.preferences.cache = recommended_node.url;
-
-    console.log(Globals.preferences.cache);
-
-    cacheSync(true);
+    getBestCache();
 
     PushNotification.configure({
         onNotification: handleNotification,
@@ -312,6 +294,7 @@ export class MainScreen extends React.PureComponent {
 
         Globals.wallet.on('createdtx', () => {
             this.updateBalance();
+            backgroundSave();
         });
 
         Globals.wallet.on('createdfusiontx', () => {
@@ -360,12 +343,11 @@ export class MainScreen extends React.PureComponent {
 
     async updateBalance() {
 
-        if (Globals.coinPrice == 0) {
-            const tmpPrice = await getCoinPriceFromAPI();
 
-            if (tmpPrice !== undefined) {
-                Globals.coinPrice = tmpPrice;
-            }
+        const tmpPrice = await getCoinPriceFromAPI();
+
+        if (tmpPrice !== undefined) {
+            Globals.coinPrice = tmpPrice;
         }
 
         const unreads = await getUnreadMessages();
@@ -432,25 +414,10 @@ export class MainScreen extends React.PureComponent {
         initBackgroundSync();
         let flipFlop = false;
 
-        let keepAnimating = () => {
+        setInterval(async () => {
+          this.updateBalance();
+        }, 60000);
 
-          Animated.timing(this.animatedValue, {
-            toValue: flipFlop ? 0 : 224,
-            duration: 30000
-          }).start(() => {
-            flipFlop = flipFlop ? false : true;
-            keepAnimating();
-          });
-
-        }
-
-          Animated.timing(this.animatedValue, {
-            toValue: 224,
-            duration: 30000
-          }).start(() => {
-            keepAnimating();
-
-      });
     }
 
     componentWillUnmount() {
@@ -484,26 +451,6 @@ export class MainScreen extends React.PureComponent {
             flex: 1,
             alignContent: 'center'
           }
-
-          const unread_counter_style = {
-            borderRadius: 15,
-            minWidth: 28,
-            height: 28,
-            backgroundColor: 'red',
-            color: 'white',
-            padding: 4,
-            borderWidth: 5,
-            marginTop: -10,
-            marginRight: -10
-          };
-
-          const unread_counter_text_style = {
-            fontSize: 14,
-            lineHeight: 14,
-            fontFamily: 'Montserrat-Bold',
-            color: 'white',
-            textAlign: 'center'
-          };
 
         /* If you touch the address component, it will hide the other stuff.
            This is nice if you want someone to scan the QR code, but don't
@@ -826,15 +773,12 @@ class BalanceComponentNoTranslation extends React.Component {
             expandedBalance: false,
         };
 
-        // this.animation = new Animated.Value(0);
-
         this.balanceRef = (ref) => this.balance = ref;
         this.valueRef = (ref) => this.value = ref;
     }
 
 
         componentWillMount() {
-          // this.animatedValue = new Animated.Value(0);
         }
 
 
@@ -842,31 +786,11 @@ class BalanceComponentNoTranslation extends React.Component {
 
               let flipFlop = false;
 
-            //   let keepAnimating = () => {
-
-            //     Animated.timing(this.animatedValue, {
-            //       toValue: flipFlop ? 0 : 224,
-            //       duration: 10000
-            //     }).start(() => {
-            //       flipFlop = flipFlop ? false : true;
-            //       keepAnimating();
-            //     });
-
-            //   }
-
-            //     Animated.timing(this.animatedValue, {
-            //       toValue: 224,
-            //       duration: 10000
-            //     }).start(() => {
-            //       keepAnimating();
-
-            // });
             }
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.unlockedBalance !== this.props.unlockedBalance ||
             nextProps.lockedBalance !== this.props.lockedBalance) {
-            // this.balance.bounce(800);
         }
     }
 
@@ -931,24 +855,26 @@ class BalanceComponentNoTranslation extends React.Component {
         return(
             <View style={{alignItems: 'center'}}>
             {/* <Animated.View */}
-            <View style={{marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%'}}>
+            <View style={{textAlign: 'center', alignItems: 'center', marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+  
                     <Text style={{
                         color: 'white',
                         fontSize: 64,
                         fontFamily: 'icomoon',
-                        position: 'absolute',
-                        top: 23,
-                        left: 5
+                        marginBottom: -20,
+                        paddingTop: 10,
+                        paddingBottom: 10,
+                        marginRight: 10
                     }}>
                         
                     </Text>
-                    <View style={{marginLeft: 64, marginBottom: 10}} ref={this.balanceRef}>
-                        {this.state.expandedBalance ? expandedBalance : compactBalance}
+                    <View style={{marginBottom: 8}}>
+                    {this.state.expandedBalance ? expandedBalance : compactBalance}
+                    </View>
                     </View>
                     {parseInt(this.props.lockedBalance) > 0 &&
                     <Text style={{color: 'white'}}>+ {prettyPrintAmount(this.props.lockedBalance, Config).slice(0,-4)}</Text>}
-            </View>
-            {/* </Animated.View> */}
+
 
             <OpenURLButton></OpenURLButton>
 <Text>
@@ -1095,34 +1021,85 @@ async function checkIfStuck() {
 
 async function backgroundSyncMessages(navigation) {
 
+    const syncingHasStalled = (Date.now() - Globals.lastSyncEvent > 1000 * 60 );
 
-  if (Globals.syncingMessagesCount > 3) {
-    Globals.syncingMessages = false;
-    Globals.syncingMessagesCount = 0;
-  }
+    console.log('Has syncing stalled?', syncingHasStalled);
+    console.log(Date.now() - Globals.lastSyncEvent);
+    console.log(Globals.lastSyncEvent);
+
+    if (syncingHasStalled ) Globals.syncingMessages = false;
+
+    // Add check if websocket // cache is working
+    if (Globals.preferences.cacheEnabled == "true") {
+
+        try {
+            const cacheURL = `${Globals.preferences.cache}/api/v1/info`;
+            console.log('trying to get ', cacheURL);
+            const resp = await fetch(cacheURL, {
+            method: 'GET'
+            }, 3000);
+            if (!resp.ok) {
+                Globals.APIOnline = false;
+            } else {
+                Globals.APIOnline = true;
+            }
+        } catch (e) {
+        console.log(e);
+        Globals.APIOnline = false;
+        }
+    }
+
+    console.log('API is ', Globals.APIOnline);
+
+
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled == "true" && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
+        startWebsocket();
+        if (Globals.webSocketStatus == 'online' && Globals.websocketEnabled == 'true') return;
+    }
+    
+    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred && Globals.websocketEnabled == 'true') {
+        Globals.syncingMessages = false;
+        return;
+    }
+
+    Globals.initalSyncOccurred = true;
 
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
-    Globals.syncingMessagesCount += 1;
     return;
   } else {
-    console.log('Commencing message sync.');
+    console.log('Commencing message sync.', Globals.syncingMessages);
   }
+
   Globals.syncingMessages = true;
 
+  if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
+
+    console.log('Syncing from API..');
+
+    await cacheSync();
+    await cacheSyncDMs();
+    console.log('Returned with', Globals.notificationQueue)
+    sendNotifications();
+    Globals.syncingMessages = false;
+    Globals.knownTXs = await getKnownTransactions();
+    return;
+
+  }
+
+  
 
   try {
 
-  cacheSync(false);
-
-    Globals.logger.addLogMessage('Getting unconfirmed transactions...');
-
+        console.log('Syncing from node..');
+    
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      let knownTXs = await getKnownTransactions();
       let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
         fetch(nodeURL + "/get_pool_changes_lite", {
         method: 'POST',
         body: JSON.stringify({
-             knownTxsIds: Globals.knownTXs
+             knownTxsIds: knownTXs
          })
       })
       .then((response) => response.json())
@@ -1142,26 +1119,32 @@ async function backgroundSyncMessages(navigation) {
 
           try {
 
+            Globals.lastSyncEvent = Date.now();
+
           let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
 
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
 
           console.log(`Checking tx with hash ${thisHash}`);
 
-          await saveKnownTransaction(thisHash);
+          
+          if (Globals.knownTXs.indexOf(thisHash) != -1) continue;
 
-
-          if (Globals.knownTXs.indexOf(thisHash) === -1) {
-                       Globals.knownTXs.push(thisHash);
-                     } else {
-                       continue;
-                     }
 
           if (thisExtra.length > 66) {
 
-            let message = await getMessage(thisExtra, thisHash, navigation);
+           
+            try {
+                let message = await getMessage(thisExtra, thisHash, navigation);
+            } catch (err) {
+                console.log(err);
+            }
+            saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
 
           } else {
+            saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
             continue;
           }
 
@@ -1171,7 +1154,8 @@ async function backgroundSyncMessages(navigation) {
         }
 
         }
-        console.log('Syncing complete!');
+        console.log('Syncing complete!', Globals.notificationQueue);
+        sendNotifications();
         Globals.syncingMessages = false;
         Globals.knownTXs = await getKnownTransactions();
 
@@ -1182,5 +1166,6 @@ async function backgroundSyncMessages(navigation) {
   console.log('Message sync failed: ', err);
   Globals.syncingMessages = false;
 }
+
 
 }

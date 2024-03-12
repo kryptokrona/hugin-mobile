@@ -52,12 +52,17 @@ const Config = new function() {
     /**
      * How often to process blocks, in millseconds
      */
-    this.syncThreadInterval = 4;
+    this.syncThreadInterval = 1000;
 
     /**
      * How often to update the daemon info, in milliseconds
      */
     this.daemonUpdateInterval = 10 * 1000;
+
+    /**
+     * After how long the "deadnode" event will be emitted
+     */
+    this.maxLastFetchedBlockInterval = 60 * 10;
 
     /**
      * How often to check on locked transactions
@@ -202,7 +207,7 @@ const Config = new function() {
     /**
      * Default Hugin Cache to use.
      */
-    this.defaultCache = 'https://cache.hugin.chat';
+    this.defaultCache = 'https://techy.ddns.net';
 
     /**
      * A link to where a bug can be reported for your wallet. Please update
@@ -224,7 +229,7 @@ const Config = new function() {
     /**
      * Displayed in the settings screen
      */
-    this.appVersion = 'v1.4.0';
+    this.appVersion = 'v1.4.1';
 
     /**
      * Base URL for us to chuck a hash on the end, and find a transaction
@@ -247,11 +252,10 @@ const Config = new function() {
      * detailed here: https://docs.turtlepay.io/blockapi/
      */
     this.nodeListURL = 'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json';
-
-    /**
-    * A Url to fetch Hugin Caches from.
-    */
-    this.cacheListURL = 'https://raw.githubusercontent.com/kryptokrona/hugin-api-list/main/apis.json';
+    this.nodeListURLs = [
+        'https://raw.githubusercontent.com/kryptokrona/kryptokrona-public-nodes/master/nodes.json',
+        'https://kryptokrona.se/nodes.json'
+    ];
 
     /**
     * A Url to fetch Hugin Caches from.

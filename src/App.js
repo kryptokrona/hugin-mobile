@@ -37,7 +37,7 @@ import {
 
 import {
     SettingsScreen, SwapCurrencyScreen, ExportKeysScreen, LoggingScreen, FaqScreen,
-    DisableDozeScreen, SwapNodeScreen, OptimizeScreen, SwapLanguageScreen
+    DisableDozeScreen, SwapNodeScreen, OptimizeScreen, SwapLanguageScreen, SwapAPIScreen
 } from './SettingsScreen';
 
 import {
@@ -152,6 +152,7 @@ const SettingsNavigator = createStackNavigator(
         ChooseAuthMethod: ChooseAuthMethodScreen,
         RequestHardwareAuth: RequestHardwareAuthScreen,
         Optimize: OptimizeScreen,
+        SwapAPI: SwapAPIScreen
     },
     {
         initialRouteName: 'Settings',
@@ -421,6 +422,8 @@ export default class App extends React.Component {
         if (prefs !== undefined) {
             Globals.preferences = prefs;
         }
+        
+        console.log(Globals.preferences);
 
         this.setState({
             screenProps: {

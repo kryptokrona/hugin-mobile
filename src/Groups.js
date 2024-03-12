@@ -25,7 +25,7 @@ import Config from './Config';
 import ListItem from './ListItem';
 import List from './ListContainer';
 
-import { Styles } from './Styles';
+import { Styles, unread_counter_style, unread_counter_text_style } from './Styles';
 
 import Moment from 'react-moment';
 
@@ -98,6 +98,8 @@ export class GroupsScreenNoTranslation extends React.Component {
             }
         });
         let standardGroups = Globals.standardGroups;
+
+        console.log(standardGroups);
 
         standardGroups = standardGroups.filter(a => !this.state.groups.map(b=>b.key).includes(a.key));
 
@@ -203,11 +205,8 @@ export class GroupsScreenNoTranslation extends React.Component {
                         renderItem={({item}) => (
                             <ListItem
                                 title={item.group}
-                                subtitle={item.lastMessage ? <Text><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text style={{fontFamily: 'Montserrat-Regular'}}>{" " + item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></Text> : t('noMessages')}
-                                subtitleStyle={{
-                                    fontFamily: "Montserrat-Regular"
-                                }}
-                                chevron={item.read == '1' ? false : newMessageIndicator }
+                                subtitle={item.lastMessage ? <View><Text style={{fontFamily: 'Montserrat-SemiBold'}}>{item.lastMessageNickname ? item.lastMessageNickname : t('Anonymous')}</Text><Text ellipsizeMode='tail' numberOfLines={1} style={{fontFamily: 'Montserrat-Regular'}}>{item.lastMessage}{"\n"}</Text><Moment locale={Globals.language} style={{fontFamily: "Montserrat-Regular", fontSize: 10, textAlignVertical: 'bottom' }} element={Text} unix fromNow>{item.lastMessageTimestamp/1000}</Moment></View> : t('noMessages')}
+                                chevron={item.read == '1' ? false : <View style={[unread_counter_style, {borderColor: "#171717", marginTop: 1, marginRight: 5}]}><Text style={unread_counter_text_style}>{item.unreads}</Text></View> }
                                 leftIcon={
                                     <Image
                                       style={{width: 50, height: 50}}
@@ -246,6 +245,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                                     );
                                     await markGroupConversationAsRead(item.key);
                                     Globals.groups = await loadGroupsDataFromDatabase();
+                                    console.log(Globals.groups);
                                     this.setState({
                                         groups: Globals.groups
                                     });
@@ -381,7 +381,6 @@ function validGroupName(group) {
     return [true, errorMessage];
 }
 
-
 function isAddressValid(address) {
     let errorMessage = '';
 
@@ -434,8 +433,6 @@ class ModifyGroup extends React.Component {
         );
     }
 }
-
-
 
 class ModifyNickname extends React.Component {
     constructor(props) {
@@ -496,6 +493,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
     render() {
         const { t } = this.props;
         const group = this.state.group;
+        const editableGroup = !Globals.standardGroups.some((rec) => rec.key == this.state.key);
         return(
             <View style={{
                 flex: 1,
@@ -585,20 +583,23 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                             }}>
                                 {'Groupname'}
                             </Text>
-
+                            {editableGroup &&
                             <Button
-                                title={t('change')}
-                                onPress={() => {
-                                    this.setState({
-                                        modifyGroup: !this.state.modifyGroup,
-                                    });
-                                }}
-                                titleStyle={{
-                                    color: this.props.screenProps.theme.primaryColour,
-                                    fontSize: 13
-                                }}
-                                type="clear"
-                            />
+                            title={t('change')}
+                            onPress={() => {
+                                this.setState({
+                                    modifyGroup: !this.state.modifyGroup,
+                                });
+                            }}
+                            titleStyle={{
+                                color: this.props.screenProps.theme.primaryColour,
+                                fontSize: 13
+                            }}
+                            type="clear"
+                        />
+                            
+                            }
+                            
                         </View>
 
                         {!this.state.modifyGroup &&
@@ -645,22 +646,6 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                                   } else {
                                       this.setState(shared);
                                   }
-
-                                    //
-                                    //
-                                    // validGroupName(text);
-                                    // const shared = {
-                                    //
-                                    // };
-                                    //
-                                    // if (true) {
-                                    //     this.setState({
-                                    //         newGroup: text,
-                                    //         ...shared,
-                                    //     });
-                                    // } else {
-                                    //     this.setState(shared);
-                                    // }
                                 }}
                                 {...this.props}
                             />
@@ -705,7 +690,8 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                                         </View>
 
                 </View>
-
+                {editableGroup && 
+                
                 <View style={{
                     marginHorizontal: 30,
                     flex: 1,
@@ -719,8 +705,8 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                     }}>
                         <RNEButton
                             title={t('update')}
-                            onPress={() => {
-                                Globals.removeGroup(this.state.key, false);
+                            onPress={async () => {
+                                await Globals.removeGroup(this.state.key, false);
 
                                 Globals.addGroup({
                                     group: this.state.newGroup,
@@ -739,7 +725,7 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
                         />
                     </View>
                 </View>
-
+              }
                 <View style={{
                     marginHorizontal: 30,
                     flex: 1,
@@ -780,27 +766,6 @@ export class ModifyGroupScreenNoTranslation extends React.Component {
 
 export const ModifyGroupScreen = withTranslation()(ModifyGroupScreenNoTranslation)
 
-//
-// export class MessageBubble extends React.Component {
-//     constructor(props) {
-//         super(props);
-//         // this.animation = new Animated.Value(0);
-//     }
-//
-//
-//     componentWillMount() {
-//       // this.animatedValue = new Animated.Value(0);
-//     }
-//
-//     componentDidMount() {
-//
-//     }
-//
-//     render() {
-//
-//     }
-// }
-
 
 export class GroupChatScreenNoTranslation extends React.Component {
     constructor(props) {
@@ -824,6 +789,8 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
             groupNameValid: true,
 
+            sending: false,
+
             messages: [],
             message: "",
             messageHasLength: false,
@@ -842,19 +809,21 @@ export class GroupChatScreenNoTranslation extends React.Component {
         }
 
 
-        Globals.updateGroupsFunctions.push(() => {
-            this.setState({
-                messages: Globals.groupMessages
-            })
-        });
+
 
     }
 
     async componentDidMount() {
 
-        await markGroupConversationAsRead(this.state.key);
+        markGroupConversationAsRead(this.state.key);
 
-        let messages = await getGroupMessages(this.state.key);
+        let messages = await getGroupMessages(this.state.key, 25);
+
+        Globals.updateGroupsFunctions.push(async () => {
+            this.setState({
+                messages: await getGroupMessages(this.state.key, Globals.messagesLoaded + 1)
+            })
+        });
 
         if (!messages) {
           messages = [];
@@ -864,13 +833,16 @@ export class GroupChatScreenNoTranslation extends React.Component {
           messages: messages
         });
 
-        Globals.activeChat = this.state.key;
+        Globals.messagesLoaded = messages.length;
+
+        Globals.activeGroup = this.state.key;
 
     }
 
     async componentWillUnmount() {
 
-        Globals.activeChat = '';
+        Globals.activeGroup = '';
+        Globals.updateGroupsFunctions.pop();
 
     }
 
@@ -899,22 +871,12 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
               items.push(
                 <TouchableOpacity onPress={async () => {
-                if (thisMessage.reply && thisMessage.reply != 0) {
 
-                    
-                this.state.replies = await getReplies(thisMessage.reply);
+                    console.log(thisMessage);
 
-                const op = await getGroupsMessage(thisMessage.reply);
-                if (op.length == 0) {
-                    return;
-                }
-                this.setActivePost(op[0]);
-
-                } else {
                 this.state.replies = await getReplies(thisMessage.hash);
                 this.setActivePost(thisMessage);
 
-                }
                 this.setMessageModalVisible(true);
 
                 }}>
@@ -1027,34 +989,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 
                 Keyboard.dismiss();
                 this.setState({reply: '', replyHasLength: false, replying: false});
-                // let updated_messages = await getGroupMessages(this.state.key);
-                // if (!updated_messages) {
-                // updated_messages = [];
-                // }
-                // let temp_timestamp = parseInt(Date.now() / 1000);
-                // console.log(updated_messages);
-                // updated_messages.unshift({
-                //     group: this.state.activePost.group,
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     message: checkText(text),
-                //     timestamp: temp_timestamp,
-                //     hash: temp_timestamp.toString(),
-                //     read: 1,
-                //     nickname: Globals.preferences.nickname,
-                //     reply: this.state.activePost.hash,
-                //     op: this.state.activePost
-                // });
-                // console.log(updated_messages);
-                // let message_indice = updated_messages.push({
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     nickname: Globals.preferences.nickname,
-                //     group: this.state.key,
-                //     type: 'processing',
-                //     message: checkText(text),
-                //     timestamp: temp_timestamp,
-                //     read: 1
-                // });
-                // console.log(message_indice);
 
                 let replies = this.state.replies;
                 console.log(replies);
@@ -1070,19 +1004,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 });
                 this.setState({replies: replies});
 
-                // this.setState({
-                // messages: updated_messages,
-                // messageHasLength: false,
-                // message: ''
-                // });
-
-                // console.log('State has been set');
-
-                // this.replyinput._textInput.clear();
-
                 console.log('Cleared input');
-
-                // this.setState({replyHasLength: this.state.reply.length > 0});
 
                 console.log('Sending message..')
 
@@ -1091,42 +1013,13 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 let success = await sendGroupsMessage(checkText(text), this.state.activePost.group, this.state.activePost.hash);
                 console.log(success);
 
-                // await removeMessage(temp_timestamp);
                 if (success.success) {
                 console.log(success);
-                // await saveBoardsMessage(
-                //     checkText(text),
-                //     Globals.wallet.getPrimaryAddress(),
-                //     '',
-                //     this.state.activePost.board,
-                //     temp_timestamp,
-                //     Globals.preferences.nickname,
-                //     this.state.activePost.hash,
-                //     success.transactionHash,
-                //     '1',
-                //     false);
-                // let updated_replies = this.state.replies;
 
-                // updated_replies.unshift({
-                //     message: checkText(text),
-                //     address: Globals.wallet.getPrimaryAddress(),
-                //     signature: '',
-                //     board: this.state.activePost.board,
-                //     timestamp: temp_timestamp.toString(),
-                //     nickname: Globals.preferences.nickname,
-                //     reply: this.state.activePost.hash,
-                //     hash: success.transactionHash,
-                //     sent: 0,
-                //     read: 1
-                //
-                // });
-                // console.log(updated_replies);
-                // this.state.replies = updated_replies;
-                // console.log(this.state.replies);
                 this.state.replies = await getReplies(this.state.activePost.hash);
-                // this.state.input.current.clear();
+
                 } else {
-                // updated_messages = await getBoardsMessages(this.state.board);
+
 
                 replies = await getReplies(this.state.activePost.hash);
                 replies.unshift({
@@ -1141,12 +1034,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 });
                 this.setState({replies: replies});
 
-
-                //     this.setState({
-                //     messages: updated_messages,
-                //     messageHasLength: true
-                //     })
-
                 }
             }
 
@@ -1155,7 +1042,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
              Keyboard.dismiss();
              this.state.input.current._textInput.clear();
 
-             let updated_messages = await getGroupMessages(this.state.key);
+             let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
              if (!updated_messages) {
                updated_messages = [];
              }
@@ -1172,7 +1059,8 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              this.setState({
                messages: updated_messages,
-               messageHasLength: false
+               messageHasLength: false,
+               sending: true
              });
 
              this.setState({messageHasLength: this.state.message.length > 0});
@@ -1181,15 +1069,17 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              if (result.success) {
 
-                    updated_messages = await getGroupMessages();
+                    updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
                     this.setState({
                         messages: updated_messages,
-                        messageHasLength: false
+                        messageHasLength: false,
+                        sending: false
                       });
+                      Globals.messagesLoaded = updated_messages.length;
 
 
              } else {
-                updated_messages = await getGroupMessages();
+                updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
                 updated_messages.push({
                     address: Globals.wallet.getPrimaryAddress(),
                     nickname: Globals.preferences.nickname,
@@ -1201,8 +1091,10 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 });
                 this.setState({
                     messages: updated_messages,
-                    messageHasLength: false
+                    messageHasLength: false,
+                    sending: false
                   });
+                  Globals.messagesLoaded = updated_messages.length;
 
              }
            }
@@ -1266,7 +1158,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                     </View>
 
-                    {this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length &&
+                    {!this.state.sending && this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length &&
                 <View style={{
                     flex: 1,
                     alignContent: 'center',
@@ -1287,8 +1179,9 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     alignItems: 'center',
                     justifyContent: 'center'}}
                 onPress={async () => {
-                    
-                    let updated_messages = await getGroupMessages(this.state.address, this.state.messages.length + 25);
+                    console.log('Loading:' , this.state.messages.length + 25)
+                    let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length + 25);
+                    Globals.messagesLoaded = updated_messages.length;
                     this.setState({
                     messages: updated_messages,
                     messageHasLength: false

@@ -15,13 +15,12 @@ import NetInfo from "@react-native-community/netinfo";
 import { getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
-
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
-import { getBestCache } from './HuginUtilities';
+import { getMessage, sendNotifications } from './HuginUtilities';
 import offline_node_list from './nodes.json';
-import offline_cache_list from './apis.json';
+import offline_cache_list from './nodes.json';
 import offline_groups_list from './groups.json';
 
 class globals {
@@ -52,6 +51,9 @@ class globals {
             node: Config.defaultDaemon.getConnectionString(),
             language: 'en',
             cache: Config.defaultCache,
+            cacheEnabled: 'true',
+            autoPickCache: 'true',
+            websocketEnabled: 'true',
             nickname: 'Anonymous'
         };
 
@@ -91,7 +93,7 @@ class globals {
 
         this.activeChat = '';
 
-        this.activeBoard = '';
+        this.activeGroup = '';
 
         this.language = 'en-US';
 
@@ -110,6 +112,26 @@ class globals {
         this.localMicOn = false;
 
         this.speakerOn = true;
+
+        this.notificationQueue = [];
+
+        this.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+
+        this.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+
+        this.webSocketStatus = 'offline';
+
+        this.socket = undefined;
+
+        this.initalSyncOccurred = false;
+
+        this.websockets = 0;
+
+        this.APIOnline;
+
+        this.messagesLoaded = 0;
+
+        this.lastSyncEvent = Date.now();
 
     }
 
@@ -164,9 +186,10 @@ class globals {
         this.updateGroups();
     }
 
-    removeGroup(key, removeMessages) {
-        _.remove(Globals.group, (item) => item.key === key);
-        removeGroupFromDatabase(key, removeMessages);
+    async removeGroup(key, removeMessages) {
+        Globals.groups = Globals.groups.filter((item) => item.key != key);
+        await removeGroupFromDatabase(key, removeMessages);
+        console.log('Group removed from DB');
         this.updateGroups();
     }
 
@@ -255,45 +278,29 @@ class globals {
     }
 
     async updateNodeList() {
+        let i = 0;
+        while (Config.nodeListURLs.length > i) { 
         try {
             const data = await request({
                 json: true,
                 method: 'GET',
                 timeout: Config.requestTimeout,
-                url: Config.nodeListURL,
+                url: Config.nodeListURLs[i],
             });
 
             if (data.nodes) {
                 this.daemons = data.nodes;
-            } else {
-              this.daemons = offline_node_list.nodes;
-            }
+                this.caches = data.apis;
+                return;
+            } 
         } catch (error) {
           console.log(offline_node_list);
             this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
-            this.daemons = offline_node_list.nodes;
         }
+        i++;
     }
-
-    async updateCacheList() {
-        try {
-            const data = await request({
-                json: true,
-                method: 'GET',
-                timeout: Config.requestTimeout,
-                url: Config.nodeListURL,
-            });
-            console.log(data);
-            if (data.apis) {
-                this.caches = data.apis;
-            } else {
-              this.caches = offline_node_list.apis;
-            }
-        } catch (error) {
-          console.log(offline_cache_list);
-            this.logger.addLogMessage('Failed to get api list from API: ' + error.toString());
-            this.daemons = offline_cache_list.apis;
-        }
+    this.daemons = offline_node_list.nodes;
+    this.caches = offline_node_list.apis;
     }
 
     async updateGroupsList() {
@@ -325,14 +332,65 @@ function updateConnection(connection) {
     if (Globals.preferences.limitData && connection.type === 'cellular') {
         Globals.wallet.stop();
     } else {
-        Globals.wallet.start();
         Globals.wallet.enableAutoOptimization(false);
+        Globals.wallet.start();
     }
 }
 
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
+
+   export async function startWebsocket() {
+
+    console.log('websockets online', Globals.websockets)
+
+    if (Globals.websockets || Globals.preferences.websocketEnabled != 'true') return;
+    
+
+    console.log('CacheNabled:', Globals.preferences.cacheEnabled)
+    console.log(Globals.preferences.cache);
+    if (Globals.preferences.cacheEnabled != "true") return;
+    const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
+    console.log(socketURL);
+    Globals.socket = new WebSocket(socketURL);
+
+    // Open connection wit Cache
+    Globals.socket.onopen = () => {
+        Globals.websockets++;
+        console.log(`Connected 🤖`)
+        Globals.webSocketStatus = 'online';
+
+    }
+
+    Globals.socket.onclose = (e) => {
+        if (Globals.websockets > 0) Globals.websockets--;
+        
+        Globals.webSocketStatus = 'offline';
+        console.log('Connection closed')
+        startWebsocket();
+    }
+
+// Listen for messages
+    Globals.socket.onmessage = async (e) => {
+        let data = e.data
+
+        try {
+
+            let json = JSON.parse(data)
+            console.log(json);
+            await getMessage(json);
+            sendNotifications();
+
+        } catch (err) {
+            console.log(err)
+        }
+
+    }
+   }
+
 export async function initGlobals() {
+
+    console.log('Initing globals..');
 
     const payees = await loadPayeeDataFromDatabase();
 
@@ -368,10 +426,11 @@ export async function initGlobals() {
             ]
         );
     } else {
-        Globals.wallet.start();
         Globals.wallet.enableAutoOptimization(false);
+        Globals.wallet.start();
     }
 
     await Globals.updateNodeList();
     await Globals.updateGroupsList();
+
 }

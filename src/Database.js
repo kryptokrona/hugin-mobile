@@ -162,7 +162,11 @@ async function createTables(DB) {
                 theme TEXT,
                 pinconfirmation BOOLEAN,
                 language TEXT,
-                nickname TEXT
+                nickname TEXT,
+                cache TEXT,
+                cacheenabled TEXT default "true",
+                autopickcache TEXT default "true",
+                websocketenabled TEXT default "true"
             )`
         );
 
@@ -224,7 +228,8 @@ async function createTables(DB) {
             `CREATE TABLE IF NOT EXISTS privateboards (
                 name TEXT,
                 key TEXT,
-                latestmessage INT default 0
+                latestmessage INT default 0,
+                UNIQUE (key)
             )`
         );
 
@@ -240,7 +245,8 @@ async function createTables(DB) {
                 timestamp TEXT,
                 read BOOLEAN default 1,
                 hash TEXT,
-                reply TEXT
+                reply TEXT,
+                UNIQUE (timestamp)
             )`
         );
 
@@ -334,6 +340,85 @@ async function createTables(DB) {
   
           }
 
+          if (dbVersion === 7) {
+            tx.executeSql(
+              `ALTER TABLE
+                  preferences
+              ADD
+                  cache TEXT default '${Config.defaultCache}'`
+            );
+            tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    cacheenabled text default "true"`
+              );
+
+              tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    autopickcache text default "true"`
+              );
+
+              tx.executeSql(
+                `ALTER TABLE
+                    preferences
+                ADD
+                    websocketenabled text default "true"`
+              );
+              
+
+              tx.executeSql(
+                `CREATE TABLE IF NOT EXISTS privateboards_messages_db2 (
+                    board TEXT,
+                    nickname TEXT,
+                    address TEXT,
+                    type TEXT,
+                    message TEXT,
+                    timestamp TEXT,
+                    read BOOLEAN default 1,
+                    hash TEXT,
+                    reply TEXT,
+                    UNIQUE (timestamp)
+                )`
+            );
+
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db2 SELECT * FROM privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db`
+        );
+
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
+                board TEXT,
+                nickname TEXT,
+                address TEXT,
+                type TEXT,
+                message TEXT,
+                timestamp TEXT,
+                read BOOLEAN default 1,
+                hash TEXT,
+                reply TEXT,
+                UNIQUE (timestamp)
+            )`
+        );
+
+        tx.executeSql(
+            `REPLACE INTO privateboards_messages_db SELECT * FROM privateboards_messages_db2`
+        );
+
+        tx.executeSql(
+            `DROP TABLE privateboards_messages_db2`
+        );
+
+        }
+
+
         /* Setup default preference values */
         tx.executeSql(
             `INSERT OR IGNORE INTO preferences (
@@ -395,11 +480,22 @@ async function createTables(DB) {
                 ],
             );
         }
-
-
+        // Remove old messages
+        tx.executeSql(`
+        DELETE FROM privateboards_messages_db
+        WHERE rowid IN (
+            SELECT rowid
+            FROM privateboards_messages_db AS p1
+            WHERE (
+                SELECT COUNT(*)
+                FROM privateboards_messages_db AS p2
+                WHERE p1.board = p2.board AND p2.timestamp > p1.timestamp
+            ) >= 1000
+        )
+        `);
 
         tx.executeSql(
-            `PRAGMA user_version = 7`
+            `PRAGMA user_version = 8`
         );
     });
 
@@ -434,7 +530,11 @@ export async function savePreferencesToDatabase(preferences) {
                 authmethod = ?,
                 node = ?,
                 language = ?,
-                nickname = ?
+                nickname = ?,
+                cache = ?,
+                cacheenabled = ?,
+                autopickcache = ?,
+                websocketenabled = ?
             WHERE
                 id = 0`,
             [
@@ -448,7 +548,11 @@ export async function savePreferencesToDatabase(preferences) {
                 preferences.authenticationMethod,
                 preferences.node,
                 preferences.language,
-                preferences.nickname
+                preferences.nickname,
+                preferences.cache,
+                preferences.cacheEnabled,
+                preferences.autoPickCache,
+                preferences.websocketEnabled
             ]
         );
     });
@@ -467,7 +571,11 @@ export async function loadPreferencesFromDatabase() {
             authmethod,
             node,
             language,
-            nickname
+            nickname,
+            cache,
+            cacheenabled,
+            autopickcache,
+            websocketenabled
         FROM
             preferences
         WHERE
@@ -488,7 +596,11 @@ export async function loadPreferencesFromDatabase() {
             authenticationMethod: item.authmethod,
             node: item.node,
             language: item.language,
-            nickname: item.nickname
+            nickname: item.nickname,
+            cache: item.cache,
+            cacheEnabled: item.cacheenabled,
+            autoPickCache: item.autopickcache,
+            websocketEnabled: item.websocketenabled
         }
     }
 
@@ -537,7 +649,15 @@ export async function saveKnownTransaction(txhash) {
       );
   });
 
-  console.log('wtfffs', await getKnownTransactions());
+}
+
+export function emptyKnownTXs() {
+
+    database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM knownTXs`
+        );
+    });
 
 }
 
@@ -590,24 +710,21 @@ export async function deleteKnownTransaction(txhash) {
 
 export async function saveGroupMessage(group, type, message, timestamp, nickname, address, reply, hash) {
 
-    console.log('Saving message with reply:', reply);
-
-  const read = (address == Globals.wallet.getPrimaryAddress() ? 1 : 0);
+  const read = (address == Globals?.wallet.getPrimaryAddress() || Globals?.activeGroup == group ? 1 : 0);
 
   console.log('Saving group message', group, type, message, timestamp, nickname, address, read);
 
   await database.transaction((tx) => {
       tx.executeSql(
           `REPLACE INTO privateboards_messages_db
-              (board, type, message, timestamp, read, nickname, address, read, reply, hash)
+              (board, type, message, timestamp, nickname, address, read, reply, hash)
           VALUES
-              (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
               group,
               type,
               message,
               timestamp,
-              'false',
               nickname,
               address,
               read,
@@ -658,7 +775,6 @@ let fromMyself = address == Globals.wallet.getPrimaryAddress();
   }
 
 }
-
 
 export async function removeMessage(timestamp) {
 
@@ -720,7 +836,6 @@ Globals.update();
 
 }
 
-
 export async function markGroupConversationAsRead(group) {
 
   await database.transaction((tx) => {
@@ -738,9 +853,9 @@ export async function markGroupConversationAsRead(group) {
 
 });
 
-
 Globals.unreadMessages = await getUnreadMessages();
 Globals.updateGroupsFunction();
+
 
 }
 
@@ -807,8 +922,6 @@ export async function removePayeeFromDatabase(nickname, removeMessages) {
   }
 }
 
-
-
 export async function saveGroupToDatabase(group) {
     await database.transaction((tx) => {
         tx.executeSql(
@@ -820,7 +933,6 @@ export async function saveGroupToDatabase(group) {
         );
     });
 }
-
 
 export async function removeGroupFromDatabase(key, removeMessages) {
     await database.transaction((tx) => {
@@ -845,9 +957,6 @@ export async function removeGroupFromDatabase(key, removeMessages) {
     })
   }
 }
-
-
-
 
 export async function removeMessages() {
     await database.transaction((tx) => {
@@ -881,7 +990,6 @@ export async function removeMessages() {
         );
     });
 }
-
 
 export async function getGroupKey(group) {
     const [data] = await database.executeSql(
@@ -947,7 +1055,6 @@ export async function getGroupName(key) {
     }
 }
 
-
 export async function loadGroupsDataFromDatabase() {
 
     const [data] = await database.executeSql(
@@ -965,6 +1072,7 @@ export async function loadGroupsDataFromDatabase() {
         const groups = data.rows.raw();
 
         let latestMessages = await getLatestGroupMessages();
+        let unreads = await getUnreadsPerGroup();
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
@@ -975,7 +1083,8 @@ export async function loadGroupsDataFromDatabase() {
                 lastMessage: latestMessage.length ? latestMessage[0].message : false,
                 lastMessageNickname: latestMessage.length ? latestMessage[0].nickname : false,
                 lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
-                read: latestMessage.length ? latestMessage[0].read : true
+                read: latestMessage.length ? latestMessage[0].read : true,
+                unreads: unreads[item.key]
             })
 
           }
@@ -1012,15 +1121,14 @@ export async function loadPayeeDataFromDatabase() {
                 nickname: item.nickname,
                 address: item.address,
                 paymentID: item.paymentid,
-                lastMessage: latestMessage.length ? latestMessage[0].message : false,
-                lastMessageTimestamp: latestMessage.length ? latestMessage[0].timestamp : 0,
-                read: latestMessage.length ? latestMessage[0].read : true
+                lastMessage: latestMessage.length && item.paymentid ? latestMessage[0].message : false,
+                lastMessageTimestamp: latestMessage.length && item.paymentid ? latestMessage[0].timestamp : 0,
+                read: latestMessage.length && item.paymentid ? latestMessage[0].read : true
             })
           }
 
         return res.sort((a, b) => b.lastMessageTimestamp - a.lastMessageTimestamp)
     }
-
 
     return undefined;
 }
@@ -1087,7 +1195,7 @@ export async function getLatestMessages() {
         return res;
     }
 
-    return undefined;
+    return [];
 }
 
 export async function getMessages(conversation=false, limit=25) {
@@ -1151,34 +1259,50 @@ export async function getMessages(conversation=false, limit=25) {
 
 export async function getGroupMessages(group=false, limit=25) {
 
+    if (limit < 25) limit = 25;
+
     const [data] = await database.executeSql(
-        `SELECT
-            nickname,
-            type,
-            message,
-            timestamp,
-            board,
-            address,
-            hash
-        FROM
-            privateboards_messages_db
-        WHERE reply = '' ${group ? ' AND board = "' + group + '"' : ''}
-        ORDER BY
-            timestamp
-        DESC
-        LIMIT ${limit}`
+        `
+            SELECT 
+        pm.nickname,
+        pm.type,
+        pm.message,
+        pm.timestamp,
+        pm.board,
+        pm.address,
+        pm.hash,
+        pm.reply,
+        COALESCE(rc.reply_count, 0) AS replies
+    FROM 
+        privateboards_messages_db pm
+        LEFT JOIN (
+            SELECT 
+                reply,
+                COUNT(*) AS reply_count
+            FROM 
+                privateboards_messages_db
+            WHERE 
+                reply != ''
+            GROUP BY 
+                reply
+        ) rc ON pm.hash = rc.reply
+    WHERE 
+        pm.reply = '' ${group ? ' AND pm.board = "' + group + '"' : ''}
+    ORDER BY 
+        pm.timestamp DESC
+    LIMIT ${limit}`
     );
 
     const [count] = await database.executeSql(
         `
-        SELECT COUNT(*) FROM privateboards_messages_db ${group ? 'WHERE board = "' + group + '"' : ''}
+        SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = ''${group ? ' AND board = "' + group + '"' : ''}
         `
     );
 
     let count_raw = 0;
 
     if (count && count.rows && count.rows.length) {
-        console.log(count);
+
         const res = [];
 
         for (let i = 0; i < count.rows.length; i++) {
@@ -1196,27 +1320,6 @@ export async function getGroupMessages(group=false, limit=25) {
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
 
-            const [replyCount] = await database.executeSql(
-                `
-                SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = "${item.hash}"
-                `
-            );
-
-            let replyCount_raw = 0;
-
-            if (replyCount && replyCount.rows && replyCount.rows.length && item.hash != '') {
-
-                const res = [];
-        
-                for (let i = 0; i < replyCount.rows.length; i++) {
-        
-                    const item = replyCount.rows.item(i);
-        
-                    replyCount_raw = item['COUNT(*)'];
-        
-                }
-            };
-
             res.push({
                 nickname: item.nickname,
                 type: item.type,
@@ -1226,7 +1329,7 @@ export async function getGroupMessages(group=false, limit=25) {
                 address: item.address,
                 hash: item.hash,
                 reply: item.reply,
-                replies: replyCount_raw,
+                replies: item.replies,
                 count: count_raw,
             });
         }
@@ -1236,9 +1339,8 @@ export async function getGroupMessages(group=false, limit=25) {
       console.log('No message le found!');
     }
 
-    return undefined;
+    return [];
 }
-
 
 export async function getHistory(conversation) {
 
@@ -1273,7 +1375,6 @@ export async function getHistory(conversation) {
     }
 
 }
-
 
 export async function getReplies(post) {
 
@@ -1453,7 +1554,6 @@ export async function getGroupsMessage(hash) {
     return [];
 }
 
-
 export async function getBoardRecommendations() {
 
     const [data] = await database.executeSql(
@@ -1510,20 +1610,7 @@ export async function getUnreadMessages() {
 
   console.log('Getting unreads..');
 
-  const [data] = await database.executeSql(
-      `
-      SELECT COUNT(*)
-      FROM boards_message_db
-      WHERE
-      read != "1"
-      `
-  );
-
   let unread_messages = {};
-
-  if (data && data.rows && data.rows.length) {
-    unread_messages.boards = data.rows.item(0)['COUNT(*)'];
-  }
 
   const [data_groups] = await database.executeSql(
       `
@@ -1554,6 +1641,47 @@ export async function getUnreadMessages() {
   return unread_messages;
 
 }
+
+
+export async function getUnreadsPerGroup() {
+
+    console.log('Getting unreads grouped..');
+  
+    let unread_messages = {};
+
+        const [data_groups] = await database.executeSql(
+            `
+            SELECT board, COUNT(*)
+            FROM privateboards_messages_db
+            WHERE read != "1"
+            GROUP BY board;
+            `
+        );
+
+
+
+    console.log(data_groups);
+
+    const unreads = {};
+
+    
+  
+    if (data_groups && data_groups.rows && data_groups.rows.length) {
+
+        for (let i = 0; i < data_groups.rows.length; i++) {
+
+            const item = data_groups.rows.item(i);
+            console.log(item);
+            unreads[item.board] = item['COUNT(*)'];
+
+        }
+    }
+  
+    return unreads;
+  
+  }
+
+  
 
 export async function getBoardSubscriptions() {
 
@@ -1593,7 +1721,6 @@ export async function getBoardSubscriptions() {
     return [];
 }
 
-
 export async function subscribeToBoard(board, key) {
 
     await database.transaction((tx) => {
@@ -1611,7 +1738,6 @@ export async function subscribeToBoard(board, key) {
 
 }
 
-
 export async function subscribeToGroup(group, key) {
 
     await database.transaction((tx) => {
@@ -1625,7 +1751,6 @@ export async function subscribeToGroup(group, key) {
     });
 
 }
-
 
 export async function removeBoard(board) {
 
@@ -1642,20 +1767,48 @@ export async function removeBoard(board) {
 
 }
 
-export async function getLatestBoardMessage() {
+export async function getLatestGroupMessage() {
 
     const [data] = await database.executeSql(
         `SELECT
             timestamp
         FROM
-            boards_message_db
+            privateboards_messages_db
         ORDER BY
             timestamp
         DESC
         LIMIT
             1`
     );
-    console.log('Got ' + data.rows.length + " board messages");
+
+    let timestamp = 0;
+    if (data && data.rows && data.rows.length) {
+
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+            timestamp = item.timestamp;
+            return timestamp;
+        }
+
+    }
+    return timestamp;
+
+}
+
+export async function getLatestMessage() {
+
+    const [data] = await database.executeSql(
+        `SELECT
+            timestamp
+        FROM
+            message_db
+        ORDER BY
+            timestamp
+        DESC
+        LIMIT
+            1`
+    );
+
     let timestamp = 0;
     if (data && data.rows && data.rows.length) {
 
@@ -1691,7 +1844,6 @@ export async function messageExists(timestamp) {
 
 }
 
-
 export async function groupMessageExists(timestamp) {
     const [data] = await database.executeSql(
         `SELECT
@@ -1713,7 +1865,6 @@ export async function groupMessageExists(timestamp) {
 
 }
 
-
 export async function boardsMessageExists(hash) {
     const [data] = await database.executeSql(
         `SELECT
@@ -1731,8 +1882,6 @@ export async function boardsMessageExists(hash) {
     }
 
 }
-
-
 
 export async function saveToDatabase(wallet) {
     try {

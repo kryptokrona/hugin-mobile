@@ -22,7 +22,7 @@ import {
 } from 'kryptokrona-wallet-backend-js';
 
 import {
-    View, Text, TextInput, TouchableWithoutFeedback, TouchableOpacity, FlatList, Platform,
+    Alert, View, Text, TextInput, TouchableWithoutFeedback, TouchableOpacity, FlatList, Platform,
     ScrollView, Clipboard, Image
 } from 'react-native';
 
@@ -50,6 +50,8 @@ import CustomIcon from './CustomIcon.js'
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
+import i18next from './i18n';
+
 
 const intToRGB = (int) => {
 
@@ -458,6 +460,29 @@ class AddressBook extends React.Component {
                                     color: this.props.screenProps.theme.slightlyMoreVisibleColour,
                                     fontFamily: 'Montserrat-Regular'
                                 }}
+                                onLongPress={() => {
+                                    Alert.alert(
+                                        i18next.t('deleteContactWarning'),
+                                         `${item.nickname} (${item.address})`,
+                                        [
+                                            {
+                                                text: i18next.t('delete'), onPress: () => {
+                                                    (async () => {
+                                                        /* Disabling saving */
+  
+                                                        Globals.removePayee(item.nickname, true);
+                                                        this.setState({
+                                                            payees: Globals.payees
+                                                        });
+
+                                                    })();
+                                                }
+                                            },
+                                            { text: i18next.t('cancel'), style: 'cancel' },
+                                        ],
+                                    );
+                                }}
+                                delayLongPress={1500}
                                 onPress={() => {
                                     this.props.navigation.navigate(
                                         'Transfer', {
