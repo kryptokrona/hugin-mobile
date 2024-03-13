@@ -45,7 +45,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, getGroupsMessage} from './Database';
+import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, getGroupsMessage, saveGroupMessage} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -990,72 +990,23 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 Keyboard.dismiss();
                 this.setState({reply: '', replyHasLength: false, replying: false});
 
-                let replies = this.state.replies;
-                console.log(replies);
-                replies.unshift({
-                    message: checkText(text),
-                    address: Globals.wallet.getPrimaryAddress(),
-                    board: this.state.key,
-                    timestamp: parseInt(Date.now()),
-                    nickname: Globals.preferences.nickname,
-                    reply: this.state.activePost.hash,
-                    type: 'sent',
-                    read: 1
-                });
-                this.setState({replies: replies});
+                submitMessage(text, this.state.activePost.hash);
 
-                console.log('Cleared input');
-
-                console.log('Sending message..')
-
-                console.log(this.state.activePost);
-
-                let success = await sendGroupsMessage(checkText(text), this.state.activePost.group, this.state.activePost.hash);
-                console.log(success);
-
-                if (success.success) {
-                console.log(success);
-
-                this.state.replies = await getReplies(this.state.activePost.hash);
-
-                } else {
-
-
-                replies = await getReplies(this.state.activePost.hash);
-                replies.unshift({
-                    message: checkText(text),
-                    address: Globals.wallet.getPrimaryAddress(),
-                    board: this.state.key,
-                    timestamp: parseInt(Date.now()),
-                    nickname: Globals.preferences.nickname,
-                    reply: this.state.activePost.hash,
-                    type: 'failed',
-                    read: 1
-                });
-                this.setState({replies: replies});
-
-                }
             }
 
-           const submitMessage = async (text) => {
+           const submitMessage = async (text, reply=false) => {
 
              Keyboard.dismiss();
              this.state.input.current._textInput.clear();
+
+             let temp_timestamp = Date.now();
+    
+             saveGroupMessage(this.state.key, 'processing', checkText(text), temp_timestamp, Globals.preferences.nickname, Globals.wallet.getPrimaryAddress(), reply ? reply : '', temp_timestamp);
 
              let updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
              if (!updated_messages) {
                updated_messages = [];
              }
-             let temp_timestamp = Date.now();
-             let message_indice = updated_messages.push({
-                 address: Globals.wallet.getPrimaryAddress(),
-                 nickname: Globals.preferences.nickname,
-                 group: this.state.key,
-                 type: 'processing',
-                 message: checkText(text),
-                 timestamp: temp_timestamp,
-                 read: 1
-             });
 
              this.setState({
                messages: updated_messages,
@@ -1063,40 +1014,17 @@ export class GroupChatScreenNoTranslation extends React.Component {
                sending: true
              });
 
+             Globals.messagesLoaded = updated_messages.length;
+
              this.setState({messageHasLength: this.state.message.length > 0});
 
-             let result = await sendGroupsMessage(checkText(text), this.state.key);
+            await sendGroupsMessage(checkText(text), this.state.key, temp_timestamp, reply);
 
-             if (result.success) {
+            if(reply) {
+                replies = await getReplies(this.state.activePost.hash);
+                this.setState({replies: replies});
+            }
 
-                    updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
-                    this.setState({
-                        messages: updated_messages,
-                        messageHasLength: false,
-                        sending: false
-                      });
-                      Globals.messagesLoaded = updated_messages.length;
-
-
-             } else {
-                updated_messages = await getGroupMessages(this.state.key, this.state.messages.length);
-                updated_messages.push({
-                    address: Globals.wallet.getPrimaryAddress(),
-                    nickname: Globals.preferences.nickname,
-                    group: this.state.key,
-                    type: 'failed',
-                    message: checkText(text),
-                    timestamp: temp_timestamp,
-                    read: 1
-                });
-                this.setState({
-                    messages: updated_messages,
-                    messageHasLength: false,
-                    sending: false
-                  });
-                  Globals.messagesLoaded = updated_messages.length;
-
-             }
            }
 
 

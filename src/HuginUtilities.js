@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage } from './Database';
+import { updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage } from './Database';
 
 /**
  * Save wallet in background
@@ -603,7 +603,7 @@ export async function createGroup() {
   return await Buffer.from(nacl.randomBytes(32)).toString('hex');
 }
 
-export async function sendGroupsMessage(message, group, reply=false) {
+export async function sendGroupsMessage(message, group, temp_timestamp, reply=false) {
 
   console.log('reply', reply)
 
@@ -613,7 +613,7 @@ export async function sendGroupsMessage(message, group, reply=false) {
 
   const signature = await xkrUtils.signMessage(message, privateSpendKey);
 
-  const timestamp = parseInt(Date.now());
+  const timestamp = parseInt(temp_timestamp);
 
   const nonce = nonceFromTimestamp(timestamp);
 
@@ -664,14 +664,18 @@ export async function sendGroupsMessage(message, group, reply=false) {
   } else optimizeMessages(10);
   console.log(result);
   if (result.success == true) {
-    saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
+    //saveGroupMessage(group, 'sent', message_json.m, timestamp, message_json.n, message_json.k, reply, result.transactionHash);
+    updateGroupMessage(temp_timestamp, 'sent', result.transactionHash);
     backgroundSave();
     Globals.lastMessageTimestamp = timestamp;
+  } else {
+    updateGroupMessage(temp_timestamp, 'failed', temp_timestamp);
   }
+
   return result;
 }
 
-export async function sendMessage(message, receiver, messageKey, silent=false) {
+export async function sendMessage(message, receiver, messageKey, temp_timestamp) {
 
   console.log(Globals.wallet);
 
@@ -700,7 +704,7 @@ export async function sendMessage(message, receiver, messageKey, silent=false) {
       return;
     }
 
-    let timestamp = Date.now();
+    let timestamp = temp_timestamp;
 
     let box;
 
@@ -764,10 +768,14 @@ if (result.success) {
   if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
     message = 'Call answered';
   }
-  saveMessage(receiver, 'sent', message, timestamp);
+  updateMessage(temp_timestamp, 'sent');
   backgroundSave();
   Globals.lastMessageTimestamp = timestamp;
-} 
+} else {
+  updateMessage(temp_timestamp, 'failed');
+}
+
+Globals.updateMessages();
 
 return result;
 

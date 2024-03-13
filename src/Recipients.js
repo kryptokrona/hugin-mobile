@@ -49,7 +49,7 @@ import {intToRGB, hashCode, get_avatar, sendMessage} from './HuginUtilities';
 
 import {toastPopUp} from './Utilities';
 
-import { saveToDatabase, getMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase } from './Database';
+import { saveMessage, getMessages, getLatestMessages, removeMessage, markConversationAsRead, loadPayeeDataFromDatabase } from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -979,53 +979,24 @@ export class ChatScreenNoTranslation extends React.Component {
         Keyboard.dismiss();
         this.state.input.current._textInput.clear();
 
+        this.setState({messageHasLength: this.state.message.length > 0});
+
+        let temp_timestamp = Date.now();
+
+        await saveMessage(this.state.address, 'processing', text, temp_timestamp);
+
         let updated_messages = await getMessages(this.state.address);
         if (!updated_messages) {
           updated_messages = [];
         }
-        let temp_timestamp = Date.now();
-        updated_messages.push({
-            conversation: this.state.address,
-            type: 'processing',
-            message: checkText(text),
-            timestamp: temp_timestamp
-        });
 
         this.setState({
           messages: updated_messages,
           messageHasLength: false
         });
 
-        this.setState({messageHasLength: this.state.message.length > 0});
+        sendMessage(checkText(text), this.state.address, this.state.paymentID, temp_timestamp);
 
-        let result = await sendMessage(checkText(text), this.state.address, this.state.paymentID);
-        
-        if (result.success) {
-           await removeMessage(temp_timestamp);
-           let updated_messages = await getMessages(this.state.address); 
-
-          this.setState({
-            messages: updated_messages,
-            messageHasLength: false
-          })
-          // this.state.input.current.clear();
-        } else {
-           let updated_messages = await getMessages(this.state.address);
-           if (!updated_messages) {
-            updated_messages = [];
-          }
-           updated_messages.push({
-               conversation: this.state.address,
-               type: 'failed',
-               message: checkText(text),
-               timestamp: temp_timestamp
-           });
-           console.log(updated_messages);
-           this.setState({
-               messages: updated_messages,
-               messageHasLength: false
-             })
-        }
       } 
 
        const items = [];

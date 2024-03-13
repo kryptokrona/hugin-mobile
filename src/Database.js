@@ -631,6 +631,47 @@ export async function saveMessage(conversation, type, message, timestamp) {
 
 }
 
+export async function updateMessage(temp_timestamp, type) {
+
+    console.log('Updating message', temp_timestamp, type);
+  
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `UPDATE message_db
+            SET type = ?
+            WHERE timestamp = ?`,
+            [
+                type,
+                temp_timestamp
+            ]
+        );
+    });
+  
+    Globals.updateMessages();
+  
+  }
+
+  export async function updateGroupMessage(temp_timestamp, type, hash) {
+
+    console.log('Updating group message', temp_timestamp, type, hash);
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `UPDATE privateboards_messages_db
+            SET type = ?, hash = ?
+            WHERE timestamp = ?`,
+            [
+                type,
+                hash,
+                temp_timestamp
+            ]
+        );
+    });
+  
+    Globals.updateGroups();
+  
+  }
+
 export async function saveKnownTransaction(txhash) {
 
   console.log('Saving known pool tx ', txhash);
