@@ -1112,6 +1112,7 @@ export async function loadPayeeDataFromDatabase() {
         const payees = data.rows.raw();
 
         let latestMessages = await getLatestMessages();
+        let unreads = await getUnreadsPerRecipient();
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
@@ -1123,7 +1124,8 @@ export async function loadPayeeDataFromDatabase() {
                 paymentID: item.paymentid,
                 lastMessage: latestMessage.length && item.paymentid ? latestMessage[0].message : false,
                 lastMessageTimestamp: latestMessage.length && item.paymentid ? latestMessage[0].timestamp : 0,
-                read: latestMessage.length && item.paymentid ? latestMessage[0].read : true
+                read: latestMessage.length && item.paymentid ? latestMessage[0].read : true,
+                unreads: unreads[item.address]
             })
           }
 
@@ -1679,6 +1681,38 @@ export async function getUnreadsPerGroup() {
   
     return unreads;
   
+  }
+
+  export async function getUnreadsPerRecipient() {
+
+    console.log('Getting unreads for recipients..');
+
+    let unread_messages = {};
+
+        const [data_unreads] = await database.executeSql(
+            `
+            SELECT conversation, COUNT(*)
+            FROM message_db
+            WHERE read != "1"
+            GROUP BY conversation;
+            `
+        );
+
+    const unreads = {};
+
+    if (data_unreads && data_unreads.rows && data_unreads.rows.length) {
+
+        for (let i = 0; i < data_unreads.rows.length; i++) {
+
+            const item = data_unreads.rows.item(i);
+            console.log(item);
+            unreads[item.conversation] = item['COUNT(*)'];
+
+        }
+    }
+
+    return unreads;
+
   }
 
   

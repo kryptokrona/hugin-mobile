@@ -32,7 +32,7 @@ import Config from './Config';
 import ListItem from './ListItem';
 import List from './ListContainer';
 
-import { Styles } from './Styles';
+import { Styles, unread_counter_style, unread_counter_text_style } from './Styles';
 
 import Moment from 'react-moment';
 
@@ -148,7 +148,7 @@ export class RecipientsScreenNoTranslation extends React.Component {
                                 subtitleStyle={{
                                     fontFamily: "Montserrat-Regular"
                                 }}
-                                chevron={item.read == '1' ? false : newMessageIndicator }
+                                chevron={item.read == '1' ? false : <View style={[unread_counter_style, {borderColor: "#171717", marginTop: 1, marginRight: 5}]}><Text style={unread_counter_text_style}>{item.unreads}</Text></View> }
                                 leftIcon={
                                     <Image
                                       style={{width: 50, height: 50}}
