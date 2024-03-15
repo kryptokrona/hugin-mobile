@@ -1405,13 +1405,9 @@ export async function getHistory(conversation) {
     );
 
     if (data && data.rows && data.rows.length) {
-      // This block should be removed in the future.
-      // It's only used for users who have not yet sent a message to all their
-      // contacts at v1.1.2 or later.
-      if (data.rows.item(0).timestamp < 1677888438000) {
-        return false;
-      }
-      //
+        if (( Date.now() - data.rows.item(0).timestamp ) > 24*60*60*1000 ) {
+            return false; // Return false if latest message is more than 24h old, because we want to renew contactability
+        }
       return true;
     } else {
       return false;
