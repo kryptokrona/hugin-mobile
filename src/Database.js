@@ -1396,7 +1396,7 @@ export async function getHistory(conversation) {
         FROM
             message_db
         WHERE conversation = "${conversation}"
-        AND type = "sent"
+        AND type = "received"
         ORDER BY
             timestamp
         DESC
