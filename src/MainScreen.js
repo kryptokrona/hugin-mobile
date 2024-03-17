@@ -595,6 +595,18 @@ export class MainScreen extends React.PureComponent {
                     onPress={() => {
                       this.props.navigation.navigate('ChoosePayee', this.props.navigation);
                     }}>
+                                            <Text style={{
+                                    color: 'white',
+                                    fontSize: 54,
+                                    fontFamily: 'icomoon',
+                                    textAlign: 'center', alignItems: 'center', marginTop: 5,
+                                    position: 'absolute',
+                                    left: 50,
+                                    top: 39,
+                                    zIndex: 999
+                                }}>
+                                    
+                                </Text>
                         <BalanceComponent
                             unlockedBalance={this.state.unlockedBalance}
                             lockedBalance={this.state.lockedBalance}
@@ -801,7 +813,7 @@ class BalanceComponentNoTranslation extends React.Component {
         const {t} = this.props;
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
-                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
+                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, marginLeft: 35, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
                                 >
 
                                      {prettyPrintAmountMainScreen(this.props.unlockedBalance)}
@@ -860,17 +872,6 @@ class BalanceComponentNoTranslation extends React.Component {
             {/* <Animated.View */}
             <View style={{textAlign: 'center', alignItems: 'center', marginTop: 20, marginBottom: 20, alignItems: 'center', borderRadius: 15, borderWidth: 1, borderColor: this.props.screenProps.theme.borderColour, padding: 8, backgroundColor: this.props.screenProps.theme.backgroundEmphasis, minWidth: '80%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
   
-                    <Text style={{
-                        color: 'white',
-                        fontSize: 64,
-                        fontFamily: 'icomoon',
-                        marginBottom: -20,
-                        paddingTop: 10,
-                        paddingBottom: 10,
-                        marginRight: 10
-                    }}>
-                        
-                    </Text>
                     <View style={{marginBottom: 8}}>
                     {this.state.expandedBalance ? expandedBalance : compactBalance}
                     </View>
