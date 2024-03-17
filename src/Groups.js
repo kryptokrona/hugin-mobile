@@ -1017,8 +1017,9 @@ export class GroupChatScreenNoTranslation extends React.Component {
              Globals.messagesLoaded = updated_messages.length;
 
              this.setState({messageHasLength: this.state.message.length > 0});
-
+             this.scrollView.scrollTo({y: 0, animated: true});
             await sendGroupsMessage(checkText(text), this.state.key, temp_timestamp, reply);
+            this.scrollView.scrollTo({y: 0, animated: true});
 
             if(reply) {
                 replies = await getReplies(this.state.activePost.hash);
@@ -1077,9 +1078,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
                         height: '80%',
                     }}
                     ref={ref => {this.scrollView = ref}}
-                    onContentSizeChange={() => {
-                        this.scrollView.scrollTo({y: 0, animated: true});
-                    }}
                 >
 
                     <View style ={{flex:1}}>

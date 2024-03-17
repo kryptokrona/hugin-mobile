@@ -994,9 +994,9 @@ export class ChatScreenNoTranslation extends React.Component {
           messages: updated_messages,
           messageHasLength: false
         });
-
-        sendMessage(checkText(text), this.state.address, this.state.paymentID, temp_timestamp);
-
+        this.scrollView.scrollTo({y: 0, animated: true});
+        await sendMessage(checkText(text), this.state.address, this.state.paymentID, temp_timestamp);
+        this.scrollView.scrollTo({y: 0, animated: true});
       } 
 
        const items = [];
@@ -1081,9 +1081,6 @@ export class ChatScreenNoTranslation extends React.Component {
                         height: '80%',
                     }}
                     ref={ref => {this.scrollView = ref}}
-                    onContentSizeChange={() => {
-                        this.scrollView.scrollTo({y: 0, animated: true});
-                    }}
                 >
 
                 <View style ={{flex:1}}>
