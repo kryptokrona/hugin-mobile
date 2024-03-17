@@ -493,17 +493,19 @@ export async function sendMessageWithHuginAPI(payload_hex) {
 
 export async function cacheSync(first=true, page=1) {
 
-  return new Promise(async (resolve, reject) => {
+  Globals.logger.addLogMessage('Syncing group message with API.. 💌');
 
-  console.log('Global timestamp', Globals.lastMessageTimestamp);
+  return new Promise(async (resolve, reject) => {
   
 
     if(first) {
       latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
     }
 
-    if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
+    console.log('Last message was:', new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''))
 
+    if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
+    Globals.logger.addLogMessage(`Syncing group messages from ${new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')} to ${new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')}.. 💌`);
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
     console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
     fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
@@ -516,6 +518,8 @@ export async function cacheSync(first=true, page=1) {
         return;
       }
       for (item in items) {
+
+        Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
 
         Globals.lastSyncEvent = Date.now();
 
@@ -581,7 +585,7 @@ export async function cacheSyncDMs(first=true, page=1) {
           hash: items[item].tx_hash
         };
         console.log('Getting message')
-        let message = await getMessage(this_json);
+        let message = await getMessage(this_json, this_json.tx_hash, Globals.navigation);
         console.log('Message gotten')
       }
       if (json.total_pages == 0) resolve(true);
@@ -677,8 +681,6 @@ export async function sendGroupsMessage(message, group, temp_timestamp, reply=fa
 
 export async function sendMessage(message, receiver, messageKey, temp_timestamp) {
 
-  console.log(Globals.wallet);
-
   if (message.length == 0) {
     return;
   }
@@ -751,17 +753,21 @@ export async function sendMessage(message, receiver, messageKey, temp_timestamp)
         Buffer.from(payload_hex, 'hex')
     );
 
+    Globals.logger.addLogMessage('Trying to send DM..');
+
     if (!result.success) {
+      Globals.logger.addLogMessage('Failed to send DM..');
       optimizeMessages(10, true);
-      console.log(result);
       try {
+        Globals.logger.addLogMessage('Trying to send DM with API..');
         result = await sendMessageWithHuginAPI(payload_hex);
       } catch (err) {
-        console.log('Failed to send with Hugin API..')
+        Globals.logger.addLogMessage('Trying to send DM with API..');
       }
     } else optimizeMessages(10);
 
 if (result.success) {
+  Globals.logger.addLogMessage('Succeeded sending DM!');
   if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
     message = 'Call started';
   }
@@ -1066,8 +1072,10 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
             Date.now() - payload_json.t < 180000 ? missed = false : missed = true;
 
             console.log('Call is missed? ', missed);
+            console.log('What is navigation', navigation)
 
             if (navigation && !missed) {
+              console.log('Navigating to dis bichh');
             navigation.navigate(
               'CallScreen', {
                   payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},

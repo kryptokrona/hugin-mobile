@@ -288,6 +288,9 @@ export class MainScreen extends React.PureComponent {
 
         init(this.props.navigation);
 
+        Globals.navigation = this.props.navigation;
+        console.log('Navigation set to', Globals.navigation)
+
         Globals.wallet.on('transaction', () => {
             this.updateBalance();
         });
@@ -1023,10 +1026,6 @@ async function backgroundSyncMessages(navigation) {
 
     const syncingHasStalled = (Date.now() - Globals.lastSyncEvent > 1000 * 60 );
 
-    console.log('Has syncing stalled?', syncingHasStalled);
-    console.log(Date.now() - Globals.lastSyncEvent);
-    console.log(Globals.lastSyncEvent);
-
     if (syncingHasStalled ) Globals.syncingMessages = false;
 
     // Add check if websocket // cache is working
@@ -1079,7 +1078,7 @@ async function backgroundSyncMessages(navigation) {
 
     await cacheSync();
     await cacheSyncDMs();
-    console.log('Returned with', Globals.notificationQueue)
+    Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
     sendNotifications();
     Globals.syncingMessages = false;
     Globals.knownTXs = await getKnownTransactions();
@@ -1091,7 +1090,7 @@ async function backgroundSyncMessages(navigation) {
 
   try {
 
-        console.log('Syncing from node..');
+    Globals.logger.addLogMessage('Syncing messages from node.. 💌');
     
       const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
       let knownTXs = await getKnownTransactions();
@@ -1111,13 +1110,15 @@ async function backgroundSyncMessages(navigation) {
         }
         let addedTxs = json.addedTxs;
 
-        let transactions = addedTxs;
+        Globals.logger.addLogMessage(`Found ${addedTxs.length} new messages.. 💌`);
 
-        console.log(`Found ${addedTxs.length} new transactions.`);
+        let transactions = addedTxs;
 
         for (transaction in transactions) {
 
           try {
+
+            Globals.logger.addLogMessage(`Trying to decrypt message ${transaction}/${addedTxs.length}.. 💌`);
 
             Globals.lastSyncEvent = Date.now();
 
@@ -1125,9 +1126,6 @@ async function backgroundSyncMessages(navigation) {
 
           let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
 
-          console.log(`Checking tx with hash ${thisHash}`);
-
-          
           if (Globals.knownTXs.indexOf(thisHash) != -1) continue;
 
 
@@ -1154,7 +1152,8 @@ async function backgroundSyncMessages(navigation) {
         }
 
         }
-        console.log('Syncing complete!', Globals.notificationQueue);
+        Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
+        
         sendNotifications();
         Globals.syncingMessages = false;
         Globals.knownTXs = await getKnownTransactions();

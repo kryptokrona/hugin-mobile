@@ -133,6 +133,8 @@ class globals {
 
         this.lastSyncEvent = Date.now();
 
+        this.navigation = undefined;
+
     }
 
     reset() {
@@ -342,22 +344,17 @@ function updateConnection(connection) {
 
    export async function startWebsocket() {
 
-    console.log('websockets online', Globals.websockets)
-
     if (Globals.websockets || Globals.preferences.websocketEnabled != 'true') return;
     
-
-    console.log('CacheNabled:', Globals.preferences.cacheEnabled)
-    console.log(Globals.preferences.cache);
     if (Globals.preferences.cacheEnabled != "true") return;
     const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
-    console.log(socketURL);
     Globals.socket = new WebSocket(socketURL);
 
     // Open connection wit Cache
     Globals.socket.onopen = () => {
         Globals.websockets++;
         console.log(`Connected 🤖`)
+        Globals.logger.addLogMessage('Connected to WebSocket 🤖');
         Globals.webSocketStatus = 'online';
 
     }
@@ -366,19 +363,20 @@ function updateConnection(connection) {
         if (Globals.websockets > 0) Globals.websockets--;
         
         Globals.webSocketStatus = 'offline';
-        console.log('Connection closed')
+        Globals.logger.addLogMessage('Disconnected from WebSocket 🤖');
         startWebsocket();
     }
 
 // Listen for messages
     Globals.socket.onmessage = async (e) => {
+        Globals.logger.addLogMessage('Received WebSocket Message!');
         let data = e.data
+        Globals.logger.addLogMessage(data);
 
         try {
 
             let json = JSON.parse(data)
-            console.log(json);
-            await getMessage(json);
+            await getMessage(json, json.hash, Globals.navigation);
             sendNotifications();
 
         } catch (err) {
@@ -389,8 +387,6 @@ function updateConnection(connection) {
    }
 
 export async function initGlobals() {
-
-    console.log('Initing globals..');
 
     const payees = await loadPayeeDataFromDatabase();
 
