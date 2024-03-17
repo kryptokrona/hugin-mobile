@@ -175,7 +175,7 @@
   callAnswered: "电话已接通",
   waitingForAnswer: "等待对方接受邀请...",
   connecting: "连接中...",
-  callTerminated: "呼叫终止"
+  callTerminated: "呼叫终止",
   loadMore: "加载更多",
   transactionHash: "交易哈希",
   transactionHistory: "交易历史",
