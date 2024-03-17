@@ -4,6 +4,7 @@
 
 import * as _ from 'lodash';
 import * as Animatable from 'react-native-animatable';
+import CustomIcon from './CustomIcon.js'
 
 import React from 'react';
 import TextTicker from 'react-native-text-ticker';
@@ -1449,69 +1450,7 @@ export class SettingsScreenNoTranslation extends React.Component {
     render() {
         let getColor = (item) => {
             switch (item.title) {
-                case "Language":
-                    return "#5f86f2";
-                    break;
-                case t('backupKeys'):
-                    return "#a65ff2";
-                    break;
-                case t('viewLogs'):
-                    return "#f25fd0";
-                    break;
-                case t('rewindWallet'):
-                    return "#f25f61";
-                    break;
-                case t('resetWallet'):
-                    return "#f25f61";
-                    break;
-                case t('backgroundSyncing'):
-                    return "#f2cb5f";
-                    break;
-                case t('swapNode'):
-                    return "#abf25f";
-                    break;
-                case t('swapCurrency'):
-                    return "#5ff281";
-                    break;
-                case t('limitData'):
-                    return "#5ff2f0";
-                    break;
-                case "Enable dark mode":
-                    return "#5f86f2";
-                    break;
-                case t('enablePin'):
-                    return "#a65ff2";
-                    break;
-                case t('changeLoginMethod'):
-                    return "#f25fd0";
-                    break;
-                case t('enableNotifications'):
-                    return "#f25f61";
-                    break;
-                case t('scanCoinbase'):
-                    return "#f2cb5f";
-                    break;
-                case t('enableAutoOptimization'):
-                    return "#abf25f";
-                    break;
-                case t('manualOptimization'):
-                    return "#5ff281";
-                    break;
-                case "View Kryptokrona Mobile Wallet on Google Play":
-                    return "#5ff2f0";
-                    break;
-                case "View Kryptokrona Mobile Wallet on Github":
-                    return "#5f86f2";
-                    break;
-                case t('resyncWallet'):
-                    return "#a65ff2";
-                    break;
-                case t('deleteAccount'):
-                    return "#f25fd0";
-                    break;
-                case "Kryptokrona Mobile Wallet":
-                    return "#f25f61";
-                    break;
+                
                 default:
                     return this.props.screenProps.theme.foregroundColour
 
@@ -1597,28 +1536,28 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     this.props.navigation.navigate('Logging');
                                 },
                             },
-                            {
-                                title: t('rewindWallet'),
-                                description: t('rewindWalletDescr'),
-                                icon: {
-                                    iconName: 'md-rewind',
-                                    IconType: Ionicons,
-                                },
-                                onClick: () => {
-                                    if (Globals.preferences.authConfirmation) {
-                                        Authenticate(
-                                            this.props.navigation,
-                                            'to rewind your wallet',
-                                            () => {
-                                                this.props.navigation.navigate('Settings');
-                                                rewindWallet(this.props.navigation);
-                                            }
-                                        );
-                                    } else {
-                                        rewindWallet(this.props.navigation);
-                                    }
-                                },
-                            },
+                            // {
+                            //     title: t('rewindWallet'),
+                            //     description: t('rewindWalletDescr'),
+                            //     icon: {
+                            //         iconName: 'md-rewind',
+                            //         IconType: Ionicons,
+                            //     },
+                            //     onClick: () => {
+                            //         if (Globals.preferences.authConfirmation) {
+                            //             Authenticate(
+                            //                 this.props.navigation,
+                            //                 'to rewind your wallet',
+                            //                 () => {
+                            //                     this.props.navigation.navigate('Settings');
+                            //                     rewindWallet(this.props.navigation);
+                            //                 }
+                            //             );
+                            //         } else {
+                            //             rewindWallet(this.props.navigation);
+                            //         }
+                            //     },
+                            // },
                             {
                                 title: t('backgroundSyncing'),
                                 description: t('backgroundSyncingDescr'),
@@ -1883,8 +1822,8 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 title: t('clearKnownMessages'),
                                 description: t('clearKnownMessagesDescr'),
                                 icon: {
-                                    iconName: 'delete',
-                                    IconType: AntDesign,
+                                    iconName: 'messages',
+                                    IconType: CustomIcon,
                                 },
                                 onClick: () => {
                                         Globals.knownTXs = [];
