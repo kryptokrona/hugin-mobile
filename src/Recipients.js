@@ -1081,7 +1081,9 @@ export class ChatScreenNoTranslation extends React.Component {
                         height: '80%',
                     }}
                     ref={ref => {this.scrollView = ref}}
-                    // onContentSizeChange={() => this.scrollView.scrollToEnd({animated: false})}
+                    onContentSizeChange={() => {
+                        this.scrollView.scrollTo({y: 0, animated: true});
+                    }}
                 >
 
                 <View style ={{flex:1}}>
