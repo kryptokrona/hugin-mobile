@@ -1573,8 +1573,9 @@ export class CallScreenNoTranslation extends React.Component {
         let receiver = this.state.address;
     
         let messageKey = this.state.paymentID;
-    
-        const result = await sendMessage(parsed_data, receiver, messageKey);    
+        const temp_timestamp = Date.now();
+        await saveMessage(receiver, 'processing', 'Call started', temp_timestamp);
+        const result = await sendMessage(parsed_data, receiver, messageKey, temp_timestamp);    
         console.log(result);
         if (!result.success) {
             toastPopUp('Failed to send call! Check your balance and try again.');
@@ -1632,8 +1633,10 @@ export class CallScreenNoTranslation extends React.Component {
         const receiver = this.state.address;
     
         const messageKey = this.state.paymentID;
-        
-        sendMessage(parsed_answer, receiver, messageKey);    
+
+        const temp_timestamp = Date.now();
+        await saveMessage(receiver, 'processing', 'Call answered', temp_timestamp);
+        const result = await sendMessage(parsed_answer, receiver, messageKey, temp_timestamp);   
 
     }
 
