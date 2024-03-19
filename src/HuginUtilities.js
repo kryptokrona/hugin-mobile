@@ -691,21 +691,6 @@ export async function sendMessage(message, receiver, messageKey, temp_timestamp)
 
     let my_addresses = Globals.wallet.getAddresses();
 
-    try {
-
-      let [munlockedBalance, mlockedBalance] = await Globals.wallet.getBalance();
-
-      if (munlockedBalance < 11 && mlockedBalance > 0) {
-
-        toastPopUp('Please wait for more funds to unlock!');
-        return {success: false};
-
-      }
-    } catch (err) {
-      toastPopUp('Error!');
-      return;
-    }
-
     let timestamp = temp_timestamp;
 
     let box;
