@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage } from './Database';
+import { updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction } from './Database';
 
 /**
  * Save wallet in background
@@ -473,6 +473,7 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     Globals.preferences.cacheEnabled = 'true';
     savePreferencesToDatabase(Globals.preferences);
     toastPopUp('API sending enabled. Please try again. You can turn this off on the settings page.')
+    return {success: false};
   };
 
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
@@ -498,13 +499,14 @@ export async function cacheSync(first=true, page=1) {
   return new Promise(async (resolve, reject) => {
   
 
-    if(first) {
-      latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
-    }
+    // if(first) {
+    //   latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
+    // }
 
-    console.log('Last message was:', new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''))
+    //console.log('Last message was:', new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, ''))
 
-    if (Globals.lastMessageTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastMessageTimestamp;
+    //if (Globals.lastMessageTimestamp > latest_board_message_timestamp)
+    latest_board_message_timestamp = Globals.lastMessageTimestamp;
     Globals.logger.addLogMessage(`Syncing group messages from ${new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')} to ${new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')}.. 💌`);
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
     console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
@@ -517,19 +519,23 @@ export async function cacheSync(first=true, page=1) {
         resolve(true);
         return;
       }
+      Globals.logger.addLogMessage(`Found ${json.total_items} group messages.. 💌`);
       for (item in items) {
 
-        Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
+        Globals.logger.addLogMessage(`Syncing group message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
 
         Globals.lastSyncEvent = Date.now();
 
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
+        if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
 
         let groupMessage = await getGroupMessage({
           sb: items[item].tx_sb,
           t: items[item].tx_timestamp,
           hash: items[item].tx_hash
         });
+
+        saveKnownTransaction(items[item].tx_hash);
 
       }
       if (json.total_pages == 0) resolve(true);
@@ -553,11 +559,13 @@ export async function cacheSyncDMs(first=true, page=1) {
     
   console.log('Global timestamp', Globals.lastDMTimestamp);
 
-    if(first) {
-      latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
-    }
+    // if(first) {
+    //   latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
+    // }
 
-    if (Globals.lastDMTimestamp > latest_board_message_timestamp) latest_board_message_timestamp = Globals.lastDMTimestamp;
+    // if (Globals.lastDMTimestamp > latest_board_message_timestamp) 
+    
+    latest_board_message_timestamp = Globals.lastDMTimestamp;
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
 
@@ -568,25 +576,26 @@ export async function cacheSyncDMs(first=true, page=1) {
       console.log(json);
       console.log('We have items');
       const items = json.encrypted_posts;
+      Globals.logger.addLogMessage(`Found ${json.total_items} DMs 💌`);
       if (!items.length) {
         resolve(true);
         return;
       }
       console.log('Looping items');
       for (item in items) {
-
+        Globals.logger.addLogMessage(`Syncing private message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
         Globals.lastSyncEvent = Date.now();
 
         if (await messageExists(items[item].tx_timestamp)) continue;
+        if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
         console.log('Item doesnt exist');
         let this_json = {
           box: items[item].tx_box,
           t: items[item].tx_timestamp,
           hash: items[item].tx_hash
         };
-        console.log('Getting message')
         let message = await getMessage(this_json, this_json.tx_hash, Globals.navigation);
-        console.log('Message gotten')
+        saveKnownTransaction(items[item].tx_hash);
       }
       if (json.total_pages == 0) resolve(true);
       if (json.current_page < json.total_pages) {
@@ -939,7 +948,6 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
            getKeyPair().secretKey);
            createNewPayee = true;
          } catch (err) {
-          Globals.logger.addLogMessage('Error: ' + err);
          }
          if(!decryptBox) {
           try {
