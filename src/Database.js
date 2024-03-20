@@ -835,6 +835,24 @@ export async function removeMessage(timestamp) {
 
 }
 
+export async function removeGroupMessage(timestamp) {
+
+    console.log('Removing message ', timestamp);
+  
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `DELETE FROM
+                privateboards_messages_db
+            WHERE
+                timestamp = ?`,
+            [ timestamp ]
+        );
+    });
+  
+    Globals.updateMessages();
+  
+  }
+
 export async function saveOutgoingMessage(message) {
 
   await database.transaction((tx) => {
@@ -873,7 +891,7 @@ export async function markConversationAsRead(conversation) {
 });
 
 Globals.unreadMessages = await getUnreadMessages();
-Globals.update();
+Globals.updateMessages()
 
 }
 
@@ -895,7 +913,7 @@ export async function markGroupConversationAsRead(group) {
 });
 
 Globals.unreadMessages = await getUnreadMessages();
-Globals.updateGroupsFunction();
+Globals.updateGroups();
 
 
 }

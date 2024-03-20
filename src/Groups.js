@@ -45,7 +45,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, getGroupsMessage, saveGroupMessage} from './Database';
+import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, saveGroupMessage, removeGroupMessage} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -243,7 +243,7 @@ export class GroupsScreenNoTranslation extends React.Component {
                                             group: item,
                                         }
                                     );
-                                    await markGroupConversationAsRead(item.key);
+                                    // await markGroupConversationAsRead(item.key);
                                     Globals.groups = await loadGroupsDataFromDatabase();
                                     console.log(Globals.groups);
                                     this.setState({
@@ -837,6 +837,20 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
         Globals.activeGroup = this.state.key;
 
+        this.focusSubscription = this.props.navigation.addListener(
+            'willFocus',
+            () => {
+                markGroupConversationAsRead(this.state.key);
+                Globals.activeGroup = this.state.key;
+            }
+        );
+        this.blurSubscription = this.props.navigation.addListener(
+            'willBlur',
+            () => {
+                Globals.activeGroup = '';
+            }
+        );
+
     }
 
     async componentWillUnmount() {
@@ -883,7 +897,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
               <View key={message} style={{marginLeft: 20, marginRight: 20, marginBottom: 20, padding: 15, borderRadius: 15}}>
                 
                 {thisMessage.type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
-                    {thisMessage.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {console.log(this.state.messages, message); submitMessage(thisMessage.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                    {thisMessage.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {removeGroupMessage(thisMessage.timestamp); submitMessage(thisMessage.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
 
                     <View style={{flexDirection:"row", marginBottom: 10}}>
                         <Image

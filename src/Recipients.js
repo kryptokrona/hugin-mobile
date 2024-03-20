@@ -938,6 +938,7 @@ export class ChatScreenNoTranslation extends React.Component {
     async componentDidMount() {
 
         const messages = await getMessages(this.state.address);
+        markConversationAsRead(this.state.address);
 
         console.log('messages', messages);
 
@@ -950,6 +951,8 @@ export class ChatScreenNoTranslation extends React.Component {
         this.focusSubscription = this.props.navigation.addListener(
             'willFocus',
             () => {
+                markConversationAsRead(this.state.address);
+                Globals.activeChat = this.state.address;
                 const { address, nickname, paymentID } = Globals.payees.filter(payee => payee.address == this.state.address)[0];
                 this.setState({
                     nickname: nickname,
@@ -958,6 +961,13 @@ export class ChatScreenNoTranslation extends React.Component {
                 })
             }
           );
+
+          this.blurSubscription = this.props.navigation.addListener(
+            'willBlur',
+            () => {
+                Globals.activeChat = '';
+            }
+        );
 
     }
 
@@ -969,8 +979,6 @@ export class ChatScreenNoTranslation extends React.Component {
     }
 
     render() {
-
-      markConversationAsRead(this.state.address);
 
        const { t } = this.props;
 
@@ -1010,7 +1018,7 @@ export class ChatScreenNoTranslation extends React.Component {
              <View  key={message} style={[{ backgroundColor: '#006BA7' } ,{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, padding: 15, borderRadius: 15}]}>
                 
                     {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
-                    {this.state.messages[message].type == 'failed' && <TouchableOpacity onPress={() => submitMessage(this.state.messages[message].message)}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                    {this.state.messages[message].type == 'failed' && <TouchableOpacity onPress={() => {removeMessage(this.state.messages[message].timestamp); submitMessage(this.state.messages[message].message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
                 <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >
                     {this.state.messages[message].message}
                 </Text>
