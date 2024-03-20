@@ -38,6 +38,8 @@ class globals {
 
         this.syncingMessagesCount = 0;
 
+        this.syncSkips = 0;
+
         /* Preferences loaded from DB */
         this.preferences = {
             currency: 'usd',

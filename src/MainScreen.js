@@ -100,8 +100,6 @@ async function init(navigation) {
     if (Globals.backgroundSyncMessagesTimer === undefined) {
       Globals.backgroundSyncMessagesTimer = setInterval(function() {
         backgroundSyncMessages(navigation);
-        //cacheSync(false);
-
       }, 10000);
     }
     
@@ -1054,15 +1052,17 @@ async function backgroundSyncMessages(navigation) {
 
     if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled == "true" && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
         startWebsocket();
-        if (Globals.webSocketStatus == 'online' && Globals.websocketEnabled == 'true') return;
+        if (Globals.webSocketStatus == 'online' && Globals.preferences.websocketEnabled == 'true') return;
     }
     
-    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred && Globals.websocketEnabled == 'true') {
+    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred && Globals.preferences.websocketEnabled == 'true') {
         Globals.syncingMessages = false;
-        return;
+        Globals.syncSkips++;
+        if (Globals.syncSkips < 6) return;
     }
 
     Globals.initalSyncOccurred = true;
+    Globals.syncSkips = 0;
 
   if (Globals.syncingMessages) {
     console.log('Already syncing.. skipping.');
