@@ -819,6 +819,10 @@ export async function getExtra(hash){
 
 async function getGroupMessage(tx) {
 
+  setTimeout(() => {
+    return false;
+  }, 10000);
+
   if (await groupMessageExists(tx.t)) return;
 
   console.log('Trying to decrypt', tx);
@@ -878,7 +882,7 @@ async function getGroupMessage(tx) {
 
   saveGroupMessage(key, received, payload_json.m, tx.t, payload_json.n, payload_json.k, reply, tx.hash);
 
-  const nickname = payload_json.n ? payload_json.n : t('Anonymous');
+  const nickname = payload_json.n ? payload_json.n : 'Anonymous';
 
   const group_object = Globals.groups.filter(group => {
     return group.key == key;
@@ -911,9 +915,15 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
   return new Promise(async (resolve, reject) => {
 
+    setTimeout(() => {
+      resolve('Promise timed out!');
+    }, 10000);
+
     let tx = trimExtra(extra);
 
-    console.log('Trimmed', tx)
+    console.log('Trimmed', tx);
+
+    if (tx.t == undefined) {resolve(); return;}
 
         if (tx.sb) {
 

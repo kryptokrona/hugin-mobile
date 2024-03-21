@@ -593,18 +593,7 @@ export class MainScreen extends React.PureComponent {
                     onPress={() => {
                       this.props.navigation.navigate('ChoosePayee', this.props.navigation);
                     }}>
-                                            <Text style={{
-                                    color: 'white',
-                                    fontSize: 54,
-                                    fontFamily: 'icomoon',
-                                    textAlign: 'center', alignItems: 'center', marginTop: 5,
-                                    position: 'absolute',
-                                    left: 50,
-                                    top: 39,
-                                    zIndex: 999
-                                }}>
-                                    
-                                </Text>
+                                            
                         <BalanceComponent
                             unlockedBalance={this.state.unlockedBalance}
                             lockedBalance={this.state.lockedBalance}
@@ -811,10 +800,18 @@ class BalanceComponentNoTranslation extends React.Component {
         const {t} = this.props;
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
-                                     style={{textAlign: 'center', alignItems: 'center', marginTop: 5, marginLeft: 35, fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
+                                     style={{textAlign: 'center', alignItems: 'center', fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
                                 >
-
+                                    <Text style={{
+                                    color: 'white',
+                                    marginRight: 30,
+                                    fontSize: 20,
+                                    fontFamily: 'icomoon',
+                                }}>
+                                        
+                                </Text>
                                      {prettyPrintAmountMainScreen(this.props.unlockedBalance)}
+                                     
                                </OneLineText>;
 
         const lockedBalance = <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -1061,7 +1058,6 @@ async function backgroundSyncMessages(navigation) {
         if (Globals.syncSkips < 6) return;
     }
 
-    Globals.initalSyncOccurred = true;
     Globals.syncSkips = 0;
 
   if (Globals.syncingMessages) {
@@ -1083,6 +1079,7 @@ async function backgroundSyncMessages(navigation) {
     sendNotifications();
     Globals.syncingMessages = false;
     Globals.knownTXs = await getKnownTransactions();
+    Globals.initalSyncOccurred = true;
     return;
 
   }
@@ -1156,6 +1153,7 @@ async function backgroundSyncMessages(navigation) {
         Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
         
         sendNotifications();
+        Globals.initalSyncOccurred = true;
         Globals.syncingMessages = false;
         Globals.knownTXs = await getKnownTransactions();
 
