@@ -991,7 +991,7 @@ export class ChatScreenNoTranslation extends React.Component {
 
         let temp_timestamp = Date.now();
 
-        await saveMessage(this.state.address, 'processing', text, temp_timestamp);
+        await saveMessage(this.state.address, 'processing', text, temp_timestamp, 1);
 
         let updated_messages = await getMessages(this.state.address);
         if (!updated_messages) {
@@ -1011,6 +1011,8 @@ export class ChatScreenNoTranslation extends React.Component {
 
        for (message in this.state.messages) {
            let timestamp = this.state.messages[message].timestamp / 1000;
+           let this_timestamp = this.state.messages[message].timestamp;
+           let this_message = this.state.messages[message].message;
            if (this.state.messages[message].type == 'received'){
               items.push(<View  key={message} style={{alignSelf: 'flex-start', marginLeft: 20, marginRight: 20, marginBottom: 20, backgroundColor: '#2C2C2C', padding: 15, borderRadius: 15}}><Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >{this.state.messages[message].message}</Text><Moment locale={Globals.language} style={{ fontFamily: "Montserrat-Regular", fontSize: 10, marginTop: 5 }} element={Text} unix fromNow>{timestamp}</Moment></View>)
            } else {
@@ -1018,7 +1020,7 @@ export class ChatScreenNoTranslation extends React.Component {
              <View  key={message} style={[{ backgroundColor: '#006BA7' } ,{alignSelf: 'flex-end', marginLeft: 20, marginRight: 20, marginBottom: 20, padding: 15, borderRadius: 15}]}>
                 
                     {this.state.messages[message].type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
-                    {this.state.messages[message].type == 'failed' && <TouchableOpacity onPress={() => {removeMessage(this.state.messages[message].timestamp); submitMessage(this.state.messages[message].message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
+                    {this.state.messages[message].type == 'failed' && <TouchableOpacity onPress={() => {removeMessage(this_timestamp); submitMessage(this_message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
                 <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 15 }} >
                     {this.state.messages[message].message}
                 </Text>
@@ -1579,7 +1581,7 @@ export class CallScreenNoTranslation extends React.Component {
     
         let messageKey = this.state.paymentID;
         const temp_timestamp = Date.now();
-        await saveMessage(receiver, 'processing', 'Call started', temp_timestamp);
+        await saveMessage(receiver, 'processing', 'Call started', temp_timestam, 1);
         const result = await sendMessage(parsed_data, receiver, messageKey, temp_timestamp);    
         console.log(result);
         if (!result.success) {
@@ -1640,7 +1642,7 @@ export class CallScreenNoTranslation extends React.Component {
         const messageKey = this.state.paymentID;
 
         const temp_timestamp = Date.now();
-        await saveMessage(receiver, 'processing', 'Call answered', temp_timestamp);
+        await saveMessage(receiver, 'processing', 'Call answered', temp_timestamp,1);
         const result = await sendMessage(parsed_answer, receiver, messageKey, temp_timestamp);   
 
     }

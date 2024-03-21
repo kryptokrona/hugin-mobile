@@ -607,9 +607,9 @@ export async function loadPreferencesFromDatabase() {
     return undefined;
 }
 
-export async function saveMessage(conversation, type, message, timestamp) {
+export async function saveMessage(conversation, type, message, timestamp, read=0) {
 
-  console.log('Saving message', conversation, type, message, timestamp);
+  console.log('Saving message', conversation, type, message, timestamp, read);
 
   await database.transaction((tx) => {
       tx.executeSql(
@@ -622,7 +622,7 @@ export async function saveMessage(conversation, type, message, timestamp) {
               type,
               message,
               timestamp,
-              'false'
+              read
           ]
       );
   });
