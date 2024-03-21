@@ -1797,28 +1797,6 @@ export class SettingsScreenNoTranslation extends React.Component {
                                 },
                             },
                             {
-                                title: t('resetWallet'),
-                                description: t('resetWalletDescr'),
-                                icon: {
-                                    iconName: 'md-help-buoy',
-                                    IconType: Ionicons,
-                                },
-                                onClick: () => {
-                                    if (Globals.preferences.authConfirmation) {
-                                        Authenticate(
-                                            this.props.navigation,
-                                            'to delete your wallet',
-                                            () => {
-                                                this.props.navigation.navigate('Settings');
-                                                recoverWallet(this.props.navigation)
-                                            }
-                                        );
-                                    } else {
-                                        recoverWallet(this.props.navigation)
-                                    }
-                                },
-                            },
-                            {
                                 title: t('clearKnownMessages'),
                                 description: t('clearKnownMessagesDescr'),
                                 icon: {
@@ -1830,7 +1808,9 @@ export class SettingsScreenNoTranslation extends React.Component {
                                         Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
                                         Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
                                         Globals.notificationQueue = false;
+                                        Globals.initalSyncOccurred = false;
                                         emptyKnownTXs();
+                                        toastPopUp('Resyncing messages from the past 24hrs..')
 
                                 },
                             },
