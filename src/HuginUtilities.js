@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import { updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction } from './Database';
+import {emptyKnownTXs, updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction } from './Database';
 
 /**
  * Save wallet in background
@@ -149,6 +149,15 @@ Globals.APIOnline = false;
 return false;
 
 
+}
+
+export function resyncMessage24h() {
+    Globals.knownTXs = [];
+    Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+    Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+    Globals.notificationQueue = false;
+    Globals.initalSyncOccurred = false;
+    emptyKnownTXs();
 }
 
 function trimExtra (extra) {
@@ -529,7 +538,7 @@ export async function cacheSync(first=true, page=1) {
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
         if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
 
-        let groupMessage = await getGroupMessage({
+        let groupMessage = await getMessage({
           sb: items[item].tx_sb,
           t: items[item].tx_timestamp,
           hash: items[item].tx_hash
@@ -819,11 +828,15 @@ export async function getExtra(hash){
 
 async function getGroupMessage(tx) {
 
-  setTimeout(() => {
-    return false;
-  }, 10000);
+  if (!tx.t) {
+    Globals.logger.addLogMessage('Invalid message format')
+    return;
+  }
 
-  if (await groupMessageExists(tx.t)) return;
+  if (await groupMessageExists(tx.t)) {
+    Globals.logger.addLogMessage('Message already exists')
+    return;
+  }
 
   console.log('Trying to decrypt', tx);
 
@@ -839,10 +852,11 @@ async function getGroupMessage(tx) {
 
     let possibleKey = groups[i].key;
 
-
     i += 1;
 
     try {
+
+      Globals.logger.addLogMessage('Trying to decrypt with ' +possibleKey)
 
      decryptBox = nacl.secretbox.open(
        hexToUint(tx.sb),
@@ -853,6 +867,7 @@ async function getGroupMessage(tx) {
      key = possibleKey;
     } catch (err) {
       console.log(err);
+      Globals.logger.addLogMessage('Decrypt error ' + err)
      continue;
     }
 
@@ -862,21 +877,28 @@ async function getGroupMessage(tx) {
 
   if (!decryptBox) {
     console.log('Cannot decrypt group message!');
+    Globals.logger.addLogMessage('Cannot decrypt group message!')
     return false;
   }
 
 
   const message_dec = naclUtil.encodeUTF8(decryptBox);
 
+  Globals.logger.addLogMessage('Message decoded' + message_dec)
+
   const payload_json = JSON.parse(message_dec);
 
   const from = payload_json.k;
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
+
+  Globals.logger.addLogMessage('From myself?' + from_myself)
   const received = (from_myself ? 'sent' : 'received');
 
   const this_addr = await Address.fromAddress(from);
 
   const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
+
+  Globals.logger.addLogMessage('Verified?' + verified)
 
   const reply = payload_json?.r ? payload_json.r : "";
 

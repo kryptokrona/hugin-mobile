@@ -8,7 +8,7 @@ import CustomIcon from './CustomIcon.js'
 
 import React from 'react';
 import TextTicker from 'react-native-text-ticker';
-import { optimizeMessages, getBestNode, getBestCache } from './HuginUtilities';
+import { optimizeMessages, getBestNode, getBestCache, resyncMessage24h } from './HuginUtilities';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -1804,12 +1804,8 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     IconType: CustomIcon,
                                 },
                                 onClick: () => {
-                                        Globals.knownTXs = [];
-                                        Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
-                                        Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
-                                        Globals.notificationQueue = false;
-                                        Globals.initalSyncOccurred = false;
-                                        emptyKnownTXs();
+
+                                        resyncMessage24h();
                                         toastPopUp('Resyncing messages from the past 24hrs..')
 
                                 },

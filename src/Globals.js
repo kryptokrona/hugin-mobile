@@ -18,7 +18,7 @@ import Config from './Config';
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
-import { getMessage, sendNotifications } from './HuginUtilities';
+import { getMessage, sendNotifications, resyncMessage24h } from './HuginUtilities';
 import offline_node_list from './nodes.json';
 import offline_cache_list from './nodes.json';
 import offline_groups_list from './groups.json';
@@ -188,6 +188,7 @@ class globals {
         Globals.groups.push(group);
         saveGroupToDatabase(group);
         this.updateGroups();
+        resyncMessage24h();
     }
 
     async removeGroup(key, removeMessages) {
