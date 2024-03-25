@@ -1051,12 +1051,6 @@ async function backgroundSyncMessages(navigation) {
         startWebsocket();
         if (Globals.webSocketStatus == 'online' && Globals.preferences.websocketEnabled == 'true') return;
     }
-    
-    if (Globals.webSocketStatus == 'online' && Globals.initalSyncOccurred && Globals.preferences.websocketEnabled == 'true') {
-        Globals.syncingMessages = false;
-        Globals.syncSkips++;
-        if (Globals.syncSkips < 6) return;
-    }
 
     Globals.syncSkips = 0;
 
