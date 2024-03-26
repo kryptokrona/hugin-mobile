@@ -328,14 +328,13 @@ class ChooseAuthMethodScreenNoTranslation extends React.Component {
                                     method = 'pincode';
                                 }
 
+                                const havePincode = await hasUserSetPinCode();
                                 Globals.preferences.authenticationMethod = method;
 
-                                savePreferencesToDatabase(Globals.preferences);
-
-                                const havePincode = await hasUserSetPinCode();
 
                                 if (method === 'none' || havePincode) {
                                     this.props.navigation.navigate(this.props.navigation.state.params.nextRoute);
+                                    savePreferencesToDatabase(Globals.preferences);
                                 } else {
                                     this.props.navigation.navigate('SetPin', {
                                         nextRoute: this.props.navigation.state.params.nextRoute
@@ -368,6 +367,7 @@ export class SetPinScreen extends React.Component {
 
     continue(pinCode) {
         /* Continue on to create or import a wallet */
+        savePreferencesToDatabase(Globals.preferences);
         this.props.navigation.navigate(this.props.navigation.state.params.nextRoute);
     }
 
