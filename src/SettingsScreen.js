@@ -634,35 +634,41 @@ class SwapNodeScreenNoTranslation extends React.Component {
         this.setState({
             refreshing: true,
         });
-
+    
         await Globals.updateNodeList();
-
-        for (node in Globals.daemons) {
-            let this_node = Globals.daemons[node];
-            console.log('this_node', this_node);
-            let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
-            try {
-                let ping = await fetch(nodeURL, {
-                    method: 'GET'
-                }, 1000);
-                console.log(ping);
-                this_node.online = true;
-            } catch (err) {
-                console.log('Cannot connect to node..');
-                this_node.online = false;
-            }
-
-
+    
+        // Create an array to store all fetch promises
+        const fetchPromises = [];
+    
+        for (const node of Globals.daemons) {
+            const nodeURL = `${node.ssl ? 'https://' : 'http://'}${node.url}:${node.port}/info`;
+            const fetchPromise = fetch(nodeURL, { method: 'GET' })
+                .then(response => {
+                    node.online = true;
+                    this.setState({
+                        nodes: Globals.daemons,
+                        forceUpdate: this.state.forceUpdate + 1,
+                    });
+                })
+                .catch(error => {
+                    // Handle errors here
+                    node.online = false;
+                    this.setState({
+                        nodes: Globals.daemons,
+                        forceUpdate: this.state.forceUpdate + 1,
+                    });
+                });
+            fetchPromises.push(fetchPromise);
         }
-
-        this.setState((prevState) => ({
+    
+        // Wait for all fetch promises to resolve
+        await Promise.all(fetchPromises);
+    
+        this.setState({
             refreshing: false,
-
             nodes: Globals.daemons,
-
-            forceUpdate: prevState.forceUpdate + 1,
-        }));
-
+            forceUpdate: this.state.forceUpdate + 1,
+        });
     }
 
     async swapNode(node) {
@@ -969,35 +975,43 @@ class SwapAPIScreenNoTranslation extends React.Component {
         this.setState({
             refreshing: true,
         });
-
+    
         await Globals.updateNodeList();
+    
+        // Create an array to store all fetch promises
+        const fetchPromises = [];
 
         for (api in Globals.caches) {
+
             let this_api = Globals.caches[api];
-            let nodeURL = this_api.url + '/api/v1/info';
-            console.log('Trying to connect to..', nodeURL);
-            try {
-                let ping = await fetch(nodeURL, {
-                    method: 'GET'
-                }, 3000);
-                console.log(ping);
-                this_api.online = true;
-            } catch (err) {
-                console.log('Cannot connect to node..', err);
-                this_api.online = false;
-            }
-
-
+            let nodeURL = this_api.url + '/api/v1/info';;
+            const fetchPromise = fetch(nodeURL, { method: 'GET' })
+                .then(response => {
+                    this_api.online = true;
+                    this.setState({
+                        apis: Globals.caches,
+                        forceUpdate: this.state.forceUpdate + 1,
+                    });
+                })
+                .catch(error => {
+                    // Handle errors here
+                    this_api.online = false;
+                    this.setState({
+                        apis: Globals.caches,
+                        forceUpdate: this.state.forceUpdate + 1,
+                    });
+                });
+            fetchPromises.push(fetchPromise);
         }
-
-        this.setState((prevState) => ({
+    
+        // Wait for all fetch promises to resolve
+        await Promise.all(fetchPromises);
+    
+        this.setState({
             refreshing: false,
-
             apis: Globals.caches,
-
-            forceUpdate: prevState.forceUpdate + 1,
-        }));
-
+            forceUpdate: this.state.forceUpdate + 1,
+        });
     }
 
     async swapAPI(node) {

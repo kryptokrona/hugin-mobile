@@ -12,7 +12,9 @@ import { Alert } from 'react-native';
 
 import NetInfo from "@react-native-community/netinfo";
 
-import { getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+import { deleteUserPinCode } from '@haskkor/react-native-pincode';
+
+import { openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 import { Logger } from './Logger';
@@ -139,14 +141,21 @@ class globals {
 
     }
 
-    reset() {
+    async reset() {
         this.wallet = undefined;
         this.pinCode = undefined;
         this.backgroundSaveTimer = undefined;
         this.logger = new Logger();
         this.payees = [];
         this.groups = [];
-        removeMessages();
+        //removeMessages();
+        
+        await deleteDB();
+        await openDB();
+        await setHaveWallet(false);
+        await deleteUserPinCode();
+        Globals.initGlobals();
+
     }
 
     addTransactionDetails(txDetails) {
