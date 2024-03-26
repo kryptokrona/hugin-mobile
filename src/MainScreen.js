@@ -1061,6 +1061,8 @@ async function backgroundSyncMessages(navigation) {
     console.log('Commencing message sync.', Globals.syncingMessages);
   }
 
+  if (Globals.groups.length + Globals.payees.length == 0) return;
+
   Globals.syncingMessages = true;
 
   if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {

@@ -505,6 +505,8 @@ export async function cacheSync(first=true, page=1) {
 
   Globals.logger.addLogMessage('Syncing group message with API.. 💌');
 
+  if (Globals.groups.length == 0) return;
+
   return new Promise(async (resolve, reject) => {
   
 
@@ -562,6 +564,8 @@ export async function cacheSync(first=true, page=1) {
 }
 
 export async function cacheSyncDMs(first=true, page=1) {
+
+  if (Globals.payees.length == 0) return;
 
   return new Promise(async (resolve, reject) => {
     try {
