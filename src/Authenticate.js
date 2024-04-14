@@ -2,7 +2,7 @@
 //
 // Please see the included LICENSE file for more information.
 
-import PINCode, { hasUserSetPinCode, deleteUserPinCode } from '@haskkor/react-native-pincode';
+import PINCode, { hasUserSetPinCode, deleteUserPinCode, resetPinCodeInternalStates } from '@haskkor/react-native-pincode';
 
 import FingerprintScanner from 'react-native-fingerprint-scanner';
 
@@ -332,7 +332,11 @@ class ChooseAuthMethodScreenNoTranslation extends React.Component {
                                 Globals.preferences.authenticationMethod = method;
 
 
-                                if (method === 'none' || havePincode) {
+                                if (method === 'none') {
+                                    await deleteUserPinCode();
+                                    this.props.navigation.navigate(this.props.navigation.state.params.nextRoute);
+                                    savePreferencesToDatabase(Globals.preferences);
+                                } else if (method == 'hardware-auth' && havePincode) {
                                     this.props.navigation.navigate(this.props.navigation.state.params.nextRoute);
                                     savePreferencesToDatabase(Globals.preferences);
                                 } else {
@@ -442,9 +446,9 @@ export class ForgotPinScreen extends React.Component {
                     title='Delete Account'
                     onPress={() => {
                         (async () => {
-                            await setHaveWallet(false);
 
-                            await deleteUserPinCode();
+                            Globals.reset();
+                            await resetPinCodeInternalStates();
 
                             this.props.navigation.navigate('Splash');
 
