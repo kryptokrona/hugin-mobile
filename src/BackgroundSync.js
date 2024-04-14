@@ -16,7 +16,7 @@ import Config from './Config';
 
 import { Globals } from './Globals';
 
-import { sendNotification } from './MainScreen';
+import { backgroundSyncMessages, sendNotification } from './MainScreen';
 
 import { processBlockOutputs, makePostRequest } from './NativeCode';
 
@@ -217,69 +217,7 @@ export async function backgroundSync() {
     /* Run for 25 seconds or until the app comes back to the foreground */
     while (!State.shouldStop && secsRunning < allowedRunTime) {
 
-          Globals.logger.addLogMessage('Getting unconfirmed transactions...');
-            const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-            let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
-              fetch(nodeURL + "/get_pool_changes_lite", {
-              method: 'POST',
-              body: JSON.stringify({
-                   knownTxsIds: Globals.knownTXs
-               })
-            })
-            .then((response) => response.json())
-            .then(async (json) => {
-
-                for (transaction in json.deletedTxsIds) {
-                    deleteKnownTransaction(json.deletedTxsIds[transaction]);
-                  }
-                  let addedTxs = json.addedTxs;
-          
-                  let transactions = addedTxs;
-          
-                  console.log(`Found ${addedTxs.length} new transactions.`);
-          
-                  for (transaction in transactions) {
-          
-                    try {
-          
-                    let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
-          
-                    let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
-          
-                    console.log(`Checking tx with hash ${thisHash}`);
-          
-                    
-                    if (Globals.knownTXs.indexOf(thisHash) != -1) continue;
-          
-          
-                    if (thisExtra.length > 66) {
-          
-                     
-                      try {
-                          let message = await getMessage(thisExtra, thisHash, navigation);
-                      } catch (err) {
-          
-                      }
-                      await saveKnownTransaction(thisHash);
-                      if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
-          
-                    } else {
-                      await saveKnownTransaction(thisHash);
-                      if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
-                      continue;
-                    }
-          
-          
-                  } catch (err) {
-                    continue;
-                  }
-          
-                  }
-          
-          
-
-
-            });
+        await backgroundSyncMessages();
 
         /* Update the daemon info */
         await Globals.wallet.internal().updateDaemonInfo();
