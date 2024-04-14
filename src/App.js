@@ -63,6 +63,11 @@ const TransactionNavigator = createStackNavigator(
     {
         initialRouteName: 'Transactions',
         headerLayoutPreset: 'center',
+        transitionConfig: () => ({
+            transitionSpec: {
+              duration: 0,
+            },
+          }),
         defaultNavigationOptions: {
             headerTitleStyle: {
                 fontWeight: 'bold',
@@ -105,6 +110,11 @@ const TransferNavigator = createStackNavigator(
     {
         initialRouteName: 'ChoosePayee',
         headerLayoutPreset: 'center',
+        transitionConfig: () => ({
+            transitionSpec: {
+              duration: 0,
+            },
+          }),
         defaultNavigationOptions: {
             headerTitleStyle: {
                 fontWeight: 'bold',
@@ -157,6 +167,11 @@ const SettingsNavigator = createStackNavigator(
     {
         initialRouteName: 'Settings',
         headerLayoutPreset: 'center',
+        transitionConfig: () => ({
+            transitionSpec: {
+              duration: 0,
+            },
+          }),
         defaultNavigationOptions: {
             headerTitleStyle: {
                 fontWeight: 'bold',
@@ -196,6 +211,11 @@ const RecipientNavigator = createStackNavigator(
     {
         initialRouteName: '',
         headerLayoutPreset: 'center',
+        transitionConfig: () => ({
+            transitionSpec: {
+              duration: 0,
+            },
+          }),
         defaultNavigationOptions: {
             headerTitleStyle: {
                 fontWeight: 'bold',
@@ -235,6 +255,11 @@ const GroupsNavigator = createStackNavigator(
     {
         initialRouteName: '',
         headerLayoutPreset: 'center',
+        transitionConfig: () => ({
+            transitionSpec: {
+              duration: 0,
+            },
+          }),
         defaultNavigationOptions: {
             headerTitleStyle: {
                 fontWeight: 'bold',
