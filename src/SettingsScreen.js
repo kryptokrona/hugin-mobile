@@ -21,6 +21,8 @@ import './i18n.js';
 import { withTranslation } from 'react-i18next';
 import i18next from './i18n';
 import fetch from './fetchWithTimeout'
+import PushNotification from 'react-native-push-notification';
+
 import {
     Button, View, FlatList, Alert, Text, Linking, ScrollView, Platform, NativeModules,
     AppState, RefreshControl, useColorScheme, Switch
@@ -1707,6 +1709,10 @@ export class SettingsScreenNoTranslation extends React.Component {
 
                                         toastPopUp(Globals.preferences.authConfirmation ? t('pinOn') : t('pinOff'));
                                         savePreferencesToDatabase(Globals.preferences);
+                                            this.props.navigation.navigate('ChooseAuthMethod', {
+                                                nextRoute: 'Settings',
+                                        });
+
                                     }
                                 },
                                 checkbox: true,
@@ -1738,8 +1744,14 @@ export class SettingsScreenNoTranslation extends React.Component {
                                     this.setState({
                                         notifsEnabled: Globals.preferences.notificationsEnabled,
                                     });
-
                                     toastPopUp(Globals.preferences.notificationsEnabled ? t('notifsOn') : t('notifsOff'));
+                                    if (Globals.preferences.notificationsEnabled) {
+                                        PushNotification.localNotification({
+                                            title: 'Test notification',
+                                            message: 'Notification\'s are enabled!',
+                                            data: ''
+                                        });
+                                    }
                                     savePreferencesToDatabase(Globals.preferences);
                                 },
                                 checkbox: true,
