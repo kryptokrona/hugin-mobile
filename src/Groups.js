@@ -808,9 +808,6 @@ export class GroupChatScreenNoTranslation extends React.Component {
             }
         }
 
-
-
-
     }
 
     async componentDidMount() {
@@ -925,7 +922,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
            // }
 
        }
-       }
+        }
 
        const modalStyle = {
         height: '100%',
@@ -1100,7 +1097,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
                     </View>
 
-                    {!this.state.sending && this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length &&
+                    {!this.state.sending && this.state.messages?.length > 0 && this.state.messages[0]?.count != this.state.messages?.length && this.state.messages?.length >= 25 &&
                 <View style={{
                     flex: 1,
                     alignContent: 'center',
