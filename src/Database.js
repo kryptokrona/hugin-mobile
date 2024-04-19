@@ -247,6 +247,7 @@ async function createTables(DB) {
                 hash TEXT,
                 reply TEXT,
                 UNIQUE (timestamp)
+                replies INT default 0
             )`
         );
 
@@ -267,8 +268,12 @@ async function createTables(DB) {
             )`
         );
 
-
-
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS misc (
+                 lastSyncGroup TEXT
+                 lastSyncDM TEXT
+            )`
+        );
 
           tx.executeSql(
             `CREATE TABLE IF NOT EXISTS boards_subscriptions (
@@ -390,10 +395,6 @@ async function createTables(DB) {
         );
 
         tx.executeSql(
-            `DROP TABLE privateboards_messages_db`
-        );
-
-        tx.executeSql(
             `CREATE TABLE IF NOT EXISTS privateboards_messages_db (
                 board TEXT,
                 nickname TEXT,
@@ -416,6 +417,15 @@ async function createTables(DB) {
             `DROP TABLE privateboards_messages_db2`
         );
 
+        }
+
+        if (dbVersion === 8) {
+            tx.executeSql(
+              `ALTER TABLE
+              privateboards_messages_db
+              ADD
+                  replies INT default 0`
+            );
         }
 
 
@@ -495,7 +505,7 @@ async function createTables(DB) {
         `);
 
         tx.executeSql(
-            `PRAGMA user_version = 8`
+            `PRAGMA user_version = 9`
         );
     });
 
@@ -775,7 +785,22 @@ export async function saveGroupMessage(group, type, message, timestamp, nickname
       );
   });
 
-  Globals.updateGroups();
+  
+  if (reply) {
+      
+      await database.transaction((tx) => {
+        tx.executeSql(
+            `UPDATE privateboards_messages_db
+            SET replies = replies + ?
+            WHERE hash = ?`,
+            [1, reply]
+        );
+            
+        });
+        
+    }
+
+    Globals.updateGroups();
 
 }
 
@@ -1320,38 +1345,23 @@ export async function getMessages(conversation=false, limit=25) {
 
 export async function getGroupMessages(group=false, limit=25) {
 
+    const stack = new Error().stack;
+    const callerInfo = stack.split('\n');
+
     if (limit < 25) limit = 25;
+
+    const starttime = Date.now();
 
     const [data] = await database.executeSql(
         `
-            SELECT 
-        pm.nickname,
-        pm.type,
-        pm.message,
-        pm.timestamp,
-        pm.board,
-        pm.address,
-        pm.hash,
-        pm.reply,
-        COALESCE(rc.reply_count, 0) AS replies
-    FROM 
-        privateboards_messages_db pm
-        LEFT JOIN (
-            SELECT 
-                reply,
-                COUNT(*) AS reply_count
-            FROM 
-                privateboards_messages_db
-            WHERE 
-                reply != ''
-            GROUP BY 
-                reply
-        ) rc ON pm.hash = rc.reply
-    WHERE 
-        pm.reply = '' ${group ? ' AND pm.board = "' + group + '"' : ''}
-    ORDER BY 
-        pm.timestamp DESC
-    LIMIT ${limit}`
+        SELECT 
+            *
+        FROM 
+            privateboards_messages_db
+        ${group ? 'WHERE board = "' + group + '"' : ''}
+        ORDER BY 
+            timestamp DESC
+        LIMIT ${limit}`
     );
 
     const [count] = await database.executeSql(
