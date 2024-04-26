@@ -45,7 +45,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, saveGroupMessage, removeGroupMessage} from './Database';
+import { getGroupsMessage, loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, saveGroupMessage, removeGroupMessage} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -895,7 +895,28 @@ export class GroupChatScreenNoTranslation extends React.Component {
                 
                 {thisMessage.type == 'processing' && <View style={{position: 'absolute', top: 5, right: 5}}><ActivityIndicator /></View>}
                     {thisMessage.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {removeGroupMessage(thisMessage.timestamp); submitMessage(thisMessage.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
-
+                    {thisMessage.replyMessage &&
+                    <TouchableOpacity onPress={async () => {
+                        console.log(thisMessage);
+                    this.state.replies = await getReplies(thisMessage.reply);
+                    
+                    this.setActivePost(await getGroupsMessage(thisMessage.reply));
+    
+                    this.setMessageModalVisible(true);
+    
+                    }}>
+                        <View style={{flexDirection:"row", marginBottom: 10}}>
+                            <View style={{marginTop: 8, marginRight: 5, width: 10, height: 10, borderTopLeftRadius: 4, borderColor: 'rgba(255,255,255,0.5)', borderLeftWidth: 1, borderTopWidth: 1}}></View>
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                                color: '#ffffff',
+                                fontSize: 12,
+                                fontFamily: "Montserrat-SemiBold"
+                            }}>{thisMessage.replyNickname ? thisMessage.replyNickname : t('Anonymous')}
+                            </Text>
+                            <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 12, paddingLeft: 5 }} >{thisMessage.replyMessage}</Text>
+                        </View>
+                    </TouchableOpacity>
+                    }
                     <View style={{flexDirection:"row", marginBottom: 10}}>
                         <Image
                         style={{width: 30, height: 30, marginTop: -5}}

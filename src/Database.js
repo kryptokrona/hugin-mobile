@@ -246,8 +246,8 @@ async function createTables(DB) {
                 read BOOLEAN default 1,
                 hash TEXT,
                 reply TEXT,
+                replies INT default 0,
                 UNIQUE (timestamp)
-                replies INT default 0
             )`
         );
 
@@ -1366,7 +1366,7 @@ export async function getGroupMessages(group=false, limit=25) {
 
     const [count] = await database.executeSql(
         `
-        SELECT COUNT(*) FROM privateboards_messages_db WHERE reply = ''${group ? ' AND board = "' + group + '"' : ''}
+        SELECT COUNT(*) FROM privateboards_messages_db ${group ? ' WHERE board = "' + group + '"' : ''}
         `
     );
 
@@ -1391,7 +1391,7 @@ export async function getGroupMessages(group=false, limit=25) {
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
 
-            res.push({
+            thisMessage = {
                 nickname: item.nickname,
                 type: item.type,
                 message: item.message,
@@ -1402,9 +1402,20 @@ export async function getGroupMessages(group=false, limit=25) {
                 reply: item.reply,
                 replies: item.replies,
                 count: count_raw,
-            });
-        }
+            };
 
+            if (thisMessage.reply != '') {
+                const thisOP = await getGroupsMessage(thisMessage.reply);
+                if (thisOP) {
+                    thisMessage.replyNickname = thisOP.nickname;
+                    thisMessage.replyMessage = thisOP.message;
+                }
+            }
+
+            res.push(thisMessage);
+
+        }
+        console.log(res);
         return res.reverse();
     } else {
       console.log('No message le found!');
@@ -1585,14 +1596,7 @@ export async function getGroupsMessage(hash) {
 
     const [data] = await database.executeSql(
         `SELECT
-            nickname,
-            type,
-            message,
-            timestamp,
-            board,
-            address,
-            hash,
-            reply
+            *
         FROM
             privateboards_messages_db WHERE hash = '${hash}'`
     );
@@ -1602,23 +1606,12 @@ export async function getGroupsMessage(hash) {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
-            console.log(item);
-            res.push({
-                message: item.message,
-                address: item.address,
-                board: item.board,
-                timestamp: item.timestamp,
-                nickname: item.nickname,
-                reply: item.reply,
-                hash: item.hash,
-                sent: item.type
-            });
+            return item;
         }
 
-        return res;
     }
 
-    return [];
+    return false;
 }
 
 export async function getBoardRecommendations() {
