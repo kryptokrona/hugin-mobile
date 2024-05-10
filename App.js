@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View, StyleSheet } from 'react-native';
 
@@ -10,14 +9,14 @@ export default function App() {
   const [data, setData] = useState([]);
 
 
-  function fromHex(hex,str){
-    try{
-      str = decodeURIComponent(hex.replace(/(..)/g,'%$1'))
+  function fromHex(hex, str) {
+    try {
+      str = decodeURIComponent(hex.replace(/(..)/g, '%$1'))
       str = JSON.parse(str)
       setData(str)
       setLoading(false)
     }
-    catch(e){
+    catch (e) {
       return
       //str = hex
       //console.log('invalid hex input: ' + hex)
@@ -34,12 +33,12 @@ export default function App() {
         body: JSON.stringify({
           jsonrpc: '2.0',
           method: 'f_transaction_json',
-          params: {hash: transactions[tx].hash}
+          params: { hash: transactions[tx].hash }
         })
       })
-      .then((response) => response.json())
-      .then((json) => fromHex(json.result.tx.extra.substring(66)))
-      .catch((error) => console.error(error))
+        .then((response) => response.json())
+        .then((json) => fromHex(json.result.tx.extra.substring(66)))
+        .catch((error) => console.error(error))
     }
   }
 
@@ -49,7 +48,7 @@ export default function App() {
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'f_block_json',
-        params: {hash: blockHash}
+        params: { hash: blockHash }
       })
     })
       .then((response) => response.json())
@@ -59,7 +58,7 @@ export default function App() {
 
   const getBlockHashes = (blockCount) => {
     let i;
-      for (i = 0; i < 100; i++) {
+    for (i = 0; i < 100; i++) {
       fetch(nodeURL, {
         method: 'POST',
         body: JSON.stringify({
@@ -86,12 +85,12 @@ export default function App() {
       .then((response) => response.json())
       .then((json) => getBlockHashes(json.result.count))
       .catch((error) => console.error(error))
-      //.finally(() => setLoading(false));
+    //.finally(() => setLoading(false));
   }, []);
 
   return (
     <View style={{ flex: 1, padding: 24 }}>
-      {isLoading ? <ActivityIndicator/> : (
+      {isLoading ? <ActivityIndicator /> : (
         <Text>{JSON.stringify(data)}</Text>
       )}
     </View>

@@ -14,11 +14,12 @@ import NetInfo from "@react-native-community/netinfo";
 
 import { deleteUserPinCode } from '@haskkor/react-native-pincode';
 
-import { openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
-loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
+import {
+  openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+  loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase
+} from './Database';
 import Config from './Config';
 import { Logger } from './Logger';
-import { getCoinPriceFromAPI } from './Currency';
 import { makePostRequest } from './NativeCode';
 import { getMessage, sendNotifications, resyncMessage24h } from './HuginUtilities';
 import offline_node_list from './nodes.json';
@@ -26,419 +27,419 @@ import offline_cache_list from './nodes.json';
 import offline_groups_list from './groups.json';
 
 class globals {
-    constructor() {
-        /* Can't really pass wallet between tab screens, and need it everywhere */
-        this.wallet = undefined;
+  constructor() {
+    /* Can't really pass wallet between tab screens, and need it everywhere */
+    this.wallet = undefined;
 
-        /* Need to be able to cancel the background saving if we make a new wallet */
-        this.backgroundSaveTimer = undefined;
+    /* Need to be able to cancel the background saving if we make a new wallet */
+    this.backgroundSaveTimer = undefined;
 
-        /* Want to cache this so we don't have to keep loading from DB/internet */
-        this.coinPrice = 0;
+    /* Want to cache this so we don't have to keep loading from DB/internet */
+    this.coinPrice = 0;
 
-        this.syncingMessages = false;
+    this.syncingMessages = false;
 
-        this.syncingMessagesCount = 0;
+    this.syncingMessagesCount = 0;
 
-        this.syncSkips = 0;
+    this.syncSkips = 0;
 
-        /* Preferences loaded from DB */
-        this.preferences = {
-            currency: 'usd',
-            notificationsEnabled: true,
-            scanCoinbaseTransactions: false,
-            limitData: false,
-            theme: 'darkMode',
-            authConfirmation: false,
-            autoOptimize: false,
-            authenticationMethod: 'hardware-auth',
-            node: Config.defaultDaemon.getConnectionString(),
-            language: 'en',
-            cache: Config.defaultCache,
-            cacheEnabled: 'true',
-            autoPickCache: 'true',
-            websocketEnabled: 'true',
-            nickname: 'Anonymous'
-        };
+    /* Preferences loaded from DB */
+    this.preferences = {
+      currency: 'usd',
+      notificationsEnabled: true,
+      scanCoinbaseTransactions: false,
+      limitData: false,
+      theme: 'darkMode',
+      authConfirmation: false,
+      autoOptimize: false,
+      authenticationMethod: 'hardware-auth',
+      node: Config.defaultDaemon.getConnectionString(),
+      language: 'en',
+      cache: Config.defaultCache,
+      cacheEnabled: 'true',
+      autoPickCache: 'true',
+      websocketEnabled: 'true',
+      nickname: 'Anonymous'
+    };
 
-        /* People in our address book */
-        this.payees = [];
+    /* People in our address book */
+    this.payees = [];
 
-        this.groups = [];
+    this.groups = [];
 
-        this.logger = new Logger();
+    this.logger = new Logger();
 
-        this.updatePayeeFunctions = [];
+    this.updatePayeeFunctions = [];
 
-        this.updateGroupsFunctions = [];
+    this.updateGroupsFunctions = [];
 
-        this.updateChatFunctions = [];
+    this.updateChatFunctions = [];
 
-        this.updateCallFunctions = [];
+    this.updateCallFunctions = [];
 
-        this.updateBoardsFunctions = [];
+    this.updateBoardsFunctions = [];
 
-        /* Mapping of tx hash to address sent, payee name, memo */
-        this.transactionDetails = [];
+    /* Mapping of tx hash to address sent, payee name, memo */
+    this.transactionDetails = [];
 
-        this.daemons = [];
+    this.daemons = [];
 
-        this.caches = [];
+    this.caches = [];
 
-        this.standardGroups = [];
+    this.standardGroups = [];
 
-        this.messages = [];
+    this.messages = [];
 
-        this.boardsMessages = [];
+    this.boardsMessages = [];
 
-        this.groupMessages = [];
+    this.groupMessages = [];
 
-        this.knownTXs = [];
+    this.knownTXs = [];
 
-        this.activeChat = '';
+    this.activeChat = '';
 
-        this.activeGroup = '';
+    this.activeGroup = '';
 
-        this.language = 'en-US';
+    this.language = 'en-US';
 
-        this.fromChat = false;
+    this.fromChat = false;
 
-        this.unreadMessages = {boards: 0, groups: 0, pms: 0};
+    this.unreadMessages = { boards: 0, groups: 0, pms: 0 };
 
-        this.sdp_answer = '';
+    this.sdp_answer = '';
 
-        this.calls = [];
+    this.calls = [];
 
-        this.stream = false;
+    this.stream = false;
 
-        this.localWebcamOn = false;
-        
-        this.localMicOn = false;
+    this.localWebcamOn = false;
 
-        this.speakerOn = true;
+    this.localMicOn = false;
 
-        this.notificationQueue = [];
+    this.speakerOn = true;
 
-        this.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+    this.notificationQueue = [];
 
-        this.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+    this.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
 
-        this.webSocketStatus = 'offline';
+    this.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
 
-        this.socket = undefined;
+    this.webSocketStatus = 'offline';
 
-        this.initalSyncOccurred = false;
+    this.socket = undefined;
 
-        this.websockets = 0;
+    this.initalSyncOccurred = false;
 
-        this.APIOnline;
+    this.websockets = 0;
 
-        this.messagesLoaded = 0;
+    this.APIOnline;
 
-        this.lastSyncEvent = Date.now();
+    this.messagesLoaded = 0;
 
-        this.navigation = undefined;
+    this.lastSyncEvent = Date.now();
 
+    this.navigation = undefined;
+
+  }
+
+  async reset() {
+    this.wallet = undefined;
+    this.pinCode = undefined;
+    this.backgroundSaveTimer = undefined;
+    this.logger = new Logger();
+    this.payees = [];
+    this.groups = [];
+    //removeMessages();
+
+    await deleteDB();
+    await openDB();
+    await setHaveWallet(false);
+    await deleteUserPinCode();
+    Globals.initGlobals();
+
+  }
+
+  addTransactionDetails(txDetails) {
+    Globals.transactionDetails.push(txDetails);
+    saveTransactionDetailsToDatabase(txDetails);
+  }
+
+  addPayee(payee) {
+    Globals.payees.push(payee);
+    savePayeeToDatabase(payee);
+    this.update();
+    this.updateMessages();
+  }
+
+  removePayee(nickname, removeMessages) {
+    _.remove(Globals.payees, (item) => item.nickname === nickname);
+    removePayeeFromDatabase(nickname, removeMessages);
+    this.update();
+  }
+
+  update() {
+    Globals.updatePayeeFunctions.forEach((f) => {
+      f();
+    });
+  }
+
+  updateGroupsFunction() {
+    Globals.updateGroupsFunctions.forEach((f) => {
+      f();
+    });
+  }
+
+
+  addGroup(group) {
+    if (Globals.groups.some((g) => g.key == group.key)) {
+      console.log('Group already exists!');
+      return;
+    }
+    Globals.groups.push(group);
+    saveGroupToDatabase(group);
+    this.updateGroups();
+    resyncMessage24h();
+  }
+
+  async removeGroup(key, removeMessages) {
+    Globals.groups = Globals.groups.filter((item) => item.key != key);
+    await removeGroupFromDatabase(key, removeMessages);
+    console.log('Group removed from DB');
+    this.updateGroups();
+  }
+
+
+  async updateGroups() {
+
+    const groups = await loadGroupsDataFromDatabase();
+
+    if (groups !== undefined) {
+      Globals.groups = groups;
     }
 
-    async reset() {
-        this.wallet = undefined;
-        this.pinCode = undefined;
-        this.backgroundSaveTimer = undefined;
-        this.logger = new Logger();
-        this.payees = [];
-        this.groups = [];
-        //removeMessages();
-        
-        await deleteDB();
-        await openDB();
-        await setHaveWallet(false);
-        await deleteUserPinCode();
-        Globals.initGlobals();
+    this.groupMessages = await getGroupMessages();
+    this.updateGroupsFunction();
 
+  }
+
+  async updateMessages() {
+    this.messages = await getMessages();
+    this.updateChat();
+    let payees = await loadPayeeDataFromDatabase();
+
+    if (payees !== undefined) {
+      Globals.payees = payees;
     }
 
-    addTransactionDetails(txDetails) {
-        Globals.transactionDetails.push(txDetails);
-        saveTransactionDetailsToDatabase(txDetails);
+    this.update();
+
+  }
+
+  async updateBoardsMessages() {
+    console.log(Globals.activeBoard);
+    if (Globals.activeBoard != '') {
+      this.boardsMessages = await getBoardsMessages(this.activeBoard);
+    } else if (Globals.activeBoard == 'Home' || Globals.activeBoard == '') {
+      this.boardsMessages = await getBoardsMessages();
+    }
+    Globals.boardsSubscriptions = await getBoardSubscriptions();
+    this.updateBoards();
+
+  }
+
+  //
+  // updateKnownTXs() {
+  //
+  // }
+
+  updateChat() {
+    console.log('updateChat');
+    Globals.updateChatFunctions.forEach((f) => {
+      f();
+    });
+  }
+
+  updateCall() {
+    console.log('updateCall');
+    Globals.updateCallFunctions.forEach((f) => {
+      f();
+    });
+  }
+
+  updateBoards() {
+    console.log('updateChat');
+    Globals.updateBoardsFunctions.forEach((f) => {
+      f();
+    });
+  }
+
+  getDaemon() {
+    const [host, port, ssl] = this.preferences.node.split(':');
+
+    let ssl_formatted = false;
+    if (ssl == 'true') {
+      ssl_formatted = true;
     }
 
-    addPayee(payee) {
-        Globals.payees.push(payee);
-        savePayeeToDatabase(payee);
-        this.update();
-        this.updateMessages();
+    const daemon = new Daemon(host, Number(port), false, ssl_formatted);
+
+    if (Platform.OS === 'android') {
+      /* Override with our native makePostRequest implementation which can
+         actually cancel requests part way through */
+      daemon.makePostRequest = makePostRequest;
     }
 
-    removePayee(nickname, removeMessages) {
-        _.remove(Globals.payees, (item) => item.nickname === nickname);
-        removePayeeFromDatabase(nickname, removeMessages);
-        this.update();
-    }
+    return daemon;
+  }
 
-    update() {
-        Globals.updatePayeeFunctions.forEach((f) => {
-            f();
+  async updateNodeList() {
+    let i = 0;
+    while (Config.nodeListURLs.length > i) {
+      try {
+        const data = await request({
+          json: true,
+          method: 'GET',
+          timeout: Config.requestTimeout,
+          url: Config.nodeListURLs[i],
         });
-    }
 
-    updateGroupsFunction() {
-      Globals.updateGroupsFunctions.forEach((f) => {
-          f();
-      });
-    }
-
-
-    addGroup(group) {
-        if (Globals.groups.some((g) => g.key == group.key)) {
-            console.log('Group already exists!');
-            return;
+        if (data.nodes) {
+          this.daemons = data.nodes;
+          this.caches = data.apis;
+          return;
         }
-        Globals.groups.push(group);
-        saveGroupToDatabase(group);
-        this.updateGroups();
-        resyncMessage24h();
-    }
-
-    async removeGroup(key, removeMessages) {
-        Globals.groups = Globals.groups.filter((item) => item.key != key);
-        await removeGroupFromDatabase(key, removeMessages);
-        console.log('Group removed from DB');
-        this.updateGroups();
-    }
-
-
-      async updateGroups() {
-
-        const groups = await loadGroupsDataFromDatabase();
-
-        if (groups !== undefined) {
-            Globals.groups = groups;
-        }
-
-        this.groupMessages = await getGroupMessages();
-        this.updateGroupsFunction();
-
+      } catch (error) {
+        console.log(offline_node_list);
+        this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
       }
-
-    async updateMessages() {
-      this.messages = await getMessages();
-      this.updateChat();
-      let payees = await loadPayeeDataFromDatabase();
-
-      if (payees !== undefined) {
-          Globals.payees = payees;
-      }
-
-      this.update();
-
-    }
-
-    async updateBoardsMessages() {
-      console.log(Globals.activeBoard);
-      if (Globals.activeBoard != '') {
-          this.boardsMessages = await getBoardsMessages(this.activeBoard);
-      } else if (Globals.activeBoard == 'Home' || Globals.activeBoard == '') {
-        this.boardsMessages = await getBoardsMessages();
-      }
-      Globals.boardsSubscriptions = await getBoardSubscriptions();
-      this.updateBoards();
-
-    }
-
-    //
-    // updateKnownTXs() {
-    //
-    // }
-
-    updateChat() {
-      console.log('updateChat');
-      Globals.updateChatFunctions.forEach((f) => {
-          f();
-      });
-    }
-
-    updateCall() {
-        console.log('updateCall');
-        Globals.updateCallFunctions.forEach((f) => {
-            f();
-        });
-      }
-
-    updateBoards() {
-      console.log('updateChat');
-      Globals.updateBoardsFunctions.forEach((f) => {
-          f();
-      });
-    }
-
-    getDaemon() {
-        const [ host, port, ssl ] = this.preferences.node.split(':');
-
-        let ssl_formatted = false;
-        if (ssl == 'true') {
-          ssl_formatted = true;
-        }
-
-        const daemon = new Daemon(host, Number(port), false, ssl_formatted);
-
-        if (Platform.OS === 'android') {
-            /* Override with our native makePostRequest implementation which can
-               actually cancel requests part way through */
-            daemon.makePostRequest = makePostRequest;
-        }
-
-        return daemon;
-    }
-
-    async updateNodeList() {
-        let i = 0;
-        while (Config.nodeListURLs.length > i) { 
-        try {
-            const data = await request({
-                json: true,
-                method: 'GET',
-                timeout: Config.requestTimeout,
-                url: Config.nodeListURLs[i],
-            });
-
-            if (data.nodes) {
-                this.daemons = data.nodes;
-                this.caches = data.apis;
-                return;
-            } 
-        } catch (error) {
-          console.log(offline_node_list);
-            this.logger.addLogMessage('Failed to get node list from API: ' + error.toString());
-        }
-        i++;
+      i++;
     }
     this.daemons = offline_node_list.nodes;
     this.caches = offline_node_list.apis;
-    }
+  }
 
-    async updateGroupsList() {
-        try {
-            const data = await request({
-                json: true,
-                method: 'GET',
-                timeout: Config.requestTimeout,
-                url: Config.groupsListURL,
-            });
-            console.log(data);
-            if (data.apis) {
-                this.standardGroups = data.groups;
-            } else {
-              this.standardGroups = offline_groups_list.groups;
-            }
-        } catch (error) {
-          console.log(offline_cache_list);
-            this.logger.addLogMessage('Failed to get groups list from API: ' + error.toString());
-            this.standardGroups = offline_groups_list.groups;
-        }
+  async updateGroupsList() {
+    try {
+      const data = await request({
+        json: true,
+        method: 'GET',
+        timeout: Config.requestTimeout,
+        url: Config.groupsListURL,
+      });
+      console.log(data);
+      if (data.apis) {
+        this.standardGroups = data.groups;
+      } else {
+        this.standardGroups = offline_groups_list.groups;
+      }
+    } catch (error) {
+      console.log(offline_cache_list);
+      this.logger.addLogMessage('Failed to get groups list from API: ' + error.toString());
+      this.standardGroups = offline_groups_list.groups;
     }
+  }
 
 }
 
 export let Globals = new globals();
 
 function updateConnection(connection) {
-    if (Globals.preferences.limitData && connection.type === 'cellular') {
-        Globals.wallet.stop();
-    } else {
-        Globals.wallet.enableAutoOptimization(false);
-        Globals.wallet.start();
-    }
+  if (Globals.preferences.limitData && connection.type === 'cellular') {
+    Globals.wallet.stop();
+  } else {
+    Globals.wallet.enableAutoOptimization(false);
+    Globals.wallet.start();
+  }
 }
 
 /* Note... you probably don't want to await this function. Can block for a while
    if no internet. */
 
-   export async function startWebsocket() {
+export async function startWebsocket() {
 
-    if (Globals.websockets || Globals.preferences.websocketEnabled != 'true') return;
-    
-    if (Globals.preferences.cacheEnabled != "true") return;
-    const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://')+'/ws';
-    Globals.socket = new WebSocket(socketURL);
+  if (Globals.websockets || Globals.preferences.websocketEnabled != 'true') return;
 
-    // Open connection wit Cache
-    Globals.socket.onopen = () => {
-        Globals.websockets++;
-        console.log(`Connected 🤖`)
-        Globals.logger.addLogMessage('Connected to WebSocket 🤖');
-        Globals.webSocketStatus = 'online';
+  if (Globals.preferences.cacheEnabled != "true") return;
+  const socketURL = Globals.preferences.cache.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://') + '/ws';
+  Globals.socket = new WebSocket(socketURL);
 
+  // Open connection wit Cache
+  Globals.socket.onopen = () => {
+    Globals.websockets++;
+    console.log(`Connected 🤖`)
+    Globals.logger.addLogMessage('Connected to WebSocket 🤖');
+    Globals.webSocketStatus = 'online';
+
+  }
+
+  Globals.socket.onclose = (e) => {
+    if (Globals.websockets > 0) Globals.websockets--;
+
+    Globals.webSocketStatus = 'offline';
+    Globals.logger.addLogMessage('Disconnected from WebSocket 🤖');
+    startWebsocket();
+  }
+
+  // Listen for messages
+  Globals.socket.onmessage = async (e) => {
+    Globals.logger.addLogMessage('Received WebSocket Message!');
+    let data = e.data
+    Globals.logger.addLogMessage(data);
+
+    try {
+
+      let json = JSON.parse(data)
+      await getMessage(json, json.hash, Globals.navigation);
+      sendNotifications();
+
+    } catch (err) {
+      console.log(err)
     }
 
-    Globals.socket.onclose = (e) => {
-        if (Globals.websockets > 0) Globals.websockets--;
-        
-        Globals.webSocketStatus = 'offline';
-        Globals.logger.addLogMessage('Disconnected from WebSocket 🤖');
-        startWebsocket();
-    }
-
-// Listen for messages
-    Globals.socket.onmessage = async (e) => {
-        Globals.logger.addLogMessage('Received WebSocket Message!');
-        let data = e.data
-        Globals.logger.addLogMessage(data);
-
-        try {
-
-            let json = JSON.parse(data)
-            await getMessage(json, json.hash, Globals.navigation);
-            sendNotifications();
-
-        } catch (err) {
-            console.log(err)
-        }
-
-    }
-   }
+  }
+}
 
 export async function initGlobals() {
 
-    const payees = await loadPayeeDataFromDatabase();
+  const payees = await loadPayeeDataFromDatabase();
 
-    if (payees !== undefined) {
-        Globals.payees = payees;
-    }
+  if (payees !== undefined) {
+    Globals.payees = payees;
+  }
 
-    Globals.knownTXs = await getKnownTransactions();
+  Globals.knownTXs = await getKnownTransactions();
 
-    const groups = await loadGroupsDataFromDatabase();
+  const groups = await loadGroupsDataFromDatabase();
 
-    Globals.groups = groups;
+  Globals.groups = groups;
 
-    Globals.boardsSubscriptions = await getBoardSubscriptions();
+  Globals.boardsSubscriptions = await getBoardSubscriptions();
 
-    Globals.unreadMessages = await getUnreadMessages();
+  Globals.unreadMessages = await getUnreadMessages();
 
-    const transactionDetails = await loadTransactionDetailsFromDatabase();
+  const transactionDetails = await loadTransactionDetailsFromDatabase();
 
-    if (transactionDetails !== undefined) {
-        Globals.transactionDetails = transactionDetails;
-    }
+  if (transactionDetails !== undefined) {
+    Globals.transactionDetails = transactionDetails;
+  }
 
-    const netInfo = await NetInfo.fetch();
+  const netInfo = await NetInfo.fetch();
 
-    /* Start syncing */
-    if ((Globals.preferences.limitData && netInfo.type === 'cellular')) {
-        Alert.alert(
-            'Not Syncing',
-            'You enabled data limits, and are on a limited connection. Not starting sync.',
-            [
-                {text: 'OK'},
-            ]
-        );
-    } else {
-        Globals.wallet.enableAutoOptimization(false);
-        Globals.wallet.start();
-    }
+  /* Start syncing */
+  if ((Globals.preferences.limitData && netInfo.type === 'cellular')) {
+    Alert.alert(
+      'Not Syncing',
+      'You enabled data limits, and are on a limited connection. Not starting sync.',
+      [
+        { text: 'OK' },
+      ]
+    );
+  } else {
+    Globals.wallet.enableAutoOptimization(false);
+    Globals.wallet.start();
+  }
 
-    await Globals.updateNodeList();
-    await Globals.updateGroupsList();
+  await Globals.updateNodeList();
+  await Globals.updateGroupsList();
 
 }

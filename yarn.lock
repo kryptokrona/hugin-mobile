@@ -5045,10 +5045,10 @@ kryptokrona-utils@^1.3.8:
   optionalDependencies:
     "@ledgerhq/hw-transport-node-hid" "^5.22.0"
 
-kryptokrona-wallet-backend-js@2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/kryptokrona-wallet-backend-js/-/kryptokrona-wallet-backend-js-2.5.1.tgz#c361121e0c8a05250ba7bb8481a6f300b13a1526"
-  integrity sha512-bjOShLXCLKljrCGtvo+Og0hVHd9J3sUwunHK7D509DNVTb/QtvTnX/sspxOGZ9oZ8uetDvylEC1nloUYdJqlnA==
+kryptokrona-wallet-backend-js@^2.5.5:
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/kryptokrona-wallet-backend-js/-/kryptokrona-wallet-backend-js-2.5.5.tgz#7a804b11b521383d3cd1e2aeda4a38abd5cff075"
+  integrity sha512-QQNZ4/R7ieuNt0XTOXYS59QbQiFq0uYdcCRSZkBgqJ+Of0sC3EKLNH9moJPZgAvjrnuipCvymA4uvga7JbqiIw==
   dependencies:
     kryptokrona-utils "^1.3.8"
     lodash "^4.17.15"
@@ -6975,6 +6975,11 @@ react-native-hyperlink@^0.0.19:
   dependencies:
     linkify-it "^2.2.0"
     mdurl "^1.0.0"
+
+react-native-incall-manager@4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/react-native-incall-manager/-/react-native-incall-manager-4.1.0.tgz#38601a2796932c0d815654f4c838722a2207bf56"
+  integrity sha512-v1c+XOGu5VudY5//E3i5xiaRA9v6RvevMzZ4RumLqI+hte+4XslB2z6HSek2FF0EmAnY1rCn4ckiwgkTI1Tmtw==
 
 react-native-invertible-scroll-view@^2.0.0:
   version "2.0.0"

@@ -2,21 +2,16 @@
 //
 // Please see the included LICENSE file for more information.
 
-import React from 'react';
 import PushNotification from 'react-native-push-notification';
-import moment from 'moment';
 
-import { Text, Platform, ToastAndroid, Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
 
-import { StackActions, NavigationActions } from 'react-navigation';
 
-import * as Qs from 'query-string';
 
 import Config from './Config';
 
 import { Globals } from './Globals';
 
-import { addFee, toAtomic } from './Fee';
 
 import { expand_sdp_answer } from './SDPParser';
 
@@ -27,53 +22,53 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import {emptyKnownTXs, updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction } from './Database';
+import { emptyKnownTXs, updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getHistory, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, messageExists, saveKnownTransaction } from './Database';
 
 /**
  * Save wallet in background
  */
 async function backgroundSave() {
-    Globals.logger.addLogMessage('Saving wallet...');
+  Globals.logger.addLogMessage('Saving wallet...');
 
-    try {
-        await saveToDatabase(Globals.wallet);
-        Globals.logger.addLogMessage('Save complete.');
-    } catch (err) {
-        Globals.logger.addLogMessage('Failed to background save: ' + err);
-    }
+  try {
+    await saveToDatabase(Globals.wallet);
+    Globals.logger.addLogMessage('Save complete.');
+  } catch (err) {
+    Globals.logger.addLogMessage('Failed to background save: ' + err);
+  }
 }
 import {
-    Address,
-    AddressPrefix,
-    Block,
-    BlockTemplate,
-    Crypto,
-    CryptoNote,
-    LevinPacket,
-    Transaction
+  Address,
+  AddressPrefix,
+  Block,
+  BlockTemplate,
+  Crypto,
+  CryptoNote,
+  LevinPacket,
+  Transaction
 } from 'kryptokrona-utils';
 const xkrUtils = new CryptoNote()
 const crypto = new Crypto()
 
 import {
   delay,
-    toastPopUp,
+  toastPopUp,
 } from './Utilities';
 
 let optimizing = false
 
-export async function getBestNode(ssl=true) {
+export async function getBestNode(ssl = true) {
 
   let recommended_node = undefined;
 
   await Globals.updateNodeList();
 
   let node_requests = [];
-  let ssl_nodes =[];
+  let ssl_nodes = [];
   if (ssl) {
-      ssl_nodes = Globals.daemons.filter(node => {return node.ssl});
+    ssl_nodes = Globals.daemons.filter(node => { return node.ssl });
   } else {
-      ssl_nodes = Globals.daemons.filter(node => {return !node.ssl});
+    ssl_nodes = Globals.daemons.filter(node => { return !node.ssl });
   }
 
   ssl_nodes = ssl_nodes.sort((a, b) => 0.5 - Math.random());
@@ -84,26 +79,26 @@ export async function getBestNode(ssl=true) {
     let nodeURL = `${this_node.ssl ? 'https://' : 'http://'}${this_node.url}:${this_node.port}/info`;
     try {
       const resp = await fetch(nodeURL, {
-         method: 'GET'
+        method: 'GET'
       }, 1000);
 
-     if (resp.ok) {
-       recommended_node = this_node;
-       return(this_node);
-     }
-  } catch (e) {
-    console.log(e);
+      if (resp.ok) {
+        recommended_node = this_node;
+        return (this_node);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
+
+  if (recommended_node == undefined) {
+    const recommended_non_ssl_node = await getBestNode(false);
+    return recommended_non_ssl_node;
+  }
+
 }
 
-if (recommended_node == undefined) {
-  const recommended_non_ssl_node = await getBestNode(false);
-  return recommended_non_ssl_node;
-}
-
-}
-
-export async function getBestCache(onlyOnline=true) {
+export async function getBestCache(onlyOnline = true) {
 
   if (Globals.preferences.autoPickCache != 'true') return;
 
@@ -117,7 +112,7 @@ export async function getBestCache(onlyOnline=true) {
 
   let caches = Globals.caches.slice();
   caches.sort((a, b) => 0.5 - Math.random());
-  caches.unshift({url: Globals.preferences.cache});
+  caches.unshift({ url: Globals.preferences.cache });
 
   for (cache in caches) {
     let this_cache = caches[cache];
@@ -125,47 +120,47 @@ export async function getBestCache(onlyOnline=true) {
     console.log('Trying ', this_cache)
     try {
       const resp = await fetch(cacheURL, {
-         method: 'GET'
+        method: 'GET'
       }, 3000);
-      if (!resp.ok) {continue}
+      if (!resp.ok) { continue }
       recommended_cache = this_cache;
       const json = await resp.json();
       console.log(json);
-     if (json.status == "online" && onlyOnline) {
-       console.log(this_cache);
-       Globals.preferences.cache = recommended_cache.url;
-       return this_cache;
-     } else {
-      Globals.preferences.cache = recommended_cache.url;
-      return this_cache
-     }
-  } catch (e) {
-    console.log(e);
+      if (json.status == "online" && onlyOnline) {
+        console.log(this_cache);
+        Globals.preferences.cache = recommended_cache.url;
+        return this_cache;
+      } else {
+        Globals.preferences.cache = recommended_cache.url;
+        return this_cache
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
-}
 
-toastPopUp('No online APIs!');
-Globals.APIOnline = false;
-return false;
+  toastPopUp('No online APIs!');
+  Globals.APIOnline = false;
+  return false;
 
 
 }
 
 export function resyncMessage24h() {
-    Globals.knownTXs = [];
-    Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
-    Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
-    Globals.notificationQueue = false;
-    Globals.initalSyncOccurred = false;
-    emptyKnownTXs();
+  Globals.knownTXs = [];
+  Globals.lastMessageTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+  Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+  Globals.notificationQueue = false;
+  Globals.initalSyncOccurred = false;
+  emptyKnownTXs();
 }
 
-function trimExtra (extra) {
+function trimExtra(extra) {
 
   try {
     const timestamp = extra.t;
     if (timestamp) return extra;
-    
+
   } catch (err) {
     console.log(err);
   }
@@ -189,56 +184,56 @@ function trimExtra (extra) {
 
   try {
     return JSON.parse(fromHex(Buffer.from(extra.substring(78)).toString()))
-  } catch(e) {
+  } catch (e) {
     console.log(e);
   }
 
 }
 
 PushNotification.configure({
-    onNotification: handleNotification,
+  onNotification: handleNotification,
 
-      permissions: {
-          alert: true,
-          badge: true,
-          sound: true,
-      },
+  permissions: {
+    alert: true,
+    badge: true,
+    sound: true,
+  },
 
-      popInitialNotification: true,
+  popInitialNotification: true,
 
-      requestPermissions: true,
+  requestPermissions: true,
 
-  });
-  function handleNotification(notification) {
+});
+function handleNotification(notification) {
 
-    if (notification.transaction != undefined) {
-      return;
-    }
+  if (notification.transaction != undefined) {
+    return;
+  }
 
-    let payee = notification.userInfo;
+  let payee = notification.userInfo;
 
-    if (payee.address) {
+  if (payee.address) {
 
-      payee = new URLSearchParams(payee).toString();
+    payee = new URLSearchParams(payee).toString();
 
-      let url = 'xkr://'.replace('address=', '') + payee;
+    let url = 'xkr://'.replace('address=', '') + payee;
 
-      Linking.openURL(url);
+    Linking.openURL(url);
 
-    } else if (payee.key) {
+  } else if (payee.key) {
 
-      let url = `xkr://?group=${payee.key}`;
+    let url = `xkr://?group=${payee.key}`;
 
-      Linking.openURL(url);
+    Linking.openURL(url);
 
-    } else {
+  } else {
 
-      let url = 'xkr://?board=' + payee;
+    let url = 'xkr://?board=' + payee;
 
-      Linking.openURL(url);
+    Linking.openURL(url);
 
 
-    }
+  }
 
 }
 
@@ -260,8 +255,8 @@ export function intToRGB(int) {
 }
 
 export function hashCode(str) {
-		let hash = Math.abs(str.hashCode())*0.007812499538;
-    return Math.floor(hash);
+  let hash = Math.abs(str.hashCode()) * 0.007812499538;
+  return Math.floor(hash);
 
 }
 
@@ -275,12 +270,12 @@ export function get_avatar(hash, size) {
   let rgb = intToRGB(hashCode(hash));
   // Options for avatar
   var options = {
-        foreground: [rgb.red, rgb.green, rgb.blue, 255],               // rgba black
-        background: [parseInt(rgb.red/10), parseInt(rgb.green/10), parseInt(rgb.blue/10), 0],         // rgba white
-        margin: 0.2,                              // 20% margin
-        size: size,                                // 420px square
-        format: 'png'                           // use SVG instead of PNG
-      };
+    foreground: [rgb.red, rgb.green, rgb.blue, 255],               // rgba black
+    background: [parseInt(rgb.red / 10), parseInt(rgb.green / 10), parseInt(rgb.blue / 10), 0],         // rgba white
+    margin: 0.2,                              // 20% margin
+    size: size,                                // 420px square
+    format: 'png'                           // use SVG instead of PNG
+  };
 
   // create a base64 encoded SVG
   return 'data:image/png;base64,' + new Identicon(hash, options).toString();
@@ -288,45 +283,45 @@ export function get_avatar(hash, size) {
 
 export function handle_links(message) {
   geturl = new RegExp(
-          "(^|[ \t\r\n])((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){3,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))"
-         ,"g"
-       );
+    "(^|[ \t\r\n])((ftp|http|https|gopher|mailto|news|nntp|telnet|wais|file|prospero|aim|webcal):(([A-Za-z0-9$_.+!*(),;/?:@&~=-])|%[A-Fa-f0-9]{2}){3,}(#([a-zA-Z0-9][a-zA-Z0-9$_.+!*(),;/?:@&~=%-]*))?([A-Za-z0-9$_+!*();/?:~-]))"
+    , "g"
+  );
 
-// Instantiate attachments
-let youtube_links = '';
-let image_attached = '';
+  // Instantiate attachments
+  let youtube_links = '';
+  let image_attached = '';
 
-// Find links
-let links_in_message = message.match(geturl);
+  // Find links
+  let links_in_message = message.match(geturl);
 
-// Supported image attachment filetypes
-let imagetypes = ['.png','.jpg','.gif', '.webm', '.jpeg', '.webp'];
+  // Supported image attachment filetypes
+  let imagetypes = ['.png', '.jpg', '.gif', '.webm', '.jpeg', '.webp'];
 
-// Find magnet links
-//let magnetLinks = /(magnet:\?[^\s\"]*)/gmi.exec(message);
+  // Find magnet links
+  //let magnetLinks = /(magnet:\?[^\s\"]*)/gmi.exec(message);
 
-//message = message.replace(magnetLinks[0], "");
+  //message = message.replace(magnetLinks[0], "");
 
-if (links_in_message) {
+  if (links_in_message) {
 
-  for (let j = 0; j < links_in_message.length; j++) {
+    for (let j = 0; j < links_in_message.length; j++) {
 
-    if (links_in_message[j].match(/youtu/) || links_in_message[j].match(/y2u.be/)) { // Embeds YouTube links
-      message = message.replace(links_in_message[j],'');
-      embed_code = links_in_message[j].split('/').slice(-1)[0].split('=').slice(-1)[0];
-      youtube_links += '<div style="position:relative;height:0;padding-bottom:42.42%"><iframe src="https://www.youtube.com/embed/' + embed_code + '?modestbranding=1" style="position:absolute;width:80%;height:100%;left:10%" width="849" height="360" frameborder="0" allow="autoplay; encrypted-media"></iframe></div>';
-    } else if (imagetypes.indexOf(links_in_message[j].substr(-4)) > -1 ) { // Embeds image links
-      message = message.replace(links_in_message[j],'');
-      image_attached_url = links_in_message[j];
-      image_attached = '<img class="attachment" src="' + image_attached_url + '" />';
-    } else { // Embeds other links
-      message = message.replace(links_in_message[j],'<a target="_new" href="' + links_in_message[j] + '">' + links_in_message[j] + '</a>');
+      if (links_in_message[j].match(/youtu/) || links_in_message[j].match(/y2u.be/)) { // Embeds YouTube links
+        message = message.replace(links_in_message[j], '');
+        embed_code = links_in_message[j].split('/').slice(-1)[0].split('=').slice(-1)[0];
+        youtube_links += '<div style="position:relative;height:0;padding-bottom:42.42%"><iframe src="https://www.youtube.com/embed/' + embed_code + '?modestbranding=1" style="position:absolute;width:80%;height:100%;left:10%" width="849" height="360" frameborder="0" allow="autoplay; encrypted-media"></iframe></div>';
+      } else if (imagetypes.indexOf(links_in_message[j].substr(-4)) > -1) { // Embeds image links
+        message = message.replace(links_in_message[j], '');
+        image_attached_url = links_in_message[j];
+        image_attached = '<img class="attachment" src="' + image_attached_url + '" />';
+      } else { // Embeds other links
+        message = message.replace(links_in_message[j], '<a target="_new" href="' + links_in_message[j] + '">' + links_in_message[j] + '</a>');
+      }
     }
+    return [message, youtube_links, image_attached];
+  } else {
+    return [message, '', ''];
   }
-  return [message, youtube_links, image_attached];
-} else {
-  return [message,'',''];
-}
 
 
 }
@@ -353,7 +348,7 @@ export function nonceFromTimestamp(tmstmp) {
 
   let nonce = hexToUint(String(tmstmp));
 
-  while ( nonce.length < nacl.box.nonceLength ) {
+  while (nonce.length < nacl.box.nonceLength) {
 
     tmp_nonce = Array.from(nonce);
 
@@ -367,7 +362,7 @@ export function nonceFromTimestamp(tmstmp) {
 }
 
 export function hexToUint(hexString) {
-return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+  return new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 }
 
 export function getKeyPair() {
@@ -380,23 +375,23 @@ export function getKeyPair() {
 }
 
 export function getKeyPairOld() {
-    // return new Promise((resolve) => setTimeout(resolve, ms));
-    const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
-    let secretKey = naclUtil.decodeUTF8(privateSpendKey.substring(1, 33));
-    let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
-    return keyPair;
+  // return new Promise((resolve) => setTimeout(resolve, ms));
+  const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+  let secretKey = naclUtil.decodeUTF8(privateSpendKey.substring(1, 33));
+  let keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
+  return keyPair;
 
 
 }
 
-export function toHex(str,hex){
-  try{
+export function toHex(str, hex) {
+  try {
     hex = unescape(encodeURIComponent(str))
-    .split('').map(function(v){
-      return v.charCodeAt(0).toString(16)
-    }).join('')
+      .split('').map(function (v) {
+        return v.charCodeAt(0).toString(16)
+      }).join('')
   }
-  catch(e){
+  catch (e) {
     hex = str
   }
   return hex
@@ -407,7 +402,7 @@ async function optimizeTimer() {
   optimizing = false
 }
 
-export async function optimizeMessages(nbrOfTxs, force=false) {
+export async function optimizeMessages(nbrOfTxs, force = false) {
 
   if (!Globals?.wallet) { return false }
 
@@ -418,9 +413,9 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
     const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
     const deterministicPrivateKey = await crypto.generateDeterministicSubwalletKeys(privateSpendKey, 1)
     const [address, error] = await Globals.wallet.importSubWallet(deterministicPrivateKey.private_key);
-    
+
     if (error) {
-       return false;
+      return false;
     }
 
   }
@@ -445,7 +440,7 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
   while (i < 15) {
     payments.push([
       subWallet,
-        2000
+      2000
     ]);
 
     i += 1;
@@ -453,15 +448,15 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
   }
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      payments, // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      [mainWallet], // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      undefined
+    payments, // destinations,
+    3, // mixin
+    { fixedFee: 1000, isFixedFee: true }, // fee
+    undefined, //paymentID
+    [mainWallet], // subWalletsToTakeFrom
+    undefined, // changeAddress
+    true, // relayToNetwork
+    false, // sneedAll
+    undefined
   );
 
   if (result.success) {
@@ -474,7 +469,7 @@ export async function optimizeMessages(nbrOfTxs, force=false) {
 
   return false;
 
-} 
+}
 
 export async function sendMessageWithHuginAPI(payload_hex) {
 
@@ -482,7 +477,7 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     Globals.preferences.cacheEnabled = 'true';
     savePreferencesToDatabase(Globals.preferences);
     toastPopUp('API sending enabled. Please try again. You can turn this off on the settings page.')
-    return {success: false};
+    return { success: false };
   };
 
   let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
@@ -494,21 +489,21 @@ export async function sendMessageWithHuginAPI(payload_hex) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({payload: payload_hex}),
+    body: JSON.stringify({ payload: payload_hex }),
   });
   const response_json = await response.json();
   return response_json;
 
 }
 
-export async function cacheSync(first=true, page=1) {
+export async function cacheSync(first = true, page = 1) {
 
   Globals.logger.addLogMessage('Syncing group message with API.. 💌');
 
   if (Globals.groups.length == 0) return;
 
   return new Promise(async (resolve, reject) => {
-  
+
 
     // if(first) {
     //   latest_board_message_timestamp = parseInt(await getLatestGroupMessage()) + 1;
@@ -520,108 +515,108 @@ export async function cacheSync(first=true, page=1) {
     latest_board_message_timestamp = Globals.lastMessageTimestamp;
     Globals.logger.addLogMessage(`Syncing group messages from ${new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')} to ${new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')}.. 💌`);
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
-    console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
-    fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
-    .then((response) => response.json())
-    .then(async (json) => {
+    console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp / 1000)}&to=${parseInt(Date.now() / 1000)}&size=50&page=` + page);
+    fetch(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp / 1000)}&to=${parseInt(Date.now() / 1000)}&size=50&page=` + page)
+      .then((response) => response.json())
+      .then(async (json) => {
 
-      const items = json.encrypted_group_posts;
-      if (!items.length) {
-        resolve(true);
-        return;
-      }
-      Globals.logger.addLogMessage(`Found ${json.total_items} group messages.. 💌`);
-      for (item in items) {
+        const items = json.encrypted_group_posts;
+        if (!items.length) {
+          resolve(true);
+          return;
+        }
+        Globals.logger.addLogMessage(`Found ${json.total_items} group messages.. 💌`);
+        for (item in items) {
 
-        Globals.logger.addLogMessage(`Syncing group message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
+          Globals.logger.addLogMessage(`Syncing group message ${parseInt(item) + parseInt((json.current_page - 1) * 50)}/${json.total_items} 💌`);
 
-        Globals.lastSyncEvent = Date.now();
+          Globals.lastSyncEvent = Date.now();
 
-        if (await groupMessageExists(items[item].tx_timestamp)) continue;
-        if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
+          if (await groupMessageExists(items[item].tx_timestamp)) continue;
+          if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
 
-        let groupMessage = await getMessage({
-          sb: items[item].tx_sb,
-          t: items[item].tx_timestamp,
-          hash: items[item].tx_hash
-        });
+          let groupMessage = await getMessage({
+            sb: items[item].tx_sb,
+            t: items[item].tx_timestamp,
+            hash: items[item].tx_hash
+          });
 
-        saveKnownTransaction(items[item].tx_hash);
+          saveKnownTransaction(items[item].tx_hash);
 
-      }
-      if (json.total_pages == 0) resolve(true);
+        }
+        if (json.total_pages == 0) resolve(true);
 
-      if (json.current_page < json.total_pages) {
-            await cacheSync(false, page+1);
-            resolve(true);
-      } else {
-        console.log('Returning..')
-        Globals.lastMessageTimestamp = Date.now();
-        resolve(true);
-      }
-    })
-});
+        if (json.current_page < json.total_pages) {
+          await cacheSync(false, page + 1);
+          resolve(true);
+        } else {
+          console.log('Returning..')
+          Globals.lastMessageTimestamp = Date.now();
+          resolve(true);
+        }
+      })
+  });
 }
 
-export async function cacheSyncDMs(first=true, page=1) {
+export async function cacheSyncDMs(first = true, page = 1) {
 
   if (Globals.payees.length == 0) return;
 
   return new Promise(async (resolve, reject) => {
     try {
-    
-  console.log('Global timestamp', Globals.lastDMTimestamp);
 
-    // if(first) {
-    //   latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
-    // }
+      console.log('Global timestamp', Globals.lastDMTimestamp);
 
-    // if (Globals.lastDMTimestamp > latest_board_message_timestamp) 
-    
-    latest_board_message_timestamp = Globals.lastDMTimestamp;
+      // if(first) {
+      //   latest_board_message_timestamp = parseInt(await getLatestMessage()) + 1;
+      // }
 
-    let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+      // if (Globals.lastDMTimestamp > latest_board_message_timestamp)
 
-    console.log(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
-    fetch(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
-    .then((response) => response.json())
-    .then(async (json) => {
-      console.log(json);
-      console.log('We have items');
-      const items = json.encrypted_posts;
-      Globals.logger.addLogMessage(`Found ${json.total_items} DMs 💌`);
-      if (!items.length) {
-        resolve(true);
-        return;
-      }
-      console.log('Looping items');
-      for (item in items) {
-        Globals.logger.addLogMessage(`Syncing private message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
-        Globals.lastSyncEvent = Date.now();
+      latest_board_message_timestamp = Globals.lastDMTimestamp;
 
-        if (await messageExists(items[item].tx_timestamp)) continue;
-        if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
-        console.log('Item doesnt exist');
-        let this_json = {
-          box: items[item].tx_box,
-          t: items[item].tx_timestamp,
-          hash: items[item].tx_hash
-        };
-        let message = await getMessage(this_json, this_json.tx_hash, Globals.navigation);
-        saveKnownTransaction(items[item].tx_hash);
-      }
-      if (json.total_pages == 0) resolve(true);
-      if (json.current_page < json.total_pages) {
-            await cacheSyncDMs(false, page+1);
+      let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+      console.log(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp / 1000)}&to=${parseInt(Date.now() / 1000)}&size=50&page=` + page);
+      fetch(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp / 1000)}&to=${parseInt(Date.now() / 1000)}&size=50&page=` + page)
+        .then((response) => response.json())
+        .then(async (json) => {
+          console.log(json);
+          console.log('We have items');
+          const items = json.encrypted_posts;
+          Globals.logger.addLogMessage(`Found ${json.total_items} DMs 💌`);
+          if (!items.length) {
             resolve(true);
-      } else {
-        Globals.lastDMTimestamp = Date.now();
-        resolve(true);
-      }
-    })
-  } catch (e) {
-    console.log(e);
-  }
+            return;
+          }
+          console.log('Looping items');
+          for (item in items) {
+            Globals.logger.addLogMessage(`Syncing private message ${parseInt(item) + parseInt((json.current_page - 1) * 50)}/${json.total_items} 💌`);
+            Globals.lastSyncEvent = Date.now();
+
+            if (await messageExists(items[item].tx_timestamp)) continue;
+            if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
+            console.log('Item doesnt exist');
+            let this_json = {
+              box: items[item].tx_box,
+              t: items[item].tx_timestamp,
+              hash: items[item].tx_hash
+            };
+            let message = await getMessage(this_json, this_json.tx_hash, Globals.navigation);
+            saveKnownTransaction(items[item].tx_hash);
+          }
+          if (json.total_pages == 0) resolve(true);
+          if (json.current_page < json.total_pages) {
+            await cacheSyncDMs(false, page + 1);
+            resolve(true);
+          } else {
+            Globals.lastDMTimestamp = Date.now();
+            resolve(true);
+          }
+        })
+    } catch (e) {
+      console.log(e);
+    }
   });
 }
 
@@ -629,7 +624,7 @@ export async function createGroup() {
   return await Buffer.from(nacl.randomBytes(32)).toString('hex');
 }
 
-export async function sendGroupsMessage(message, group, temp_timestamp, reply=false) {
+export async function sendGroupsMessage(message, group, temp_timestamp, reply = false) {
 
   console.log('reply', reply)
 
@@ -663,22 +658,22 @@ export async function sendGroupsMessage(message, group, temp_timestamp, reply=fa
 
   const secretbox = nacl.secretbox(payload_unencrypted, nonce, hexToUint(group));
 
-  const payload_encrypted = {"sb":Buffer.from(secretbox).toString('hex'), "t":timestamp};
+  const payload_encrypted = { "sb": Buffer.from(secretbox).toString('hex'), "t": timestamp };
 
   const payload_encrypted_hex = toHex(JSON.stringify(payload_encrypted));
 
   let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
 
   let result = await Globals.wallet.sendTransactionAdvanced(
-      [[subWallet, 1000]], // destinations,
-      3, // mixin
-      {fixedFee: 1000, isFixedFee: true}, // fee
-      undefined, //paymentID
-      [subWallet], // subWalletsToTakeFrom
-      undefined, // changeAddress
-      true, // relayToNetwork
-      false, // sneedAll
-      Buffer.from(payload_encrypted_hex, 'hex')
+    [[subWallet, 1000]], // destinations,
+    3, // mixin
+    { fixedFee: 1000, isFixedFee: true }, // fee
+    undefined, //paymentID
+    [subWallet], // subWalletsToTakeFrom
+    undefined, // changeAddress
+    true, // relayToNetwork
+    false, // sneedAll
+    Buffer.from(payload_encrypted_hex, 'hex')
   );
   if (!result.success) {
     optimizeMessages(10, true);
@@ -709,123 +704,123 @@ export async function sendMessage(message, receiver, messageKey, temp_timestamp)
 
   let has_history = await getHistory(receiver);
 
-    let my_address = Globals.wallet.getPrimaryAddress();
+  let my_address = Globals.wallet.getPrimaryAddress();
 
-    let my_addresses = Globals.wallet.getAddresses();
+  let my_addresses = Globals.wallet.getAddresses();
 
-    let timestamp = temp_timestamp;
+  let timestamp = temp_timestamp;
 
-    let box;
+  let box;
 
-    if (!has_history) {
-      // If you haven't yet sent a message to this specific contact, send the
-      // first one with a sealed box so it can be decrypted by the recipient
-      // at now, or at a later stage.
-      const addr = await Address.fromAddress(my_address);
-      const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
-      let xkr_private_key = privateSpendKey;
-      let signature = await xkrUtils.signMessage(message, xkr_private_key);
-      let payload_json = {"from":my_address, "k": Buffer.from(getKeyPair().publicKey).toString('hex'), "msg":message, "s": signature};
-      let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
-      box = new NaclSealed.sealedbox(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey));
-    } else {
-      // If you have history with this contact, it should be sent with a regular
-      // box.
-      let payload_json = {"from":my_address, "msg":message};
+  if (!has_history) {
+    // If you haven't yet sent a message to this specific contact, send the
+    // first one with a sealed box so it can be decrypted by the recipient
+    // at now, or at a later stage.
+    const addr = await Address.fromAddress(my_address);
+    const [privateSpendKey, privateViewKey] = Globals.wallet.getPrimaryAddressPrivateKeys();
+    let xkr_private_key = privateSpendKey;
+    let signature = await xkrUtils.signMessage(message, xkr_private_key);
+    let payload_json = { "from": my_address, "k": Buffer.from(getKeyPair().publicKey).toString('hex'), "msg": message, "s": signature };
+    let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
+    box = new NaclSealed.sealedbox(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey));
+  } else {
+    // If you have history with this contact, it should be sent with a regular
+    // box.
+    let payload_json = { "from": my_address, "msg": message };
 
-      let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
+    let payload_json_decoded = naclUtil.decodeUTF8(JSON.stringify(payload_json));
 
 
 
-      box = nacl.box(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey), getKeyPair().secretKey);
+    box = nacl.box(payload_json_decoded, nonceFromTimestamp(timestamp), hexToUint(messageKey), getKeyPair().secretKey);
 
+  }
+
+  let payload_box = { "box": Buffer.from(box).toString('hex'), "t": timestamp };
+
+  // Convert json to hex
+  let payload_hex = toHex(JSON.stringify(payload_box));
+
+  let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
+
+  let result = await Globals.wallet.sendTransactionAdvanced(
+    [[subWallet, 1000]], // destinations,
+    3, // mixin
+    { fixedFee: 1000, isFixedFee: true }, // fee
+    undefined, //paymentID
+    [subWallet], // subWalletsToTakeFrom
+    undefined, // changeAddress
+    true, // relayToNetwork
+    false, // sneedAll
+    Buffer.from(payload_hex, 'hex')
+  );
+
+  Globals.logger.addLogMessage('Trying to send DM..');
+
+  if (!result.success) {
+    Globals.logger.addLogMessage('Failed to send DM..');
+    optimizeMessages(10, true);
+    try {
+      Globals.logger.addLogMessage('Trying to send DM with API..');
+      result = await sendMessageWithHuginAPI(payload_hex);
+    } catch (err) {
+      Globals.logger.addLogMessage('Trying to send DM with API..');
     }
+  } else optimizeMessages(10);
 
-    let payload_box = {"box":Buffer.from(box).toString('hex'), "t":timestamp};
-
-    // Convert json to hex
-    let payload_hex = toHex(JSON.stringify(payload_box));
-
-    let [mainWallet, subWallet] = Globals.wallet.subWallets.getAddresses();
-
-    let result = await Globals.wallet.sendTransactionAdvanced(
-        [[subWallet, 1000]], // destinations,
-        3, // mixin
-        {fixedFee: 1000, isFixedFee: true}, // fee
-        undefined, //paymentID
-        [subWallet], // subWalletsToTakeFrom
-        undefined, // changeAddress
-        true, // relayToNetwork
-        false, // sneedAll
-        Buffer.from(payload_hex, 'hex')
-    );
-
-    Globals.logger.addLogMessage('Trying to send DM..');
-
-    if (!result.success) {
-      Globals.logger.addLogMessage('Failed to send DM..');
-      optimizeMessages(10, true);
-      try {
-        Globals.logger.addLogMessage('Trying to send DM with API..');
-        result = await sendMessageWithHuginAPI(payload_hex);
-      } catch (err) {
-        Globals.logger.addLogMessage('Trying to send DM with API..');
-      }
-    } else optimizeMessages(10);
-
-if (result.success) {
-  Globals.logger.addLogMessage('Succeeded sending DM!');
-  if (message.substring(0,1) == 'Δ' || message.substring(0,1) == 'Λ') {
-    message = 'Call started';
+  if (result.success) {
+    Globals.logger.addLogMessage('Succeeded sending DM!');
+    if (message.substring(0, 1) == 'Δ' || message.substring(0, 1) == 'Λ') {
+      message = 'Call started';
+    }
+    if (message.substring(0, 1) == 'δ' || message.substring(0, 1) == 'λ') {
+      message = 'Call answered';
+    }
+    updateMessage(temp_timestamp, 'sent');
+    backgroundSave();
+    Globals.lastMessageTimestamp = timestamp;
+  } else {
+    updateMessage(temp_timestamp, 'failed');
   }
-  if (message.substring(0,1) == 'δ' || message.substring(0,1) == 'λ') {
-    message = 'Call answered';
-  }
-  updateMessage(temp_timestamp, 'sent');
-  backgroundSave();
-  Globals.lastMessageTimestamp = timestamp;
-} else {
-  updateMessage(temp_timestamp, 'failed');
-}
 
-Globals.updateMessages();
+  Globals.updateMessages();
 
-return result;
+  return result;
 
 }
 
-export function fromHex(hex,str){
-  try{
-    str = decodeURIComponent(hex.replace(/(..)/g,'%$1'))
+export function fromHex(hex, str) {
+  try {
+    str = decodeURIComponent(hex.replace(/(..)/g, '%$1'))
   }
-  catch(e){
+  catch (e) {
     str = hex
   }
   return str
 }
 
-export async function getExtra(hash){
+export async function getExtra(hash) {
   return new Promise((resolve, reject) => {
-      const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
-      let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}/json_rpc`;
+    const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+    let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}/json_rpc`;
 
-      Globals.logger.addLogMessage('Message possibly received: ' + hash);
-      Globals.logger.addLogMessage('Using rpc: ' + nodeURL);
+    Globals.logger.addLogMessage('Message possibly received: ' + hash);
+    Globals.logger.addLogMessage('Using rpc: ' + nodeURL);
 
-      fetch(nodeURL, {
+    fetch(nodeURL, {
       method: 'POST',
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'f_transaction_json',
-        params: {hash: hash}
+        params: { hash: hash }
       })
     })
-    .then((response) => response.json())
-    .then((json) => {
-      let data = fromHex(json.result.tx.extra);
-      resolve(data);
-     })
-    .catch((error) => Globals.logger.addLogMessage(error))
+      .then((response) => response.json())
+      .then((json) => {
+        let data = fromHex(json.result.tx.extra);
+        resolve(data);
+      })
+      .catch((error) => Globals.logger.addLogMessage(error))
 
   })
 }
@@ -860,19 +855,19 @@ async function getGroupMessage(tx) {
 
     try {
 
-      Globals.logger.addLogMessage('Trying to decrypt with ' +possibleKey)
+      Globals.logger.addLogMessage('Trying to decrypt with ' + possibleKey)
 
-     decryptBox = nacl.secretbox.open(
-       hexToUint(tx.sb),
-       nonceFromTimestamp(tx.t),
-       hexToUint(possibleKey)
-     );
+      decryptBox = nacl.secretbox.open(
+        hexToUint(tx.sb),
+        nonceFromTimestamp(tx.t),
+        hexToUint(possibleKey)
+      );
 
-     key = possibleKey;
+      key = possibleKey;
     } catch (err) {
       console.log(err);
       Globals.logger.addLogMessage('Decrypt error ' + err)
-     continue;
+      continue;
     }
 
 
@@ -916,25 +911,25 @@ async function getGroupMessage(tx) {
 
   const groupname = await getGroupName(key);
 
-    if (Globals.activeGroup != key && !from_myself) {
+  if (Globals.activeGroup != key && !from_myself) {
 
-      Globals.notificationQueue.push({
-        title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
-          //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-          message: payload_json.m,
-          data: tx.t,
-          userInfo: group_object[0],
-          largeIconUrl: get_avatar(from, 64)
-      });
+    Globals.notificationQueue.push({
+      title: `${nickname} in ${groupname}`,//'Incoming transaction received!',
+      //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+      message: payload_json.m,
+      data: tx.t,
+      userInfo: group_object[0],
+      largeIconUrl: get_avatar(from, 64)
+    });
 
-    }
+  }
 
   return payload_json;
 
 
 }
 
-export async function getMessage(extra, hash, navigation, fromBackground=false){
+export async function getMessage(extra, hash, navigation, fromBackground = false) {
 
 
   Globals.logger.addLogMessage('Getting payees..');
@@ -949,227 +944,228 @@ export async function getMessage(extra, hash, navigation, fromBackground=false){
 
     console.log('Trimmed', tx);
 
-    if (tx.t == undefined) {resolve(); return;}
+    if (tx.t == undefined) { resolve(); return; }
 
-        if (tx.sb) {
+    if (tx.sb) {
 
-          if (await groupMessageExists(tx.t)) {
-            reject();
-            return;
-          }
-          if (!tx.hash) tx.hash = hash;
-          
-          let groupMessage = await getGroupMessage(tx);
-          resolve(groupMessage);
-        }
+      if (await groupMessageExists(tx.t)) {
+        reject();
+        return;
+      }
+      if (!tx.hash) tx.hash = hash;
 
-        // If no key is appended to message we need to try the keys in our payload_keychain
-        let box = tx.box;
+      let groupMessage = await getGroupMessage(tx);
+      resolve(groupMessage);
+    }
 
-        let timestamp = tx.t;
+    // If no key is appended to message we need to try the keys in our payload_keychain
+    let box = tx.box;
 
-        if (await messageExists(timestamp)) {
-          reject();
-          return;
-        }
+    let timestamp = tx.t;
 
-        let decryptBox = false;
-        let createNewPayee = false;
+    if (await messageExists(timestamp)) {
+      reject();
+      return;
+    }
 
-        let key = '';
+    let decryptBox = false;
+    let createNewPayee = false;
 
-        try {
-           decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
-           nonceFromTimestamp(timestamp),
-           getKeyPair().secretKey);
-           createNewPayee = true;
-         } catch (err) {
-         }
-         if(!decryptBox) {
-          try {
-            decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
-            nonceFromTimestamp(timestamp),
-            getKeyPairOld().secretKey);
-            let message_dec_temp = naclUtil.encodeUTF8(decryptBox);
-            let payload_json_temp = JSON.parse(message_dec_temp);
-            let from_temp = payload_json_temp.from;
-            let payee = Globals.payees.filter(item => item.address == from_temp)[0];
-            Globals.removePayee(payee.nickname, false);
-            createNewPayee = true;
-          } catch (err) {
-            console.log(err);
-          }
-        }
+    let key = '';
 
-        console.log('Thats cool we keep goinbg')
+    try {
+      decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
+        nonceFromTimestamp(timestamp),
+        getKeyPair().secretKey);
+      createNewPayee = true;
+    } catch (err) {
+    }
+    if (!decryptBox) {
+      try {
+        decryptBox = NaclSealed.sealedbox.open(hexToUint(box),
+          nonceFromTimestamp(timestamp),
+          getKeyPairOld().secretKey);
+        let message_dec_temp = naclUtil.encodeUTF8(decryptBox);
+        let payload_json_temp = JSON.parse(message_dec_temp);
+        let from_temp = payload_json_temp.from;
+        let payee = Globals.payees.filter(item => item.address == from_temp)[0];
+        Globals.removePayee(payee.nickname, false);
+        createNewPayee = true;
+      } catch (err) {
+        console.log(err);
+      }
+    }
 
-        let i = 0;
+    console.log('Thats cool we keep goinbg')
 
-        let payees = await loadPayeeDataFromDatabase();
+    let i = 0;
 
-        while (!decryptBox && i < payees?.length) {
+    let payees = await loadPayeeDataFromDatabase();
 
-          let possibleKey = payees[i].paymentID;
+    while (!decryptBox && i < payees?.length) {
 
-          i += 1;
+      let possibleKey = payees[i].paymentID;
 
-          try {
-           decryptBox = nacl.box.open(hexToUint(box),
-           nonceFromTimestamp(timestamp),
-           hexToUint(possibleKey),
-           getKeyPair().secretKey);
-           key = possibleKey;
-          } catch (err) {
-           continue;
-          }
+      i += 1;
 
-        }
-        
-        if (!decryptBox) {
-          console.log('No encrypted message found.. Sad!')
-          resolve();
-          return;
-        }
+      try {
+        decryptBox = nacl.box.open(hexToUint(box),
+          nonceFromTimestamp(timestamp),
+          hexToUint(possibleKey),
+          getKeyPair().secretKey);
+        key = possibleKey;
+      } catch (err) {
+        continue;
+      }
 
+    }
 
-        let message_dec = naclUtil.encodeUTF8(decryptBox);
-
-        let payload_json = JSON.parse(message_dec);
-
-        payload_json.t = timestamp;
-         let from = payload_json.from;
-        let from_myself = false;
-         if (from == Globals.wallet.getPrimaryAddress()) {
-           from_myself = true;
-         }
-
-        let from_address = from;
-
-        let from_payee = {};
-
-        if (!from_myself) {
-
-        for (payee in payees) {
-
-          if (payees[payee].address == from) {
-            from = payees[payee].nickname;
-            createNewPayee = false;
-
-            from_payee = {
-                name: from,
-                address: from_address,
-                paymentID: payees[payee].paymentID,
-            };
-
-          }
+    if (!decryptBox) {
+      console.log('No encrypted message found.. Sad!')
+      resolve();
+      return;
+    }
 
 
-        }
-        } else {
+    let message_dec = naclUtil.encodeUTF8(decryptBox);
 
-        from_payee = payees.filter(payee => {
-          return payee.paymentID == key;
-        })
+    let payload_json = JSON.parse(message_dec);
 
-        }
+    payload_json.t = timestamp;
+    let from = payload_json.from;
+    let from_myself = false;
+    if (from == Globals.wallet.getPrimaryAddress()) {
+      from_myself = true;
+    }
 
-        if (createNewPayee && !from_myself) {
-          const payee = {
-              nickname: payload_json.from.substring(0,12) + "..",
-              address: payload_json.from,
-              paymentID: payload_json.k,
+    let from_address = from;
+
+    let from_payee = {};
+
+    if (!from_myself) {
+
+      for (payee in payees) {
+
+        if (payees[payee].address == from) {
+          from = payees[payee].nickname;
+          createNewPayee = false;
+
+          from_payee = {
+            name: from,
+            address: from_address,
+            paymentID: payees[payee].paymentID,
           };
 
-          Globals.addPayee(payee);
-
-          from_payee = payee;
-
         }
 
-          let received = 'received';
 
-          if (from_myself) {
-            payload_json.from = from_payee[0].address;
-            received = 'sent';
-          }
+      }
+    } else {
 
-          if (payload_json.msg.substring(0,1) == 'Δ' ||  payload_json.msg.substring(0,1) == 'Λ' ){
-            console.log('Call received!');
+      from_payee = payees.filter(payee => {
+        return payee.paymentID == key;
+      })
 
-            let missed;
+    }
 
-            Date.now() - payload_json.t < 180000 ? missed = false : missed = true;
+    if (createNewPayee && !from_myself) {
+      const payee = {
+        nickname: payload_json.from.substring(0, 12) + "..",
+        address: payload_json.from,
+        paymentID: payload_json.k,
+      };
 
-            console.log('Call is missed? ', missed);
-            console.log('What is navigation', navigation)
+      Globals.addPayee(payee);
 
-            if (navigation && !missed) {
-              console.log('Navigating to dis bichh');
-            navigation.navigate(
-              'CallScreen', {
-                  payee: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
-                  sdp: payload_json.msg,
-              }) } else {
-                // use URL to 
-              }
-            if (!from_myself && !missed) {
+      from_payee = payee;
 
-                console.log('Notifying call..')
-                PushNotification.localNotification({
-                  title: from,
-                  message: missed ? 'Call missed' : 'Call received',
-                  data: payload_json.t,
-                  userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
-                  largeIconUrl: get_avatar(payload_json.from, 64),
-              })
-              
-            } else if(!from_myself && missed) {
-              Globals.notificationQueue.push({
-                title: from,
-                  //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
-                  message: 'Call missed',
-                  data: payload_json.t,
-                  userInfo: {nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID},
-                  largeIconUrl: get_avatar(payload_json.from, 64),
-              });
-              
-            }
-          payload_json.msg = 'Call received';
-          saveMessage(payload_json.from, received, 'Call received', payload_json.t);
+    }
 
-          resolve(payload_json);
+    let received = 'received';
 
-          return;
+    if (from_myself) {
+      payload_json.from = from_payee[0].address;
+      received = 'sent';
+    }
 
-          } 
-          if (payload_json.msg.substring(0,1) == 'δ' || payload_json.msg.substring(0,1) == 'λ') {
-            Globals.sdp_answer = payload_json.msg;
-            const expanded_answer = expand_sdp_answer(payload_json.msg);
-            Globals.calls.find(call => call.contact == from_payee.paymentID).channel.setRemoteDescription(expanded_answer);
-            saveMessage(payload_json.from, received, 'Call answered', payload_json.t);
-            payload_json.msg = 'Call answered';
-            resolve(payload_json);
-          }
+    if (payload_json.msg.substring(0, 1) == 'Δ' || payload_json.msg.substring(0, 1) == 'Λ') {
+      console.log('Call received!');
 
-          saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+      let missed;
 
-          if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
-            Globals.notificationQueue.push({
-                  title: from,
-                  message: payload_json.msg,
-                  data: payload_json.t,
-                  userInfo: from_payee,
-                  largeIconUrl: get_avatar(payload_json.from, 64),
-              });
-          }
+      Date.now() - payload_json.t < 180000 ? missed = false : missed = true;
 
-        resolve(payload_json);
+      console.log('Call is missed? ', missed);
+      console.log('What is navigation', navigation)
+
+      if (navigation && !missed) {
+        console.log('Navigating to dis bichh');
+        navigation.navigate(
+          'CallScreen', {
+          payee: { nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID },
+          sdp: payload_json.msg,
+        })
+      } else {
+        // use URL to
+      }
+      if (!from_myself && !missed) {
+
+        console.log('Notifying call..')
+        PushNotification.localNotification({
+          title: from,
+          message: missed ? 'Call missed' : 'Call received',
+          data: payload_json.t,
+          userInfo: { nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID },
+          largeIconUrl: get_avatar(payload_json.from, 64),
+        })
+
+      } else if (!from_myself && missed) {
+        Globals.notificationQueue.push({
+          title: from,
+          //message: `You were sent ${prettyPrintAmount(transaction.totalAmount(), Config)}`,
+          message: 'Call missed',
+          data: payload_json.t,
+          userInfo: { nickname: from_payee.name, address: from_payee.address, paymentID: from_payee.paymentID },
+          largeIconUrl: get_avatar(payload_json.from, 64),
+        });
+
+      }
+      payload_json.msg = 'Call received';
+      saveMessage(payload_json.from, received, 'Call received', payload_json.t);
+
+      resolve(payload_json);
+
+      return;
+
+    }
+    if (payload_json.msg.substring(0, 1) == 'δ' || payload_json.msg.substring(0, 1) == 'λ') {
+      Globals.sdp_answer = payload_json.msg;
+      const expanded_answer = expand_sdp_answer(payload_json.msg);
+      Globals.calls.find(call => call.contact == from_payee.paymentID).channel.setRemoteDescription(expanded_answer);
+      saveMessage(payload_json.from, received, 'Call answered', payload_json.t);
+      payload_json.msg = 'Call answered';
+      resolve(payload_json);
+    }
+
+    saveMessage(payload_json.from, received, payload_json.msg, payload_json.t);
+
+    if ((Globals.activeChat != payload_json.from && !from_myself) || (!from_myself && fromBackground)) {
+      Globals.notificationQueue.push({
+        title: from,
+        message: payload_json.msg,
+        data: payload_json.t,
+        userInfo: from_payee,
+        largeIconUrl: get_avatar(payload_json.from, 64),
+      });
+    }
+
+    resolve(payload_json);
 
 
 
 
 
-});
+  });
 
 }
 
@@ -1177,21 +1173,21 @@ export async function sendNotifications() {
   console.log('Sending', Globals.notificationQueue);
   if (Globals.notificationQueue.length > 2) {
 
-      PushNotification.localNotification({
-          title: "New messages received!",
-          message: `You've received ${Globals.notificationQueue.length} new messages.`
-      });
+    PushNotification.localNotification({
+      title: "New messages received!",
+      message: `You've received ${Globals.notificationQueue.length} new messages.`
+    });
 
   } else if (0 < Globals.notificationQueue.length && Globals.notificationQueue.length <= 2) {
-      for (n in Globals.notificationQueue) {
-          PushNotification.localNotification({
-                  title: Globals.notificationQueue[n].title,
-                  message: Globals.notificationQueue[n].message,
-                  data: Globals.notificationQueue[n].data,
-                  userInfo: Globals.notificationQueue[n].userInfo,
-                  largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
-              });
-      }
+    for (n in Globals.notificationQueue) {
+      PushNotification.localNotification({
+        title: Globals.notificationQueue[n].title,
+        message: Globals.notificationQueue[n].message,
+        data: Globals.notificationQueue[n].data,
+        userInfo: Globals.notificationQueue[n].userInfo,
+        largeIconUrl: Globals.notificationQueue[n].largeIconUrl,
+      });
+    }
   }
   Globals.notificationQueue = [];
 }
