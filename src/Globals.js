@@ -14,7 +14,7 @@ import NetInfo from "@react-native-community/netinfo";
 
 import { deleteUserPinCode } from '@haskkor/react-native-pincode';
 
-import { openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+import { getLastSync, setHaveWallet, openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 import { Logger } from './Logger';
@@ -183,6 +183,10 @@ class globals {
     }
 
     updateGroupsFunction() {
+      console.log('UPDATING GROUPS', Globals.updateGroupsFunctions.length);
+      console.log('UPDATING GROUPS', Globals.updateGroupsFunctions.length);
+      console.log('UPDATING GROUPS', Globals.updateGroupsFunctions);
+      console.log('UPDATING GROUPS', Globals.updateGroupsFunctions);
       Globals.updateGroupsFunctions.forEach((f) => {
           f();
       });
@@ -216,7 +220,7 @@ class globals {
             Globals.groups = groups;
         }
 
-        this.groupMessages = await getGroupMessages();
+        // this.groupMessages = await getGroupMessages();
         this.updateGroupsFunction();
 
       }
@@ -440,5 +444,10 @@ export async function initGlobals() {
 
     await Globals.updateNodeList();
     await Globals.updateGroupsList();
+
+    let lastSync = await getLastSync();
+
+    console.log('lastSync', lastSync);
+
 
 }
