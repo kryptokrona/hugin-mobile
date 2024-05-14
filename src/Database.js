@@ -1391,7 +1391,9 @@ export async function getGroupMessages(group=false, limit=25) {
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
 
-            thisMessage = {
+            console.log(item);
+
+            const thisMessage = {
                 nickname: item.nickname,
                 type: item.type,
                 message: item.message,

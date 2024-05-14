@@ -818,7 +818,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
         Globals.updateGroupsFunctions.push(async () => {
             this.setState({
-                messages: await getGroupMessages(this.state.key, Globals.messagesLoaded + 1)
+                messages: await getGroupMessages(this.state.key, Globals.messagesLoaded)
             })
         });
 
