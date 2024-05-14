@@ -1062,6 +1062,10 @@ export async function backgroundSyncMessages(navigation) {
     return;
   }
 
+  if (Globals.preferences.limitData && type === 'cellular') {
+    Globals.logger.addLogMessage('[Message sync] On mobile data and data saver mode is on. Aborting.');
+  }
+
   Globals.syncingMessages = true;
 
   if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
