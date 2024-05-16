@@ -987,7 +987,7 @@ export class ChatScreenNoTranslation extends React.Component {
         Keyboard.dismiss();
         this.state.input.current._textInput.clear();
 
-        this.setState({messageHasLength: this.state.message.length > 0});
+        this.setState({messageHasLength: this.state.message.trim().length > 0});
 
         let temp_timestamp = Date.now();
 
@@ -1191,7 +1191,7 @@ export class ChatScreenNoTranslation extends React.Component {
                             this.props.onChange(text);
                         }
                         this.state.message = text;
-                        this.setState({messageHasLength: this.state.message.length > 0});
+                        this.setState({messageHasLength: this.state.message.trim().length > 0});
                     }}
                     errorMessage={this.props.error}
                 />

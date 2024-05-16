@@ -1048,7 +1048,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
 
              Globals.messagesLoaded = updated_messages.length;
 
-             this.setState({messageHasLength: this.state.message.length > 0});
+             this.setState({messageHasLength: this.state.message.trim().length > 0});
              this.scrollView.scrollTo({y: 0, animated: true});
             await sendGroupsMessage(checkText(text), this.state.key, temp_timestamp, reply);
             this.scrollView.scrollTo({y: 0, animated: true});
@@ -1210,7 +1210,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                             this.props.onChange(text);
                         }
                         this.state.message = text;
-                        this.setState({messageHasLength: this.state.message.length > 0});
+                        this.setState({messageHasLength: this.state.message.trim().length > 0});
                     }}
                     errorMessage={this.props.error}
                 />
