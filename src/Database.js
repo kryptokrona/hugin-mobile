@@ -267,10 +267,11 @@ async function createTables(DB) {
             )`
     );
 
-    tx.executeSql(
-      `CREATE TABLE IF NOT EXISTS misc (
-                 lastSyncGroup TEXT
-                 lastSyncDM TEXT
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS sync_status (
+                 id INTEGER PRIMARY KEY,
+                 lastSyncGroup INT default 0,
+                 lastSyncDM INT default 0
             )`
     );
 
@@ -640,6 +641,77 @@ export async function saveMessage(conversation, type, message, timestamp, read =
   Globals.updateMessages();
 
 }
+
+export async function setLastSyncGroup(timestamp) {
+
+    console.log('Setting last group msg synced to ', timestamp );
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `UPDATE sync_status
+            SET lastSyncGroup = ? WHERE id = 1`,
+            [
+                timestamp
+            ]
+        );
+
+});
+
+}
+
+
+
+export async function setLastSyncDM(timestamp) {
+
+    console.log('Setting last DM msg synced to ', timestamp );
+
+    await database.transaction((tx) => {
+        tx.executeSql(
+            `UPDATE sync_status
+            SET lastSyncDM = ? WHERE id = 1`,
+            [
+                timestamp
+            ]
+        );
+
+});
+
+}
+
+
+export async function getLastSync() {
+  
+    const [data] = await database.executeSql(
+      `SELECT lastSyncDM, lastSyncGroup  FROM sync_status`
+    );
+
+    console.log('lastSync', data);
+  
+    if (data && data.rows && data.rows.length) {
+  
+        return data.rows.item(0);
+  
+    } else {
+
+        await database.transaction((tx) => {
+            tx.executeSql(
+                `INSERT INTO sync_status
+                    (lastSyncDM, lastSyncGroup)
+                VALUES
+                    (?, ?)`,
+                [
+                   0,0
+                ]
+            );
+        });
+
+        return await getLastSync();
+
+    }
+  
+  }
+
+
 
 export async function updateMessage(temp_timestamp, type) {
 
@@ -1412,7 +1484,33 @@ export async function getGroupMessages(group = false, limit = 25) {
         }
       }
 
-      res.push(thisMessage);
+        for (let i = 0; i < data.rows.length; i++) {
+            const item = data.rows.item(i);
+
+            console.log(item);
+
+            const thisMessage = {
+                nickname: item.nickname,
+                type: item.type,
+                message: item.message,
+                timestamp: item.timestamp,
+                group: item.board,
+                address: item.address,
+                hash: item.hash,
+                reply: item.reply,
+                replies: item.replies,
+                count: count_raw,
+            };
+
+            if (thisMessage.reply != '') {
+                const thisOP = await getGroupsMessage(thisMessage.reply);
+                if (thisOP) {
+                    thisMessage.replyNickname = thisOP.nickname;
+                    thisMessage.replyMessage = thisOP.message;
+                }
+            }
+
+            res.push(thisMessage);
 
     }
     console.log(res);

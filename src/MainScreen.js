@@ -891,7 +891,9 @@ async function checkIfStuck() {
 
 }
 
-async function backgroundSyncMessages(navigation) {
+export async function backgroundSyncMessages(navigation) {
+
+    Globals.logger.addLogMessage('[Message sync] Starting message synchronization routine.');
 
   const syncingHasStalled = (Date.now() - Globals.lastSyncEvent > 1000 * 60);
 
@@ -917,30 +919,31 @@ async function backgroundSyncMessages(navigation) {
     }
   }
 
-  console.log('API is ', Globals.APIOnline);
+    Globals.logger.addLogMessage('[Message sync] API is connected: ' + Globals.APIOnline);
 
 
-  if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled == "true" && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
-    startWebsocket();
-    if (Globals.webSocketStatus == 'online' && Globals.preferences.websocketEnabled == 'true') return;
-  }
+    if (Globals.webSocketStatus == 'offline' && Globals.preferences.cacheEnabled == "true" && Globals.APIOnline && Globals.preferences.websocketEnabled == 'true') {
+        Globals.logger.addLogMessage('[Message sync] Starting WebSocket');
+        startWebsocket();
+        if (Globals.webSocketStatus == 'online' && Globals.preferences.websocketEnabled == 'true') return;
+    }
 
   Globals.syncSkips = 0;
 
   if (Globals.syncingMessages) {
-    console.log('Already syncing.. skipping.');
+    Globals.logger.addLogMessage('[Message sync] Another synchronization process is already running. Aborting.');
     return;
-  } else {
-    console.log('Commencing message sync.', Globals.syncingMessages);
   }
 
-  if (Globals.groups.length + Globals.payees.length == 0) return;
+  if (Globals.preferences.limitData && type === 'cellular') {
+    Globals.logger.addLogMessage('[Message sync] On mobile data and data saver mode is on. Aborting.');
+  }
 
   Globals.syncingMessages = true;
 
   if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
 
-    console.log('Syncing from API..');
+    Globals.logger.addLogMessage('[Message sync] Begin API sync process');
 
     await cacheSync();
     await cacheSyncDMs();
