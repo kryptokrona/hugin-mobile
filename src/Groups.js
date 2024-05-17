@@ -913,7 +913,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
                                 fontFamily: "Montserrat-SemiBold"
                             }}>{thisMessage.replyNickname ? thisMessage.replyNickname : t('Anonymous')}
                             </Text>
-                            <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 12, paddingLeft: 5 }} >{thisMessage.replyMessage}</Text>
+                            <Text selectable numberOfLines={1} ellipsizeMode={'tail'} style={{ fontFamily: "Montserrat-Regular", fontSize: 12, paddingLeft: 5 }} >{thisMessage.replyMessage}</Text>
                         </View>
                     </TouchableOpacity>
                     }
