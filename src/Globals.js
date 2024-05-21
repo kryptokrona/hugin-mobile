@@ -447,6 +447,10 @@ export async function initGlobals() {
 
     let lastSync = await getLastSync();
 
+    Globals.lastDMTimestamp = lastSync.lastSyncDM;
+
+    Globals.lastMessageTimestamp = lastSync.lastSyncGroup;
+
     console.log('lastSync', lastSync);
 
 

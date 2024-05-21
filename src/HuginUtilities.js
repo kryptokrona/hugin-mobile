@@ -156,6 +156,8 @@ export function resyncMessage24h() {
     Globals.lastDMTimestamp = Date.now() - (24 * 60 * 60 * 1000);
     Globals.notificationQueue = [];
     Globals.initalSyncOccurred = false;
+    setLastSyncGroup(Globals.lastMessageTimestamp);
+    setLastSyncDM(Globals.lastMessageTimestamp);
     emptyKnownTXs();
 }
 
@@ -508,7 +510,10 @@ export async function cacheSync(first=true, page=1) {
 
   return new Promise(async (resolve, reject) => {
 
+    let last_read_timestamp = 0;
+
     latest_board_message_timestamp = Globals.lastMessageTimestamp;
+    console.log('CHECKMEPLS', Globals.lastMessageTimestamp)
     Globals.logger.addLogMessage(`Syncing group messages from ${new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')} to ${new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')}.. 💌`);
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
     console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
@@ -525,8 +530,11 @@ export async function cacheSync(first=true, page=1) {
       for (item in items) {
 
         Globals.logger.addLogMessage(`Syncing group message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
-
+        last_read_timestamp = parseInt(items[item].tx_timestamp)+1;
+        setLastSyncGroup(last_read_timestamp);
         Globals.lastSyncEvent = Date.now();
+
+        console.log('Finished presync');
 
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
         // if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
@@ -546,9 +554,8 @@ export async function cacheSync(first=true, page=1) {
             await cacheSync(false, page+1);
             resolve(true);
       } else {
+        Globals.lastMessageTimestamp = last_read_timestamp;
         console.log('Returning..')
-        Globals.lastMessageTimestamp = Date.now();
-        setLastSyncGroup(Date.now());
         resolve(true);
       }
     })
@@ -562,9 +569,11 @@ export async function cacheSyncDMs(first=true, page=1) {
     
   console.log('Global timestamp', Globals.lastDMTimestamp);
     
-    latest_board_message_timestamp = Globals.lastDMTimestamp;
+    latest_board_message_timestamp = Globals.lastDMTimestamp; // just a lazy way to use a bad variable name
 
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
+
+    let latest_sync_timestamp = 0;
 
     console.log(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
     fetch(`${cacheURL}/api/v1/posts-encrypted?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page)
@@ -579,6 +588,8 @@ export async function cacheSyncDMs(first=true, page=1) {
       for (item in items) {
         Globals.logger.addLogMessage(`Syncing private message ${parseInt(item)+parseInt((json.current_page-1)*50)}/${json.total_items} 💌`);
         Globals.lastSyncEvent = Date.now();
+        latest_sync_timestamp = parseInt(items[item].tx_timestamp) + 1;
+        setLastSyncDM(latest_sync_timestamp);
 
         if (await messageExists(items[item].tx_timestamp)) continue;
         // if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
@@ -595,8 +606,7 @@ export async function cacheSyncDMs(first=true, page=1) {
             await cacheSyncDMs(false, page+1);
             resolve(true);
       } else {
-        Globals.lastDMTimestamp = Date.now();
-        setLastSyncDM(Date.now());
+        Globals.lastDMTimestamp = latest_sync_timestamp;
         resolve(true);
       }
     })
@@ -871,21 +881,18 @@ async function getGroupMessage(tx) {
 
   const message_dec = naclUtil.encodeUTF8(decryptBox);
 
-  Globals.logger.addLogMessage('Message decoded' + message_dec)
-
   const payload_json = JSON.parse(message_dec);
+
+  Globals.logger.addLogMessage('[Message sync] New message found: ' + payload_json.m.slice(0,10));
 
   const from = payload_json.k;
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
 
-  Globals.logger.addLogMessage('From myself?' + from_myself)
   const received = (from_myself ? 'sent' : 'received');
 
   const this_addr = await Address.fromAddress(from);
 
   const verified = await xkrUtils.verifyMessageSignature(payload_json.m, this_addr.spend.publicKey, payload_json.s);
-
-  Globals.logger.addLogMessage('Verified?' + verified)
 
   const reply = payload_json?.r ? payload_json.r : "";
 
