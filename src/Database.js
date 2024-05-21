@@ -1296,7 +1296,7 @@ export async function getLatestGroupMessages() {
         `
         SELECT *
         FROM privateboards_messages_db D
-        WHERE timestamp = (SELECT MAX(timestamp) FROM privateboards_messages_db WHERE board = D.board AND reply = '')
+        WHERE timestamp = (SELECT MAX(timestamp) FROM privateboards_messages_db WHERE board = D.board)
         ORDER BY
             timestamp
         ASC
