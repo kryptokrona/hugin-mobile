@@ -907,13 +907,16 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     }}>
                         <View style={{flexDirection:"row", marginBottom: 10}}>
                             <View style={{marginTop: 8, marginRight: 5, width: 10, height: 10, borderTopLeftRadius: 4, borderColor: 'rgba(255,255,255,0.5)', borderLeftWidth: 1, borderTopWidth: 1}}></View>
-                            <Text numberOfLines={1} ellipsizeMode={'tail'} style={{
+                            <Text numberOfLines={1} ellipsizeMode={'tail'} >
+                            <Text style={{
                                 color: '#ffffff',
                                 fontSize: 12,
                                 fontFamily: "Montserrat-SemiBold"
-                            }}>{thisMessage.replyNickname ? thisMessage.replyNickname : t('Anonymous')}
+                            }}>{thisMessage.replyNickname ? thisMessage.replyNickname : t('Anonymous')}</Text>
+                            
+                            <Text selectable style={{ fontFamily: "Montserrat-Regular", fontSize: 12, paddingLeft: 5 }} > {thisMessage.replyMessage}</Text>
                             </Text>
-                            <Text selectable numberOfLines={1} ellipsizeMode={'tail'} style={{ fontFamily: "Montserrat-Regular", fontSize: 12, paddingLeft: 5 }} >{thisMessage.replyMessage}</Text>
+                            
                         </View>
                     </TouchableOpacity>
                     }
