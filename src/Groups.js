@@ -897,10 +897,13 @@ export class GroupChatScreenNoTranslation extends React.Component {
                     {thisMessage.type == 'failed' && <TouchableOpacity style={{marginBottom: 10}} onPress={() => {removeGroupMessage(thisMessage.timestamp); submitMessage(thisMessage.message)}}><Text style={{fontSize: 10}}>Message failed to send. Tap here to try again.</Text></TouchableOpacity>}
                     {thisMessage.replyMessage &&
                     <TouchableOpacity onPress={async () => {
-                        console.log(thisMessage);
+
                     this.state.replies = await getReplies(thisMessage.reply);
-                    
-                    this.setActivePost(await getGroupsMessage(thisMessage.reply));
+
+                    let newActivePost = await getGroupsMessage([thisMessage.reply]);
+                    newActivePost = newActivePost[0];
+
+                    this.setActivePost(newActivePost);
     
                     this.setMessageModalVisible(true);
     

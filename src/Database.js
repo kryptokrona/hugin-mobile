@@ -1417,12 +1417,7 @@ export async function getMessages(conversation=false, limit=25) {
 
 export async function getGroupMessages(group=false, limit=25) {
 
-    const stack = new Error().stack;
-    const callerInfo = stack.split('\n');
-
     if (limit < 25) limit = 25;
-
-    const starttime = Date.now();
 
     const [data] = await database.executeSql(
         `
@@ -1459,6 +1454,8 @@ export async function getGroupMessages(group=false, limit=25) {
 
     if (data && data.rows && data.rows.length) {
         const res = [];
+        const replies = [];
+        const replyHashes = [];
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
@@ -1479,17 +1476,35 @@ export async function getGroupMessages(group=false, limit=25) {
             };
 
             if (thisMessage.reply != '') {
-                const thisOP = await getGroupsMessage(thisMessage.reply);
-                if (thisOP) {
-                    thisMessage.replyNickname = thisOP.nickname;
-                    thisMessage.replyMessage = thisOP.message;
-                }
+
+                replies.push({op: item.reply, reply: item.hash});
+                replyHashes.push(item.reply);
+                
             }
 
             res.push(thisMessage);
 
         }
-        console.log(res);
+
+        if (replyHashes) {
+            const ops = await getGroupsMessage(replyHashes);
+
+            console.log('ops ', ops);
+
+            for (op in ops) {
+                const thisReply = ops[op];  
+                for (message in res) {
+                    const thisMessage = res[message];
+                    if (thisMessage.reply == thisReply.hash) {
+                        res[message].replyNickname = thisReply.nickname;
+                        res[message].replyMessage = thisReply.message;
+                        break;
+                    }
+                }
+            }
+
+        }
+        
         return res.reverse();
     } else {
       console.log('No message le found!');
@@ -1666,13 +1681,18 @@ export async function getBoardsMessages(board='Home') {
     return [];
 }
 
-export async function getGroupsMessage(hash) {
+export async function getGroupsMessage(hashes) {
+
+    hashes = hashes.join('", "')
+    hashes = '"' + hashes + '"';
+
+    console.log(hashes);
 
     const [data] = await database.executeSql(
         `SELECT
             *
         FROM
-            privateboards_messages_db WHERE hash = '${hash}'`
+            privateboards_messages_db WHERE hash IN (${hashes})`
     );
 
     if (data && data.rows && data.rows.length) {
@@ -1680,9 +1700,9 @@ export async function getGroupsMessage(hash) {
 
         for (let i = 0; i < data.rows.length; i++) {
             const item = data.rows.item(i);
-            return item;
+            res.push(item);
         }
-
+        return res;
     }
 
     return false;
