@@ -45,7 +45,7 @@ import {intToRGB, hashCode, get_avatar, sendGroupsMessage, createGroup, getBoard
 
 import {toastPopUp} from './Utilities';
 
-import { getGroupsMessage, loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, saveGroupMessage, removeGroupMessage} from './Database';
+import { getGroupsMessage, loadGroupsDataFromDatabase, subscribeToGroup, markGroupConversationAsRead, getGroupMessages, getReplies, saveGroupMessage, removeGroupMessage, blockUser} from './Database';
 
 import './i18n.js';
 import { withTranslation } from 'react-i18next';
@@ -962,6 +962,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
         borderTopRightRadius: 20,
         borderTopLeftRadius: 20,
         padding: 25,
+        paddingBottom: 100,
         alignItems: "center",
         shadowColor: "#000",
         shadowOffset: {
@@ -1071,7 +1072,7 @@ export class GroupChatScreenNoTranslation extends React.Component {
             <View style={{
                 flex: 1,
                 backgroundColor: this.props.screenProps.theme.backgroundColour,
-                alignItems: 'center',
+                alignItems: 'center'
             }}>
 
                 <View style={{
@@ -1386,6 +1387,33 @@ export class GroupChatScreenNoTranslation extends React.Component {
                         textAlign: 'center'
                       }}>
                         Reply</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.02)',
+                                    borderWidth: 1,
+                                    borderColor: this.props.screenProps.theme.borderColour,
+                                    borderRadius: 15,
+                                    padding: 10,
+                                    flexDirection: 'row',
+                                    alignContent: 'center',
+                                    justifyContent: 'space-between',
+                                    marginLeft: 10
+                                  }}
+                              onPress={() => {
+                                blockUser(this.state.activePost.address, this.state.activePost.nickname);
+                                this.setMessageModalVisible(false);
+                              }}
+                            >
+                                <CustomIcon name='user-remove' size={18} style={{marginRight: 4, color: 'rgba(255,255,255,0.8)'}} />
+                                <Text style={{
+                        color: this.props.screenProps.theme.primaryColour,
+                        textAlign: 'left',
+                        fontSize: 14,
+                        fontFamily: 'Montserrat-Bold',
+                        textAlign: 'center'
+                      }}>
+                        Block</Text>
                             </TouchableOpacity>
                           </View>
 

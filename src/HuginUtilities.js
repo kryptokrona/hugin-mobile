@@ -513,7 +513,6 @@ export async function cacheSync(first=true, page=1) {
     let last_read_timestamp = 0;
 
     latest_board_message_timestamp = Globals.lastMessageTimestamp;
-    console.log('CHECKMEPLS', Globals.lastMessageTimestamp)
     Globals.logger.addLogMessage(`Syncing group messages from ${new Date(latest_board_message_timestamp).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')} to ${new Date(Date.now()).toISOString().replace('T', ' ').replace(/\.\d+Z$/, '')}.. 💌`);
     let cacheURL = Globals.preferences.cache ? Globals.preferences.cache : Config.defaultCache;
     console.log(`${cacheURL}/api/v1/posts-encrypted-group?from=${parseInt(latest_board_message_timestamp/1000)}&to=${parseInt(Date.now()/1000)}&size=50&page=` + page);
@@ -533,8 +532,6 @@ export async function cacheSync(first=true, page=1) {
         last_read_timestamp = parseInt(items[item].tx_timestamp)+1;
         setLastSyncGroup(last_read_timestamp);
         Globals.lastSyncEvent = Date.now();
-
-        console.log('Finished presync');
 
         if (await groupMessageExists(items[item].tx_timestamp)) continue;
         // if (Globals.knownTXs.indexOf(items[item].tx_hash) != -1) continue;
@@ -886,6 +883,9 @@ async function getGroupMessage(tx) {
   Globals.logger.addLogMessage('[Message sync] New message found: ' + payload_json.m.slice(0,10));
 
   const from = payload_json.k;
+  if (Globals.blockList.some(a => a === from)) return false;
+
+
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
 
   const received = (from_myself ? 'sent' : 'received');

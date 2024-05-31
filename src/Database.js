@@ -170,6 +170,14 @@ async function createTables(DB) {
             )`
         );
 
+        tx.executeSql(
+            `CREATE TABLE IF NOT EXISTS blocklist (
+                address TEXT,
+                name TEXT,
+                UNIQUE (address)
+            )`
+        );
+
         /* Add new columns */
         if (dbVersion === 0) {
             tx.executeSql(
@@ -2146,4 +2154,66 @@ export async function loadTransactionDetailsFromDatabase() {
     }
 
     return undefined;
+}
+
+async function removeGroupMessagesFromUser(address) {
+
+    const [data] = await database.executeSql(
+        `DELETE FROM privateboards_messages_db WHERE address = "${address}"`
+    )
+
+    Globals.updateGroups();
+
+}
+
+export async function blockUser(address, nickname) {
+
+    const [data] = await database.executeSql(
+        `REPLACE INTO blocklist
+        (address, name)
+          VALUES
+            (?, ?)`, 
+            [address, nickname]
+    )
+
+    console.log('Added to block list', address)
+    removeGroupMessagesFromUser(address);
+
+}
+
+export async function getBlockList() {
+
+    console.log('Getting blocklist..');
+
+    const [data] = await database.executeSql(
+        `SELECT * FROM blocklist`
+    );
+    
+    let blockList = [];
+    if (data && data.rows && data.rows.length) {
+
+        for (let i = 0; i < data.rows.length; i++) {
+
+            const item = data.rows.item(i);
+            timestamp = item.timestamp;
+            blockList.push(item.address);
+
+        }
+
+    }
+
+    return blockList;
+
+}
+
+export async function unBlockUsers (address) {
+
+    const [data] = await database.executeSql(
+        `DELETE FROM
+        blocklist
+      WHERE
+        address = ${address}`);
+
+
+    console.log('Removed from block list', address)
 }

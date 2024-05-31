@@ -14,7 +14,7 @@ import NetInfo from "@react-native-community/netinfo";
 
 import { deleteUserPinCode } from '@haskkor/react-native-pincode';
 
-import { getLastSync, setHaveWallet, openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
+import { getBlockList, getLastSync, setHaveWallet, openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
 loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
 import Config from './Config';
 import { Logger } from './Logger';
@@ -138,6 +138,8 @@ class globals {
         this.lastSyncEvent = Date.now();
 
         this.navigation = undefined;
+
+        this.blockList = [];
 
     }
 
@@ -451,7 +453,6 @@ export async function initGlobals() {
 
     Globals.lastMessageTimestamp = lastSync.lastSyncGroup;
 
-    console.log('lastSync', lastSync);
-
+    Globals.blockList = await getBlockList();
 
 }
