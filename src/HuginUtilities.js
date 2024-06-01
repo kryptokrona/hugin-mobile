@@ -27,7 +27,7 @@ import * as NaclSealed from 'tweetnacl-sealed-box';
 
 import Identicon from 'identicon.js';
 
-import {setLastSyncGroup, setLastSyncDM, emptyKnownTXs, updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction } from './Database';
+import {setLastSyncGroup, setLastSyncDM, emptyKnownTXs, updateGroupMessage, updateMessage, savePreferencesToDatabase, getGroupName, saveGroupMessage, groupMessageExists, getGroupKey, getLatestGroupMessage, getHistory, getLatestMessages, saveToDatabase, loadPayeeDataFromDatabase, saveMessage, saveBoardsMessage, savePayeeToDatabase, messageExists, getLatestMessage, saveKnownTransaction, isSpam } from './Database';
 
 /**
  * Save wallet in background
@@ -883,8 +883,11 @@ async function getGroupMessage(tx) {
   Globals.logger.addLogMessage('[Message sync] New message found: ' + payload_json.m.slice(0,10));
 
   const from = payload_json.k;
-  if (Globals.blockList.some(a => a === from)) return false;
 
+  const spam = await isSpam(from, payload_json.m, tx.t);
+  if (spam) return false;
+
+  if (Globals.blockList.some(a => a === from)) return false;
 
   const from_myself = (from == Globals.wallet.getPrimaryAddress() ? true : false);
 

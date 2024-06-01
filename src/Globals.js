@@ -15,7 +15,7 @@ import NetInfo from "@react-native-community/netinfo";
 import { deleteUserPinCode } from '@haskkor/react-native-pincode';
 
 import { getBlockList, getLastSync, setHaveWallet, openDB, deleteDB, getKnownTransactions, getUnreadMessages, getGroupMessages, saveGroupToDatabase, removeMessages, loadPayeeDataFromDatabase, savePayeeToDatabase, removePayeeFromDatabase,
-loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase } from './Database';
+loadTransactionDetailsFromDatabase, saveTransactionDetailsToDatabase, removeGroupFromDatabase, getMessages, getLatestMessages, getBoardsMessages, getBoardSubscriptions, loadGroupsDataFromDatabase, unBlockUsers } from './Database';
 import Config from './Config';
 import { Logger } from './Logger';
 import { getCoinPriceFromAPI } from './Currency';
@@ -453,6 +453,13 @@ export async function initGlobals() {
 
     Globals.lastMessageTimestamp = lastSync.lastSyncGroup;
 
+    await unBlockUsers('SEKReWcYe3X1bVh2Cv3YfY6nosjm1ZDhAG5y6jwMbPofEUUwi5Kgt6dM8z1tJjuHe6AASFqViHxBxM92x1oJ71WgRT4aL4XGbC8');
+    await unBlockUsers('SEKReTbT3Kr1YAJdGT7HudX9nG7iq99vpbxgWKhHgg3G4daZpnp5zxfeMpQpigJKAf8Fu4RYybyQpSz2rGj4TPDGePE4oUkP4Sp');
+    await unBlockUsers('SEKReXtKuFcEfMuvf9SY4nFYVz6KifongWRt3Kuvo5TfU1yDh5DGFYoCNVAVhE6oUZ83GVhpQg8XJg14w8Tzb5XdRJH5iz4VVdE');
+    await unBlockUsers('SEKReUabHDKVWqE7mtYjQeY2mMQYq49U8TQYzEQ2KidDd7fwtmWMhorMhHoXChpikL7c8rYi2AAyTS4SVxWfvkK18ku4zVd8zFv');
+
     Globals.blockList = await getBlockList();
+
+    Globals.logger.addLogMessage('Blocked users: ' + Globals.blockList.join(' ,'));
 
 }

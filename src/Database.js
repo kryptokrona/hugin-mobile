@@ -529,7 +529,7 @@ export async function openDB() {
 
         await createTables(database);
     } catch (err) {
-        Globals.logger.addLogMessage('Failed to open DB: ' + err);
+        Globals.logger.addLogMessage('Failed to open DB: ' + JSON.stringify(err));
     }
 }
 
@@ -2177,6 +2177,8 @@ export async function blockUser(address, nickname) {
     )
 
     console.log('Added to block list', address)
+    Globals.blockList.push(address);
+    Globals.logger.addLogMessage('Blocked users: ' + Globals.blockList.join(' ,'));
     removeGroupMessagesFromUser(address);
 
 }
@@ -2195,7 +2197,7 @@ export async function getBlockList() {
         for (let i = 0; i < data.rows.length; i++) {
 
             const item = data.rows.item(i);
-            timestamp = item.timestamp;
+
             blockList.push(item.address);
 
         }
@@ -2212,8 +2214,53 @@ export async function unBlockUsers (address) {
         `DELETE FROM
         blocklist
       WHERE
-        address = ${address}`);
+        address = "${address}"`);
 
 
     console.log('Removed from block list', address)
+}
+
+
+export async function isSpam (address, message, timestamp) {
+
+    const length = message.length;
+    const an_hour_ago = Date.now() - (60*60*1000);
+
+    if (length < 10) {
+        const [data] = await database.executeSql(
+            `
+            SELECT hash
+            FROM privateboards_messages_db D
+            WHERE message = "${message}"
+            AND address = "${address}"
+            AND timestamp > ${an_hour_ago}
+            `);
+    
+            if (data && data.rows && data.rows.length) { 
+                return true;
+            } else {
+                return false;
+            }
+    };
+
+    const partLength = Math.ceil(length / 3);
+    
+    const part1 = message.slice(0, partLength);
+    const part2 = message.slice(partLength, partLength * 2);
+    const part3 = message.slice(partLength * 2);
+
+    const [data] = await database.executeSql(
+        `
+        SELECT hash
+        FROM privateboards_messages_db D
+        WHERE message LIKE "%${part1}%" OR message LIKE "%${part2}%" OR message LIKE "%${part3}%"
+        AND timestamp > ${an_hour_ago}
+        `);
+
+        if (data && data.rows && data.rows.length) { 
+            return true;
+        } else {
+            return false;
+        }
+
 }
