@@ -65,6 +65,7 @@ async function init(navigation) {
   
     Globals.wallet.scanCoinbaseTransactions(Globals.preferences.scanCoinbaseTransactions);
     Globals.wallet.enableAutoOptimization(false);
+    Globals.wallet.scanPoolTransactions(false);
 
     /* Remove any previously added listeners */
     Globals.wallet.removeAllListeners('incomingtx');
@@ -800,7 +801,7 @@ class BalanceComponentNoTranslation extends React.Component {
         const {t} = this.props;
         const hasBalance = (this.props.unlockedBalance + this.props.lockedBalance > 0) ? true : false;
         const compactBalance = <OneLineText
-                                     style={{textAlign: 'center', alignItems: 'center', fontFamily: 'MajorMonoDisplay-Regular', fontWeight: 'bolder', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
+                                     style={{textAlign: 'center', alignItems: 'center', fontFamily: 'MajorMonoDisplay-Regular', fontWeight: '900', color: this.props.lockedBalance === 0 ? 'white' : 'white', fontSize: 24}}
                                 >
                                     <Text style={{
                                     color: 'white',
@@ -1062,28 +1063,102 @@ export async function backgroundSyncMessages(navigation) {
     return;
   }
 
-  if (Globals.preferences.limitData && type === 'cellular') {
-    Globals.logger.addLogMessage('[Message sync] On mobile data and data saver mode is on. Aborting.');
-  }
-
   Globals.syncingMessages = true;
 
-  if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
+//   if (Globals.preferences.cacheEnabled == "true" && Globals.APIOnline) {
 
-    Globals.logger.addLogMessage('[Message sync] Begin API sync process');
+//     Globals.logger.addLogMessage('[Message sync] Begin API sync process');
 
-    await cacheSync();
-    await cacheSyncDMs();
-    Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
-    sendNotifications();
-    Globals.syncingMessages = false;
-    Globals.knownTXs = await getKnownTransactions();
-    Globals.initalSyncOccurred = true;
-    return;
+//     await cacheSync();
+//     await cacheSyncDMs();
+//     Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
+//     sendNotifications();
+//     Globals.syncingMessages = false;
+//     Globals.knownTXs = await getKnownTransactions();
+//     Globals.initalSyncOccurred = true;
+//     return;
 
-  }
+//   }
 
-  
+  try {
+
+    Globals.logger.addLogMessage('Syncing messages from node.. 💌');
+    
+      const daemonInfo = Globals.wallet.getDaemonConnectionInfo();
+      let knownTXs = await getKnownTransactions();
+      let nodeURL = `${daemonInfo.ssl ? 'https://' : 'http://'}${daemonInfo.host}:${daemonInfo.port}`;
+        fetch(nodeURL + "/get_pool", {
+        method: 'POST',
+        body: JSON.stringify({
+            timestampBegin: Globals.lastMessageTimestamp
+         })
+      })
+      .then((response) => response.json())
+      .then(async (json) => {
+
+
+        for (transaction in json.deletedTxsIds) {
+          deleteKnownTransaction(json.deletedTxsIds[transaction]);
+        }
+        let addedTxs = json.addedTxs;
+
+        Globals.logger.addLogMessage(`Found ${addedTxs.length} new messages.. 💌`);
+
+        let transactions = addedTxs;
+
+        for (transaction in transactions) {
+
+          try {
+
+            Globals.logger.addLogMessage(`Trying to decrypt message ${transaction}/${addedTxs.length}.. 💌`);
+
+            Globals.lastSyncEvent = Date.now();
+
+          let thisExtra = transactions[transaction]["transactionPrefixInfo.txPrefix"].extra;
+
+          let thisHash = transactions[transaction]["transactionPrefixInfo.txHash"];
+
+          if (Globals.knownTXs.indexOf(thisHash) != -1) continue;
+
+
+          if (thisExtra.length > 66) {
+
+           
+            try {
+                let message = await getMessage(thisExtra, thisHash, navigation);
+            } catch (err) {
+                console.log(err);
+            }
+            saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
+
+          } else {
+            saveKnownTransaction(thisHash);
+            if (Globals.knownTXs.indexOf(thisHash) === -1) Globals.knownTXs.push(thisHash);
+            continue;
+          }
+
+
+        } catch (err) {
+          continue;
+        }
+
+        }
+        Globals.logger.addLogMessage(`Found ${Globals.notificationQueue.length} messages.. 💌`);
+        
+        sendNotifications();
+        Globals.initalSyncOccurred = true;
+        Globals.syncingMessages = false;
+        Globals.knownTXs = await getKnownTransactions();
+
+        return;
+
+
+
+      });
+} catch (err) {
+  console.log('Message sync failed: ', err);
+}
 
   try {
 
