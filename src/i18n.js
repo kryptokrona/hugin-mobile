@@ -1,6 +1,7 @@
 import i18next from "i18next";
 import { initReactI18next } from "react-i18next";
 import en from "./i18n/en.json";
+import es from "./i18n/es.json";
 import sv from "./i18n/sv.json";
 import no from "./i18n/no.json";
 import zh from "./i18n/zh.json";
@@ -42,6 +43,9 @@ i18next
     resources: {
       en: {
         translation: en,
+      },
+      es: {
+        translation: es,
       },
       sv: {
         translation: sv,
