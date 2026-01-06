@@ -1,3 +1,6 @@
+# ⚠️ ALERT! This repo is discontinued.
+## Please refer to the rebuild of Hugin for Mobile here: https://github.com/kryptokrona/hugin-native
+
 # Hugin Messenger Mobile
 
 ### Initial Setup
