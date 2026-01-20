@@ -196,4 +196,9 @@
   clearKnownMessagesDescr: "这将重新同步过去24小时内的所有消息",
   alreadyOptimizing: "开始优化.请等待直到优化完成...",
   deleteContactWarning: "您确定要删除此联系人吗？"
+,
+  boardsTitle: "版块",
+  subscribe: "订阅",
+  myBoards: "我的版块",
+  is: "是"
 }
